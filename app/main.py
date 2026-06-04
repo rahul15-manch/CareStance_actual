@@ -426,7 +426,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Add Session Middleware (needed for OAuth)
 # On Vercel (HTTPS), cookies must have Secure flag to survive cross-site OAuth redirects
-_is_production = bool(os.getenv("VERCEL") or os.getenv("BASE_URL", "").startswith("https"))
+_is_production = bool(os.getenv("VERCEL") or os.getenv("BASE_URL", os.getenv("APP_URL", "")).startswith("https"))
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SECRET_KEY", "a_very_secret_key_for_sessions"),
@@ -901,8 +901,8 @@ async def login_google(request: Request):
         print("ERROR: GOOGLE_CLIENT_ID not found in environment!")
         return RedirectResponse(url='/login?error=Configuration missing', status_code=status.HTTP_302_FOUND)
     
-    # Build redirect_uri: prefer BASE_URL env var, fallback to request-based URL
-    base_url = os.getenv("BASE_URL")
+# Build redirect_uri: prefer BASE_URL env var, then APP_URL, fallback to request-based URL
+    base_url = os.getenv("BASE_URL") or os.getenv("APP_URL")
     if base_url:
         redirect_uri = f"{base_url.rstrip('/')}/auth/callback"
     else:
