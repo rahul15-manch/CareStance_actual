@@ -444,6 +444,8 @@ async def add_cache_control_header(request: Request, call_next):
         response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     return response
 
+
+#
 @app.middleware("http")
 async def check_suspension(request: Request, call_next):
     # Paths that suspended users can still access
