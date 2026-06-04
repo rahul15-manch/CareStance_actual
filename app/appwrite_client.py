@@ -16,6 +16,7 @@ databases = Databases(client)
 account = Account(client)
 storage = Storage(client)
 
+#
 # Appwrite Constants
 DB_ID = "main" # Replace with your Appwrite Database ID
 COLLECTIONS = {
