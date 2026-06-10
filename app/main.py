@@ -25,6 +25,7 @@ from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy import select, and_, or_, func
 from .database import AsyncSessionLocal, engine, get_db, Base, SQLALCHEMY_DATABASE_URL
 import re
+from urllib.parse import urlparse
 from . import models
 from .email_utils import (
     send_email, 
@@ -432,31 +433,84 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
+# Helpers to include BASE_URL / APP_URL hosts and origins in middleware configuration
+def _normalize_host(url: str):
+    try:
+        parsed = urlparse(url)
+        return parsed.hostname or url
+    except Exception:
+        return url
+
+
+def _normalize_origin(url: str):
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme and parsed.netloc:
+            return f"{parsed.scheme}://{parsed.netloc}"
+        return url
+    except Exception:
+        return url
+
+
+def _collect_env_hosts(*env_names):
+    hosts = []
+    for env in env_names:
+        raw = os.getenv(env, "").strip()
+        if raw:
+            host = _normalize_host(raw)
+            if host and host not in hosts:
+                hosts.append(host)
+    return hosts
+
+
+def _collect_env_origins(*env_names):
+    origins = []
+    for env in env_names:
+        raw = os.getenv(env, "").strip()
+        if raw:
+            origin = _normalize_origin(raw)
+            if origin and origin not in origins:
+                origins.append(origin)
+    return origins
+
 # ─── Trusted Host Middleware ──────────────────────────────────────────────────
 # Ensures the app accepts requests from your domains
 app.add_middleware(
     TrustedHostMiddleware, 
-    allowed_hosts=["carestance.in", "www.carestance.in", "*.railway.app", "localhost", "127.0.0.1"]
+    allowed_hosts=[
+        "carestance.in", 
+        "www.carestance.in", 
+        "*.railway.app", 
+        "localhost", 
+        "127.0.0.1",
+        *(_collect_env_hosts("BASE_URL", "APP_URL"))
+    ]
 )
 
 # ─── CORS Middleware ──────────────────────────────────────────────────────────
-# Allows Vercel to communicate with Railway
+# Allows Vercel and other configured domains to communicate with Railway
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://carestance.in", "https://www.carestance.in", "*.vercel.app"],
+    allow_origins=[
+        "https://carestance.in", 
+        "https://www.carestance.in", 
+        "*.vercel.app",
+        *(_collect_env_origins("BASE_URL", "APP_URL"))
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Add Session Middleware (needed for OAuth)
-# On Vercel (HTTPS), cookies must have Secure flag to survive cross-site OAuth redirects
+# On Vercel/production HTTPS, cookies should be secure.
 _is_production = bool(os.getenv("VERCEL") or os.getenv("BASE_URL", os.getenv("APP_URL", "")).startswith("https"))
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SECRET_KEY", "a_very_secret_key_for_sessions"),
     same_site="lax",
-    https_only=False, # Relaxed for the proxy bridge
+    https_only=_is_production,
     max_age=14 * 24 * 60 * 60,  # 14 days
 )
 

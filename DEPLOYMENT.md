@@ -56,6 +56,9 @@ In the Railway dashboard, go to **Variables** and add:
 
 ```
 DATABASE_URL=postgresql://user:password@host:5432/carestance
+APPWRITE_ENDPOINT=https://<your-appwrite-host>/v1
+APPWRITE_PROJECT_ID=your_appwrite_project_id
+APPWRITE_API_KEY=your_appwrite_api_key
 GEMINI_API_KEY=your-google-gemini-key
 GROQ_API_KEY=your-groq-api-key
 RAZORPAY_KEY_ID=your-razorpay-key-id
@@ -65,6 +68,9 @@ SECRET_KEY=your-random-secret-key-here
 REDIS_URL=redis://host:6379/0
 BASE_URL=https://your-railway-app.up.railway.app
 VERCEL=false
+
+# Note
+# BASE_URL is used for OAuth callback generation and custom host validation within the backend.
 ```
 
 #### 3. Configure Build & Start Commands
