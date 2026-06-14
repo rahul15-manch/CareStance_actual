@@ -1922,10 +1922,21 @@ async def admin_dashboard(
         if user_search:
             # Search across the entire database by name or email
             search_filter = models.User.full_name.ilike(f"%{user_search}%") | models.User.email.ilike(f"%{user_search}%")
-            all_users = (await db.execute(select(models.User).where(search_filter).order_by(models.User.id.desc()))).scalars().all()
+            all_users = (await db.execute(
+                select(models.User)
+                .options(selectinload(models.User.assessment))
+                .where(search_filter)
+                .order_by(models.User.id.desc())
+            )).scalars().all()
             total_users = len(all_users)
         else:
-            all_users = (await db.execute(select(models.User).order_by(models.User.id.desc()).offset((user_page - 1) * page_size).limit(page_size))).scalars().all()
+            all_users = (await db.execute(
+                select(models.User)
+                .options(selectinload(models.User.assessment))
+                .order_by(models.User.id.desc())
+                .offset((user_page - 1) * page_size)
+                .limit(page_size)
+            )).scalars().all()
             total_users = (await db.execute(select(func.count()).select_from(models.User))).scalar()
 
         all_feedback = (await db.execute(select(models.Feedback).order_by(models.Feedback.timestamp.desc()).offset((feedback_page - 1) * page_size).limit(page_size))).scalars().all()
@@ -1934,7 +1945,11 @@ async def admin_dashboard(
         all_tickets = (await db.execute(select(models.Ticket).order_by(models.Ticket.timestamp.desc()).offset((ticket_page - 1) * page_size).limit(page_size))).scalars().all()
         total_tickets = (await db.execute(select(func.count()).select_from(models.Ticket))).scalar()
 
-        pending_counsellors = (await db.execute(select(models.CounsellorProfile).where(models.CounsellorProfile.verification_status == "pending"))).scalars().all()
+        pending_counsellors = (await db.execute(
+            select(models.CounsellorProfile)
+            .options(joinedload(models.CounsellorProfile.user))
+            .where(models.CounsellorProfile.verification_status == "pending")
+        )).scalars().all()
         
         # ─── Optimized Counsellor Stats (Single Query) ───────────────────
 
@@ -1959,17 +1974,36 @@ async def admin_dashboard(
             # Search across all counsellors by name or email
             search_filter = models.User.full_name.ilike(f"%{counsellor_search}%") | models.User.email.ilike(f"%{counsellor_search}%")
             all_counsellors = (await db.execute(
-                select(models.CounsellorProfile).join(models.User).where(search_filter)
+                select(models.CounsellorProfile)
+                .join(models.User)
+                .options(joinedload(models.CounsellorProfile.user))
+                .where(search_filter)
             )).scalars().all()
         else:
-            all_counsellors = (await db.execute(select(models.CounsellorProfile))).scalars().all()
+            all_counsellors = (await db.execute(
+                select(models.CounsellorProfile)
+                .options(joinedload(models.CounsellorProfile.user))
+            )).scalars().all()
         for cp in all_counsellors:
             cp.session_count = completed_map.get(cp.user_id, 0)
             cp.total_sessions = total_map.get(cp.user_id, 0)
 
         # ─── Payment Split Analytics ──────────────────────────────────────
         try:
-            all_payments = (await db.execute(select(models.Payment).order_by(models.Payment.created_at.desc()).limit(20))).scalars().all()
+            all_payments = (await db.execute(
+                select(models.Payment)
+                .options(
+                    joinedload(models.Payment.session).options(
+                        joinedload(models.Appointment.student),
+                        joinedload(models.Appointment.counsellor)
+                    ),
+                    selectinload(models.Payment.transfers).options(
+                        joinedload(models.Transfer.counsellor)
+                    )
+                )
+                .order_by(models.Payment.created_at.desc())
+                .limit(20)
+            )).scalars().all()
             
             # Using scalars directly for performance
             session_revenue = (await db.execute(
@@ -2012,7 +2046,7 @@ async def admin_dashboard(
         # Fetch simulation payments
         simulation_payments = (await db.execute(
             select(models.SimulationPayment).options(
-                joinedload(models.SimulationPayment.user)
+                joinedload(models.SimulationPayment.user).selectinload(models.User.assessment)
             ).order_by(models.SimulationPayment.id.desc()).limit(50)
         )).scalars().all()
 
