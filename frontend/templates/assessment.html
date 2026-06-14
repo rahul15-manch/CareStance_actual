@@ -297,15 +297,17 @@
 <div class="cyber-bg-glow-2"></div>
 
 <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 relative z-10">
-    <!-- Header Details -->
+    <!-- Header Details with Mascot -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2" id="grade-title">
-                Psychometric Assessment
-            </h1>
-            <p class="text-sm font-semibold tracking-wider text-[#0d9488] mt-1 uppercase" id="subtitle-tracker">
-                Shadow Analysis Pipeline Activated
-            </p>
+        <div class="flex items-center gap-4">
+            <div class="w-20 h-20 flex-shrink-0 relative">
+                <div class="absolute inset-0 bg-teal-500/10 rounded-full blur-md animate-pulse"></div>
+                <img src="/static/images/careo.png" alt="Careo Mascot" class="w-full h-full object-contain relative z-10">
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-slate-900">Careo</h1>
+                <p class="text-xs font-semibold tracking-wider text-[#0d9488] uppercase">Your Career Guide</p>
+            </div>
         </div>
         <div class="flex flex-col items-end gap-1">
             <span class="text-xs font-bold uppercase tracking-widest text-slate-500" id="phase-step-label">Phase 1 of 5</span>
@@ -406,14 +408,20 @@
         const totalPhases = isG12 ? 6 : 5;
         const currentLabelVal = isG12 ? (assessmentState.current_phase + 1) : assessmentState.current_phase;
         
-        document.getElementById("grade-title").innerText = isG12 ? "Grade 12 Career Track" : "Grade 10 Stream Planner";
+        const gradeTitle = document.getElementById("grade-title");
+        if (gradeTitle) {
+            gradeTitle.innerText = isG12 ? "Grade 12 Career Track" : "Grade 10 Stream Planner";
+        }
         document.getElementById("phase-step-label").innerText = `Phase ${currentLabelVal} of ${totalPhases}`;
         
         // Progress percentage calculation
         const percent = Math.round((currentLabelVal / totalPhases) * 100);
         document.getElementById("global-progress-fill").style.width = `${percent}%`;
         
-        document.getElementById("subtitle-tracker").innerText = isG12 ? "Advanced Multi-Phase Diagnostic Flow" : "Interactive Stream Strategy Matrix";
+        const subtitleTracker = document.getElementById("subtitle-tracker");
+        if (subtitleTracker) {
+            subtitleTracker.innerText = isG12 ? "Advanced Multi-Phase Diagnostic Flow" : "Interactive Stream Strategy Matrix";
+        }
     }
 
     async function loadPhase() {
