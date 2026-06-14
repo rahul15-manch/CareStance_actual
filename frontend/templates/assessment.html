@@ -8,26 +8,26 @@
 
 <style>
     :root {
-        --dark-bg: #070e0f;
-        --dark-card: rgba(13, 29, 31, 0.7);
-        --neon-cyan: #00f2ff;
-        --neon-purple: #8b5cff;
-        --glow-cyan: rgba(0, 242, 255, 0.25);
-        --glow-purple: rgba(139, 92, 255, 0.25);
-        --text-bright: #e4f7f8;
-        --text-dim: #7f999c;
-        --border-neon: rgba(0, 242, 255, 0.15);
-        --border-purple: rgba(139, 92, 255, 0.15);
-        --glass-border: rgba(255, 255, 255, 0.08);
+        --dark-bg: #f8fafc;
+        --dark-card: #ffffff;
+        --neon-cyan: #0d9488;
+        --neon-purple: #6366f1;
+        --glow-cyan: rgba(13, 148, 136, 0.04);
+        --glow-purple: rgba(99, 102, 241, 0.04);
+        --text-bright: #0f172a;
+        --text-dim: #64748b;
+        --border-neon: rgba(13, 148, 136, 0.12);
+        --border-purple: rgba(99, 102, 241, 0.12);
+        --glass-border: rgba(15, 23, 42, 0.08);
     }
 
     body {
         font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-        background: linear-gradient(135deg, #050d0e 0%, #030606 100%) !important;
+        background: radial-gradient(circle at 10% 20%, rgba(240, 253, 250, 0.7) 0%, rgba(254, 243, 199, 0.2) 90%) !important;
         color: var(--text-bright);
     }
 
-    /* Outer Glowing Backgrounds */
+    /* Outer Glowing Backgrounds - Softened for light theme */
     .cyber-bg-glow {
         position: fixed;
         width: 40vw;
@@ -35,7 +35,7 @@
         border-radius: 50%;
         background: radial-gradient(circle, var(--glow-purple) 0%, transparent 70%);
         filter: blur(120px);
-        opacity: 0.25;
+        opacity: 0.15;
         z-index: 0;
         top: -10%;
         right: -10%;
@@ -49,7 +49,7 @@
         border-radius: 50%;
         background: radial-gradient(circle, var(--glow-cyan) 0%, transparent 70%);
         filter: blur(120px);
-        opacity: 0.25;
+        opacity: 0.15;
         z-index: 0;
         bottom: -10%;
         left: -10%;
@@ -58,10 +58,8 @@
 
     .premium-assessment-card {
         background: var(--dark-card);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
         border: 1px solid var(--glass-border);
-        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 242, 255, 0.02) inset;
+        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.04);
         border-radius: 28px;
         position: relative;
         overflow: hidden;
@@ -83,15 +81,14 @@
         position: absolute;
         width: 100%;
         height: 100%;
-        background: rgba(18, 38, 41, 0.95);
-        backdrop-filter: blur(10px);
+        background: #ffffff;
         border: 1px solid var(--glass-border);
         border-radius: 24px;
         padding: 32px 24px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06);
         cursor: grab;
         user-select: none;
         transform-origin: 50% 100%;
@@ -113,12 +110,12 @@
     }
 
     .swipe-card.swiping-right {
-        box-shadow: 0 0 30px rgba(0, 242, 255, 0.4) inset, 0 20px 40px rgba(0,0,0,0.6);
+        box-shadow: 0 0 30px rgba(13, 148, 136, 0.08) inset, 0 15px 35px rgba(15, 23, 42, 0.06);
         border-color: var(--neon-cyan);
     }
 
     .swipe-card.swiping-left {
-        box-shadow: 0 0 30px rgba(139, 92, 255, 0.4) inset, 0 20px 40px rgba(0,0,0,0.6);
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.08) inset, 0 15px 35px rgba(15, 23, 42, 0.06);
         border-color: var(--neon-purple);
     }
 
@@ -145,11 +142,11 @@
         width: 6px;
     }
     .chat-container::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(0, 0, 0, 0.01);
         border-radius: 10px;
     }
     .chat-container::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(0, 0, 0, 0.06);
         border-radius: 10px;
     }
 
@@ -164,34 +161,34 @@
     }
 
     .chat-bubble.mentor {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border-neon);
+        background: #f1f5f9;
+        border: 1px solid var(--glass-border);
         color: var(--text-bright);
         border-bottom-left-radius: 4px;
         align-self: flex-start;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.02);
     }
 
     .chat-bubble.user {
-        background: linear-gradient(135deg, var(--neon-purple), #6333cc);
+        background: linear-gradient(135deg, var(--neon-cyan), #0b7a70);
         color: white;
         border-bottom-right-radius: 4px;
         align-self: flex-end;
-        box-shadow: 0 8px 20px rgba(139, 92, 255, 0.15);
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.1);
     }
 
     /* Fira Code Style for Console logs (Phase 0) */
     .console-bubble {
         font-family: 'Fira Code', 'Courier New', monospace;
         font-size: 0.85rem;
-        background: rgba(0,0,0,0.4) !important;
+        background: #f8fafc !important;
         border: 1px solid var(--border-neon) !important;
         color: var(--neon-cyan) !important;
     }
     .console-bubble.user {
         border-color: var(--border-purple) !important;
         color: var(--neon-purple) !important;
-        background: rgba(0,0,0,0.4) !important;
+        background: #f8fafc !important;
     }
 
     @keyframes bubble-stagger {
@@ -204,7 +201,7 @@
         align-items: center;
         gap: 4px;
         padding: 12px 18px;
-        background: rgba(255,255,255,0.03);
+        background: #f1f5f9;
         border: 1px solid var(--glass-border);
         border-radius: 18px;
         align-self: flex-start;
@@ -228,7 +225,7 @@
 
     /* Option buttons */
     .premium-option-btn {
-        background: rgba(255, 255, 255, 0.03);
+        background: #ffffff;
         border: 1px solid var(--glass-border);
         border-radius: 16px;
         padding: 16px 20px;
@@ -237,19 +234,20 @@
         text-align: left;
         cursor: pointer;
         outline: none;
+        box-shadow: 0 2px 4px rgba(15, 23, 42, 0.01);
     }
 
     .premium-option-btn:hover {
-        background: rgba(0, 242, 255, 0.05);
+        background: rgba(13, 148, 136, 0.04);
         border-color: var(--neon-cyan);
-        box-shadow: 0 0 15px rgba(0, 242, 255, 0.1);
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.04);
         transform: translateY(-2px);
     }
 
     .premium-option-btn.selected {
-        background: linear-gradient(135deg, rgba(0, 242, 255, 0.15), rgba(139, 92, 255, 0.15));
+        background: rgba(13, 148, 136, 0.08);
         border-color: var(--neon-cyan);
-        box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(13, 148, 136, 0.06);
         transform: scale(0.98);
     }
 
@@ -258,8 +256,8 @@
         font-family: 'Outfit', sans-serif;
         letter-spacing: 2px;
         font-size: 0.7rem;
-        background: linear-gradient(90deg, rgba(0, 242, 255, 0.1), rgba(139, 92, 255, 0.1));
-        border: 1px solid var(--border-neon);
+        background: rgba(13, 148, 136, 0.08);
+        border: 1px solid rgba(13, 148, 136, 0.15);
         color: var(--neon-cyan);
         border-radius: 20px;
         padding: 4px 12px;
@@ -271,16 +269,14 @@
     /* Custom Progress bar */
     .cyber-progress-bg {
         height: 6px;
-        background: rgba(255, 255, 255, 0.04);
+        background: #e2e8f0;
         border-radius: 10px;
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.02);
     }
 
     .cyber-progress-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--neon-cyan) 0%, var(--neon-purple) 100%);
-        box-shadow: 0 0 10px var(--neon-cyan);
+        background: linear-gradient(90deg, var(--neon-cyan) 0%, #0b7a70 100%);
         border-radius: 10px;
         transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -295,24 +291,34 @@
     @keyframes cyber-stagger {
         to { opacity: 1; transform: translateY(0); }
     }
+
+    #intake-submit-btn, #chat-send-btn, #compile-btn {
+        background-color: #0d9488 !important;
+        color: #ffffff !important;
+    }
+    #intake-submit-btn:hover, #chat-send-btn:hover, #compile-btn:hover {
+        background-color: #0f766e !important;
+    }
 </style>
 
 <div class="cyber-bg-glow"></div>
 <div class="cyber-bg-glow-2"></div>
 
 <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 relative z-10">
-    <!-- Header Details -->
+    <!-- Header Details with Mascot -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <div>
-            <h1 class="text-3xl font-extrabold tracking-tight text-white flex items-center gap-2" id="grade-title">
-                Psychometric Assessment
-            </h1>
-            <p class="text-sm font-semibold tracking-wider text-teal-400 mt-1 uppercase" id="subtitle-tracker">
-                Shadow Analysis Pipeline Activated
-            </p>
+        <div class="flex items-center gap-4">
+            <div class="w-20 h-20 flex-shrink-0 relative">
+                <div class="absolute inset-0 bg-teal-500/10 rounded-full blur-md animate-pulse"></div>
+                <img src="/static/images/careo.png" alt="Careo Mascot" class="w-full h-full object-contain relative z-10">
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-slate-900">Careo</h1>
+                <p class="text-xs font-semibold tracking-wider text-teal-600 uppercase">Your Career Guide</p>
+            </div>
         </div>
         <div class="flex flex-col items-end gap-1">
-            <span class="text-xs font-bold uppercase tracking-widest text-[#7f999c]" id="phase-step-label">Phase 1 of 5</span>
+            <span class="text-xs font-bold uppercase tracking-widest text-slate-500" id="phase-step-label">Phase 1 of 5</span>
             <div class="w-48 cyber-progress-bg mt-1">
                 <div class="cyber-progress-fill" id="global-progress-fill" style="width: 20%;"></div>
             </div>
@@ -323,14 +329,14 @@
     <div class="premium-assessment-card p-8 sm:p-10 min-h-[520px] flex flex-col justify-between">
         
         <!-- Loading Shield overlay -->
-        <div id="loader" class="absolute inset-0 bg-[#070e0f]/95 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
+        <div id="loader" class="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
             <div class="relative flex items-center justify-center mb-6">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyan-400"></div>
-                <div class="absolute h-10 w-10 rounded-full bg-[#122629] border border-cyan-400/20 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-teal-600"></div>
+                <div class="absolute h-10 w-10 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 </div>
             </div>
-            <p class="text-cyan-400 font-extrabold text-sm tracking-widest uppercase animate-pulse" id="loader-text">Loading Node Matrix...</p>
+            <p class="text-teal-600 font-extrabold text-sm tracking-widest uppercase animate-pulse" id="loader-text">Loading Assessment...</p>
         </div>
 
         <!-- Upper Section Workspace -->
@@ -339,17 +345,17 @@
         </div>
 
         <!-- Footer / Panel Control Bar -->
-        <div class="mt-8 pt-6 border-t border-white/5 flex justify-between items-center w-full relative z-10">
-            <a href="/assessment/reset" onclick="return confirm('WARNING: Re-initializing will wipe your current psychometric telemetry logs. Proceed?')" class="text-xs font-bold uppercase tracking-widest text-[#ff6161] hover:text-[#ff8282] transition-colors">
+        <div class="mt-8 pt-6 border-t border-slate-100 flex justify-between items-center w-full relative z-10">
+            <a href="/assessment/reset" onclick="return confirm('WARNING: Re-initializing will wipe your current psychometric telemetry logs. Proceed?')" class="text-xs font-bold uppercase tracking-widest text-red-500 hover:text-red-600 transition-colors">
                 Reset Engine
             </a>
             
             <div class="flex items-center gap-3">
-                <button type="button" id="speak-btn" onclick="speakActivePrompt()" class="p-2.5 rounded-full bg-white/5 text-cyan-400 hover:bg-cyan-500/10 transition-all border border-cyan-400/20" title="Audio Synthesizer Readout">
+                <button type="button" id="speak-btn" onclick="speakActivePrompt()" class="p-2.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200 transition-all" title="Audio Synthesizer Readout">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
                 </button>
-                <div class="text-xs font-bold text-[#7f999c] uppercase tracking-widest flex items-center gap-2" id="bottom-status">
-                    <span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span> Sync Ready
+                <div class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2" id="bottom-status">
+                    <span class="h-2 w-2 rounded-full bg-teal-500 animate-ping"></span> Sync Ready
                 </div>
             </div>
         </div>
@@ -410,14 +416,20 @@
         const totalPhases = isG12 ? 6 : 5;
         const currentLabelVal = isG12 ? (assessmentState.current_phase + 1) : assessmentState.current_phase;
         
-        document.getElementById("grade-title").innerText = isG12 ? "Grade 12 Career Track" : "Grade 10 Stream Planner";
+        const gradeTitle = document.getElementById("grade-title");
+        if (gradeTitle) {
+            gradeTitle.innerText = isG12 ? "Grade 12 Career Track" : "Grade 10 Stream Planner";
+        }
         document.getElementById("phase-step-label").innerText = `Phase ${currentLabelVal} of ${totalPhases}`;
         
         // Progress percentage calculation
         const percent = Math.round((currentLabelVal / totalPhases) * 100);
         document.getElementById("global-progress-fill").style.width = `${percent}%`;
         
-        document.getElementById("subtitle-tracker").innerText = isG12 ? "Advanced Multi-Phase Diagnostic Flow" : "Interactive Stream Strategy Matrix";
+        const subtitleTracker = document.getElementById("subtitle-tracker");
+        if (subtitleTracker) {
+            subtitleTracker.innerText = isG12 ? "Advanced Multi-Phase Diagnostic Flow" : "Interactive Stream Strategy Matrix";
+        }
     }
 
     async function loadPhase() {
@@ -490,88 +502,220 @@
     function renderIntakePhase() {
         const body = document.getElementById("phase-body");
         body.innerHTML = `
-            <div class="text-center mb-6 stagger-in">
-                <span class="cyber-badge mb-2">Phase 1: Intake Diagnostic</span>
-                <h2 class="text-2xl font-bold mt-2 text-white">Student Metadata Profile</h2>
-                <p class="text-[#7f999c] text-sm mt-1">We collect your academic configuration to anchor final results recommendations.</p>
-            </div>
+            <div class="stagger-in max-w-3xl mx-auto">
+                <!-- Header Title block -->
+                <div class="mb-8 text-center md:text-left">
+                    <span class="cyber-badge mb-2">Phase 1: Student Intake</span>
+                    <h2 class="text-3xl font-extrabold text-slate-900 mt-1">Let's get to know you better</h2>
+                    <p class="text-slate-500 text-sm mt-1">We'll ask you a few questions to understand you better and provide personalized insights.</p>
+                </div>
 
-            <div class="border border-white/5 bg-black/40 rounded-2xl p-4 flex flex-col justify-between h-[360px] stagger-in">
-                <div class="chat-container flex flex-col" id="intake-chat-box">
-                    <!-- Dialogue nodes -->
+                <!-- Alert Box -->
+                <div class="bg-teal-50 border border-teal-100/80 text-teal-800 rounded-2xl p-4 mb-8 flex items-center gap-3 text-sm">
+                    <i class="fas fa-info-circle text-teal-600 text-lg"></i>
+                    <span>Your information is safe with us and will only be used to guide your career journey.</span>
                 </div>
-                
-                <div class="flex gap-2 pt-3 border-t border-white/5 mt-2">
-                    <input type="text" id="intake-input" placeholder="Supply requested detail..." class="flex-1 px-4 py-3 rounded-xl border border-white/10 focus:border-cyan-400 focus:outline-none text-sm font-medium bg-black/40 text-white" onkeydown="if(event.key === 'Enter') sendIntakeMessage()">
-                    <button onclick="sendIntakeMessage()" id="intake-send-btn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 text-white font-extrabold hover:brightness-110 transition-all text-sm">Submit</button>
-                </div>
+
+                <!-- Form Rows -->
+                <form id="intake-form" onsubmit="submitIntakeForm(event)" class="space-y-6">
+                    <!-- Row 1: Full Name -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">What is your full name?</h4>
+                                <p class="text-slate-400 text-xs">Please enter your full name.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <input type="text" name="name" required placeholder="Enter your full name" 
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter a valid name (at least 2 characters).</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Currently Pursuing -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">What are you currently pursuing?</h4>
+                                <p class="text-slate-400 text-xs">Select your current class/education level.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <input type="text" name="pursuing" required placeholder="Enter current education (e.g. Grade 12)" 
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter your current studies (at least 2 characters).</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Areas of Interest -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">What are your areas of interest?</h4>
+                                <p class="text-slate-400 text-xs">Select all that interest you.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <input type="text" name="interests" required placeholder="Enter interests (e.g. Technology, Art)" 
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter your interests.</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Parent Income -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">What is your parent's approximate annual income?</h4>
+                                <p class="text-slate-400 text-xs">This helps us suggest better career paths.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <input type="text" name="parent_income" required placeholder="Enter income in numbers (e.g. 800000)" 
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter a valid numeric income (number only).</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Parent Occupation -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">What do your parents do?</h4>
+                                <p class="text-slate-400 text-xs">Select their primary occupation.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <input type="text" name="parent_occupation" required placeholder="Enter parents' occupation (e.g. Service)" 
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter parent's occupation.</div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Control Bar -->
+                    <div class="flex justify-between items-center pt-6 border-t border-slate-100 mt-8">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fas fa-shield-alt text-teal-600"></i> Secure & Confidential
+                        </div>
+                        <button type="submit" id="intake-submit-btn" class="px-8 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold transition-all text-sm flex items-center gap-2 shadow-md shadow-teal-600/10">
+                            Save & Continue <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
             </div>
         `;
+    }
+
+    async function submitIntakeForm(event) {
+        event.preventDefault();
+        const form = event.target;
+        const submitBtn = document.getElementById("intake-submit-btn");
         
-        // Initial intake message from Alex
-        addIntakeBubble("Hello! I'm Alex, your career mentor. Let's start with your name. What's your name?", "ai");
-    }
-
-    function addIntakeBubble(text, role) {
-        const box = document.getElementById("intake-chat-box");
-        if (!box) return;
-        const bubble = document.createElement("div");
-        bubble.className = `chat-bubble console-bubble ${role === 'ai' ? 'ai mentor' : 'user'}`;
-        bubble.innerText = role === 'ai' ? `SYS_PROMPT> ${text}` : `USR_INPUT> ${text}`;
-        box.appendChild(bubble);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    async function sendIntakeMessage() {
-        const input = document.getElementById("intake-input");
-        const btn = document.getElementById("intake-send-btn");
-        if (!input || !btn) return;
-        const msg = input.value.trim();
-        if (!msg) return;
-
-        input.value = "";
-        addIntakeBubble(msg, "user");
-
-        input.disabled = true;
-        btn.disabled = true;
+        const nameVal = form.name.value.trim();
+        const pursuingVal = form.pursuing.value.trim();
+        const interestsVal = form.interests.value.trim();
+        const incomeRaw = form.parent_income.value.trim().replace(/,/g, '');
+        const occupationVal = form.parent_occupation.value.trim();
+        
+        let isValid = true;
+        
+        function toggleError(inputName, show) {
+            const input = form[inputName];
+            const error = input.nextElementSibling;
+            if (show) {
+                input.classList.add("border-red-400");
+                error.classList.remove("hidden");
+                isValid = false;
+            } else {
+                input.classList.remove("border-red-400");
+                error.classList.add("hidden");
+            }
+        }
+        
+        if (nameVal.length < 2) {
+            toggleError("name", true);
+        } else {
+            toggleError("name", false);
+        }
+        
+        if (pursuingVal.length < 2) {
+            toggleError("pursuing", true);
+        } else {
+            toggleError("pursuing", false);
+        }
+        
+        if (interestsVal.length < 2) {
+            toggleError("interests", true);
+        } else {
+            toggleError("interests", false);
+        }
+        
+        const incomeNum = Number(incomeRaw);
+        if (incomeRaw === "" || isNaN(incomeNum) || incomeNum <= 0) {
+            toggleError("parent_income", true);
+        } else {
+            toggleError("parent_income", false);
+        }
+        
+        if (occupationVal.length < 2) {
+            toggleError("parent_occupation", true);
+        } else {
+            toggleError("parent_occupation", false);
+        }
+        
+        if (!isValid) return;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="fas fa-spinner animate-spin"></i> Processing...`;
         
         document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span> Querying extraction pipeline...`;
-
+        
         try {
             const res = await fetch("/assessment/api/intake", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: msg })
+                body: JSON.stringify({
+                    name: nameVal,
+                    pursuing: pursuingVal,
+                    interests: interestsVal,
+                    parent_income: incomeNum,
+                    parent_occupation: occupationVal
+                })
             });
             const data = await res.json();
             
             document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span> Sync Ready`;
             
             if (data.status === "success") {
-                addIntakeBubble(data.content, "ai");
-                
-                // Read AI voice synthesizer
-                const speech = new SpeechSynthesisUtterance(data.content);
-                const voices = speechSynth.getVoices();
-                const preferredVoice = voices.find(v => v.lang.startsWith("en-IN")) || voices.find(v => v.lang.startsWith("en"));
-                if (preferredVoice) speech.voice = preferredVoice;
-                speechSynth.speak(speech);
-
-                if (data.is_complete) {
-                    setTimeout(async () => {
-                        await refreshState();
-                    }, 1800);
-                } else {
-                    input.disabled = false;
-                    btn.disabled = false;
-                    input.focus();
-                }
+                setTimeout(async () => {
+                    await refreshState();
+                }, 800);
+            } else {
+                alert("Failed to submit intake. Please verify your data and try again.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `Save & Continue <i class="fas fa-arrow-right"></i>`;
             }
         } catch (e) {
             console.error(e);
             document.getElementById("bottom-status").innerHTML = `Extraction Error`;
-            input.disabled = false;
-            btn.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `Save & Continue <i class="fas fa-arrow-right"></i>`;
         }
     }
 
@@ -585,8 +729,8 @@
         body.innerHTML = `
             <div class="text-center mb-6 stagger-in">
                 <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '2' : '1'}: Reflex Mapping</span>
-                <h2 class="text-2xl font-bold mt-2 text-white">Preference Cards</h2>
-                <p class="text-[#7f999c] text-sm mt-1">Swipe right for yes, left for no. Your response speed and hesitation coordinates are measured.</p>
+                <h2 class="text-2xl font-bold mt-2 text-slate-900">Preference Cards</h2>
+                <p class="text-slate-500 text-sm mt-1">Swipe right for yes, left for no. Your response speed and hesitation coordinates are measured.</p>
             </div>
             
             <div class="deck-container stagger-in" id="card-deck">
@@ -594,15 +738,15 @@
             </div>
 
             <div class="flex justify-center gap-6 mt-8 stagger-in">
-                <button onclick="executeUiSwipe('left')" class="w-14 h-14 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-indigo-400 shadow-xl hover:bg-indigo-500/10 hover:border-indigo-400 hover:scale-105 active:scale-95 transition-all duration-300">
+                <button onclick="executeUiSwipe('left')" class="w-14 h-14 flex items-center justify-center rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 shadow-md hover:bg-indigo-100/80 hover:border-indigo-200 hover:scale-105 active:scale-95 transition-all duration-300">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
-                <button onclick="executeUiSwipe('right')" class="w-14 h-14 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-cyan-400 shadow-xl hover:bg-cyan-500/10 hover:border-cyan-400 hover:scale-105 active:scale-95 transition-all duration-300">
+                <button onclick="executeUiSwipe('right')" class="w-14 h-14 flex items-center justify-center rounded-full bg-teal-50 border border-teal-100 text-teal-600 shadow-md hover:bg-teal-100/80 hover:border-teal-200 hover:scale-105 active:scale-95 transition-all duration-300">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </button>
             </div>
             <div class="text-center mt-4 stagger-in">
-                <span class="text-xs font-semibold text-[#7f999c]" id="swipe-counter">0 / 0 Completed</span>
+                <span class="text-xs font-semibold text-slate-500" id="swipe-counter">0 / 0 Completed</span>
             </div>
         `;
         buildSwipeCards();
@@ -637,10 +781,10 @@
             
             cardEl.innerHTML = `
                 <div>
-                    <span class="px-2.5 py-1 bg-white/5 text-cyan-400 border border-cyan-400/10 rounded-full text-[10px] font-bold tracking-widest uppercase">${c.category || 'OBJECTIVE'}</span>
-                    <h3 class="text-xl font-bold mt-6 text-white leading-relaxed font-outfit">${c.content || c.text || ''}</h3>
+                    <span class="px-2.5 py-1 bg-teal-50 text-teal-600 border border-teal-100 rounded-full text-[10px] font-bold tracking-widest uppercase">${c.category || 'OBJECTIVE'}</span>
+                    <h3 class="text-xl font-bold mt-6 text-slate-900 leading-relaxed font-outfit">${c.content || c.text || ''}</h3>
                 </div>
-                <div class="flex justify-between items-center text-[10px] text-[#7f999c] font-bold tracking-wider pt-4 border-t border-white/5">
+                <div class="flex justify-between items-center text-[10px] text-slate-400 font-bold tracking-wider pt-4 border-t border-slate-100">
                     <span>← SWIPE LEFT (NO)</span>
                     <span>SWIPE RIGHT (YES) →</span>
                 </div>
@@ -755,18 +899,18 @@
         body.innerHTML = `
             <div class="text-center mb-6 stagger-in">
                 <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '3' : '2'}: Mentorship Verification</span>
-                <h2 class="text-2xl font-bold mt-2 text-white">Alex RIASEC Chat</h2>
-                <p class="text-[#7f999c] text-sm mt-1">Answer short prompts as Alex drills into your intrinsic task orientations.</p>
+                <h2 class="text-2xl font-bold mt-2 text-slate-900">Alex RIASEC Chat</h2>
+                <p class="text-slate-500 text-sm mt-1">Answer short prompts as Alex drills into your intrinsic task orientations.</p>
             </div>
 
-            <div class="border border-white/5 bg-black/40 rounded-2xl p-4 flex flex-col justify-between h-[360px] stagger-in">
+            <div class="border border-slate-200 bg-slate-50/50 rounded-2xl p-4 flex flex-col justify-between h-[360px] stagger-in">
                 <div class="chat-container flex flex-col" id="chat-messages-box">
                     <!-- Conversations -->
                 </div>
                 
-                <div class="flex gap-2 pt-3 border-t border-white/5 mt-2">
-                    <input type="text" id="chat-input" placeholder="Speak your mind to Alex..." class="flex-1 px-4 py-3 rounded-xl border border-white/10 focus:border-cyan-400 focus:outline-none text-sm font-medium bg-black/40 text-white" onkeydown="if(event.key === 'Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" id="chat-send-btn" class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-indigo-500 text-white font-extrabold hover:brightness-110 transition-all text-sm">Send</button>
+                <div class="flex gap-2 pt-3 border-t border-slate-200 mt-2">
+                    <input type="text" id="chat-input" placeholder="Speak your mind to Alex..." class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:outline-none text-sm font-medium bg-white text-slate-900 placeholder-slate-400" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" id="chat-send-btn" class="px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold transition-all text-sm">Send</button>
                 </div>
             </div>
         `;
@@ -812,7 +956,7 @@
             if (btn) btn.disabled = true;
         }
 
-        document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-purple-400 animate-ping"></span> Alex is writing...`;
+        document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-teal-500 animate-ping"></span> Alex is writing...`;
 
         try {
             const res = await fetch("/assessment/api/chat", {
@@ -875,21 +1019,21 @@
         body.innerHTML = `
             <div class="text-center mb-6 stagger-in">
                 <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '4' : '3'}: Socio-Demo Context</span>
-                <h2 class="text-2xl font-bold mt-2 text-white leading-relaxed font-outfit">${q.question || q.question_text || q.text || ''}</h2>
-                <p class="text-[#7f999c] text-sm mt-1">This evaluates external socioeconomic, digital infrastructure, and geographical limits.</p>
+                <h2 class="text-2xl font-bold mt-2 text-slate-900 leading-relaxed font-outfit">${q.question || q.question_text || q.text || ''}</h2>
+                <p class="text-slate-500 text-sm mt-1">This evaluates external socioeconomic, digital infrastructure, and geographical limits.</p>
             </div>
 
             <div class="grid grid-cols-1 gap-3 max-w-md mx-auto stagger-in" style="animation-delay: 0.1s;">
                 ${(q.options || []).map(opt => `
                     <button onclick="handleProxySelection('${q.question_id || q.id}', '${opt.option_text || opt.text || ''}', ${opt.multiplier})" class="premium-option-btn w-full flex items-center justify-between group">
-                        <span class="font-semibold text-slate-200 group-hover:text-white">${opt.option_text || opt.text || ''}</span>
-                        <svg class="w-5 h-5 text-slate-500 group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <span class="font-semibold text-slate-700 group-hover:text-teal-600">${opt.option_text || opt.text || ''}</span>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 `).join('')}
             </div>
 
             <div class="text-center mt-6 stagger-in">
-                <span class="text-xs font-semibold text-[#7f999c]">${activeProxyIdx} / ${total} Environmental Nodes Checked</span>
+                <span class="text-xs font-semibold text-slate-500">${activeProxyIdx} / ${total} Environmental Nodes Checked</span>
             </div>
         `;
     }
@@ -944,21 +1088,21 @@
         body.innerHTML = `
             <div class="text-center mb-6 stagger-in">
                 <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '5' : '4'}: Strategic Alignment</span>
-                <h2 class="text-xl font-bold mt-2 text-white leading-relaxed font-outfit">${sc.scenario}</h2>
-                <p class="text-[#7f999c] text-sm mt-1">Pick the response coordinate that aligns with your real values and behavior.</p>
+                <h2 class="text-xl font-bold mt-2 text-slate-900 leading-relaxed font-outfit">${sc.scenario}</h2>
+                <p class="text-slate-500 text-sm mt-1">Pick the response coordinate that aligns with your real values and behavior.</p>
             </div>
 
             <div class="grid grid-cols-1 gap-3 max-w-md mx-auto stagger-in" style="animation-delay: 0.15s;">
                 ${(sc.options || sc.choices || []).map(choice => `
                     <button onclick="handleScenarioSelection('${sc.id}', '${choice.label || choice.tag}')" class="premium-option-btn w-full flex items-center justify-between group">
-                        <span class="font-medium text-slate-200 group-hover:text-white">${choice.text || choice.value || ''}</span>
-                        <svg class="w-5 h-5 text-slate-500 group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <span class="font-medium text-slate-700 group-hover:text-teal-600">${choice.text || choice.value || ''}</span>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 `).join('')}
             </div>
 
             <div class="text-center mt-6 stagger-in">
-                <span class="text-xs font-semibold text-[#7f999c]">${activeScenarioIdx} / ${total} Dilemmas Resolved</span>
+                <span class="text-xs font-semibold text-slate-500">${activeScenarioIdx} / ${total} Dilemmas Resolved</span>
             </div>
         `;
     }
@@ -996,16 +1140,16 @@
         body.innerHTML = `
             <div class="text-center py-10 flex flex-col items-center justify-center stagger-in">
                 <div class="relative flex items-center justify-center mb-8">
-                    <div class="animate-ping absolute inline-flex h-20 w-20 rounded-full bg-cyan-400 opacity-20"></div>
-                    <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-cyan-400 to-indigo-500 flex items-center justify-center text-white shadow-2xl">
+                    <div class="animate-ping absolute inline-flex h-20 w-20 rounded-full bg-teal-500 opacity-20"></div>
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-teal-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-teal-600/10">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                     </div>
                 </div>
-                <h2 class="text-2xl font-extrabold text-white">Shadow Compilation Ready</h2>
-                <p class="text-[#7f999c] max-w-md mt-3 text-sm leading-relaxed">Your reflex latency indices, RIASEC profiles, geographical variables, and ego coefficients are consolidated.</p>
+                <h2 class="text-2xl font-extrabold text-slate-900">Shadow Compilation Ready</h2>
+                <p class="text-slate-500 max-w-md mt-3 text-sm leading-relaxed">Your reflex latency indices, RIASEC profiles, geographical variables, and ego coefficients are consolidated.</p>
                 
-                <button onclick="compileFinalResults()" id="compile-btn" class="mt-8 px-12 py-4 bg-gradient-to-r from-cyan-400 to-indigo-500 text-white rounded-xl font-extrabold hover:brightness-110 transition-all shadow-2xl hover:scale-105 active:scale-95 tracking-widest uppercase text-xs">Execute Matrix Compilation</button>
-                <p id="compiling-indicator" class="hidden text-cyan-400 font-bold mt-5 animate-pulse text-xs tracking-widest uppercase">Formulating career fit projections...</p>
+                <button onclick="compileFinalResults()" id="compile-btn" class="mt-8 px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-extrabold transition-all shadow-md shadow-teal-600/10 hover:scale-105 active:scale-95 tracking-widest uppercase text-xs">Execute Matrix Compilation</button>
+                <p id="compiling-indicator" class="hidden text-teal-600 font-bold mt-5 animate-pulse text-xs tracking-widest uppercase">Formulating career fit projections...</p>
             </div>
         `;
     }

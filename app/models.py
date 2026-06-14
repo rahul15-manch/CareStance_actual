@@ -67,13 +67,10 @@ class AssessmentResult(Base):
     intake_grade = Column(Integer, nullable=True)
     intake_stream = Column(String, nullable=True)
     telemetry_logs = Column(JSON, nullable=True)
-    reality_answers = Column(JSON, nullable=True)
     chat_messages = Column(JSON, nullable=True)
     chat_turn = Column(Integer, default=0, nullable=True)
     proxy_answers = Column(JSON, nullable=True)
     scenario_answers = Column(JSON, nullable=True)
-    worldview_answers = Column(JSON, nullable=True)
-    future_self_answers = Column(JSON, nullable=True)
     assessment_report = Column(JSON, nullable=True)
     
     user = relationship("User", back_populates="assessment")

@@ -10,7 +10,7 @@ from functools import lru_cache
 from types import SimpleNamespace
 from . import email_utils
 from .appwrite_client import databases, account, storage, DB_ID, COLLECTIONS
-from .appwrite_helper import get_user_by_id, get_user_by_email, update_assessment_simulation
+from .appwrite_helper import get_user_by_id, get_user_by_email, update_assessment_simulation, sync_assessment_to_appwrite
 from dotenv import load_dotenv
 from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
@@ -270,10 +270,9 @@ async def run_migrations():
                            ('student_type', "VARCHAR DEFAULT '10th'"), ('current_phase', 'INTEGER DEFAULT 1'),
                            ('intake_turn', 'INTEGER DEFAULT 1'), ('intake_name', 'VARCHAR'),
                            ('intake_grade', 'INTEGER'), ('intake_stream', 'VARCHAR'),
-                           ('telemetry_logs', 'JSON'), ('reality_answers', 'JSON'),
+                           ('telemetry_logs', 'JSON'),
                            ('chat_messages', 'JSON'), ('chat_turn', 'INTEGER DEFAULT 0'),
                            ('proxy_answers', 'JSON'), ('scenario_answers', 'JSON'),
-                           ('worldview_answers', 'JSON'), ('future_self_answers', 'JSON'),
                            ('assessment_report', 'JSON')]:
                 if col not in ar_cols: migrations.append(f"ALTER TABLE assessment_results ADD COLUMN {col} {ty}")
             migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_recommended_stream ON assessment_results (recommended_stream)")
@@ -321,6 +320,13 @@ async def run_migrations():
         traceback.print_exc()
 
 app = FastAPI(title="CareStance")
+
+@app.middleware("http")
+async def forward_proto_middleware(request: Request, call_next):
+    proto = request.headers.get("x-forwarded-proto")
+    if proto:
+        request.scope["scheme"] = proto
+    return await call_next(request)
 
 # Lightweight health endpoint for uptime checks
 @app.get("/_health")
@@ -976,21 +982,27 @@ async def reset_password(
     
     return RedirectResponse(url="/login?message=Password updated successfully", status_code=status.HTTP_302_FOUND)
 
+def get_oauth_redirect_uri(request: Request):
+    host = request.headers.get("host", "")
+    if "localhost" in host or "127.0.0.1" in host:
+        return str(request.url_for('auth_callback'))
+    
+    base_url = os.getenv("BASE_URL") or os.getenv("APP_URL")
+    if base_url:
+        return f"{base_url.rstrip('/')}/auth/callback"
+    else:
+        redirect_uri = str(request.url_for('auth_callback'))
+        if "vercel.app" in str(request.base_url) or os.getenv("VERCEL"):
+            redirect_uri = redirect_uri.replace("http://", "https://")
+        return redirect_uri
+
 @app.get("/login/google")
 async def login_google(request: Request):
     if not os.getenv('GOOGLE_CLIENT_ID'):
         print("ERROR: GOOGLE_CLIENT_ID not found in environment!")
         return RedirectResponse(url='/login?error=Configuration missing', status_code=status.HTTP_302_FOUND)
     
-# Build redirect_uri: prefer BASE_URL env var, then APP_URL, fallback to request-based URL
-    base_url = os.getenv("BASE_URL") or os.getenv("APP_URL")
-    if base_url:
-        redirect_uri = f"{base_url.rstrip('/')}/auth/callback"
-    else:
-        redirect_uri = str(request.url_for('auth_callback'))
-        if "vercel.app" in str(request.base_url) or os.getenv("VERCEL"):
-            redirect_uri = redirect_uri.replace("http://", "https://")
-    
+    redirect_uri = get_oauth_redirect_uri(request)
     print(f"DEBUG: OAuth Redirect URI: {redirect_uri}")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
@@ -998,8 +1010,8 @@ async def login_google(request: Request):
 async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
     try:
         try:
-            # authlib retrieves redirect_uri from session automatically — do NOT pass it again
-            token = await oauth.google.authorize_access_token(request)
+            redirect_uri = get_oauth_redirect_uri(request)
+            token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
         except Exception as e:
             import traceback
             print(f"OAuth Token Exchange Error: {e}")
@@ -1129,13 +1141,10 @@ async def assessment_start(
             result.intake_grade = 10 if student_type == "10th" else 12
             result.intake_stream = stream
             result.telemetry_logs = None
-            result.reality_answers = None
             result.chat_messages = None
             result.chat_turn = 0
             result.proxy_answers = None
             result.scenario_answers = None
-            result.worldview_answers = None
-            result.future_self_answers = None
             result.assessment_report = None
             
             # Clear legacy fields
@@ -1169,6 +1178,7 @@ async def assessment_start(
             db.add(result)
         
         await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
     except Exception as e:
         print(f"Assessment start error: {e}")
         await db.rollback()
@@ -1189,13 +1199,10 @@ async def assessment_reset(request: Request, db: AsyncSession = Depends(get_db))
         result.current_phase = start_phase
         result.intake_turn = 1
         result.telemetry_logs = None
-        result.reality_answers = None
         result.chat_messages = None
         result.chat_turn = 0
         result.proxy_answers = None
         result.scenario_answers = None
-        result.worldview_answers = None
-        result.future_self_answers = None
         result.assessment_report = None
         
         # Clear legacy fields
@@ -1215,6 +1222,7 @@ async def assessment_reset(request: Request, db: AsyncSession = Depends(get_db))
         result.stream_pros = None
         result.stream_cons = None
         await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
     
     return RedirectResponse(url="/dashboard?message=Assessment+reset+successfully", status_code=status.HTTP_302_FOUND)
 
@@ -1263,6 +1271,59 @@ async def assessment_api_intake(request: Request, payload: dict, db: AsyncSessio
     if not result or result.student_type != "12th":
         raise HTTPException(status_code=404, detail="Assessment not found or invalid type")
         
+    # Check if payload is from the new form submission
+    if "name" in payload and "pursuing" in payload and "interests" in payload:
+        name = payload.get("name", "").strip()
+        pursuing = payload.get("pursuing", "").strip()
+        interests = payload.get("interests", "").strip()
+        try:
+            parent_income = float(payload.get("parent_income", 0))
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="Invalid parent income type")
+        parent_occupation = payload.get("parent_occupation", "").strip()
+        
+        # Validations
+        if not name or len(name) < 2:
+            raise HTTPException(status_code=400, detail="Invalid name")
+        if not pursuing or len(pursuing) < 2:
+            raise HTTPException(status_code=400, detail="Invalid pursuing status")
+        if not interests or len(interests) < 2:
+            raise HTTPException(status_code=400, detail="Invalid interests")
+        if parent_income <= 0:
+            raise HTTPException(status_code=400, detail="Invalid parent income value")
+        if not parent_occupation or len(parent_occupation) < 2:
+            raise HTTPException(status_code=400, detail="Invalid parent occupation")
+            
+        result.intake_name = name
+        result.intake_grade = 12
+        result.intake_stream = pursuing
+        result.raw_answers = {
+            "name": name,
+            "pursuing": pursuing,
+            "interests": interests,
+            "parent_income": parent_income,
+            "parent_occupation": parent_occupation
+        }
+        result.intake_turn = 3
+        result.current_phase = 1
+        
+        await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
+        
+        validation_payload = {
+            "student_metadata": {
+                "name": result.intake_name, 
+                "grade": result.intake_grade, 
+                "current_stream": result.intake_stream
+            }, 
+            "system_validation": {
+                "stream_lock_flag": True, 
+                "normalization_confidence": 0.95
+            }
+        }
+        return {"status": "success", "content": "Metadata locked. Transitioning to Phase 1.", "is_complete": True, "payload": validation_payload}
+
+    # Fallback to legacy chat interface payload
     user_message = payload.get("message", "").strip()
     
     # Extract metadata using service
@@ -1312,6 +1373,7 @@ async def assessment_api_intake(request: Request, payload: dict, db: AsyncSessio
             is_complete = True
 
     await db.commit()
+    sync_assessment_to_appwrite(user.id, result)
     return {"status": "success", "content": response_text, "is_complete": is_complete, "payload": validation_payload}
 
 @app.get("/assessment/api/questions")
@@ -1367,6 +1429,7 @@ async def assessment_api_swipe(request: Request, payload: dict, db: AsyncSession
     
     result.current_phase = 2
     await db.commit()
+    sync_assessment_to_appwrite(user.id, result)
     
     return {"status": "success", "next_phase": 2}
 
@@ -1389,6 +1452,7 @@ async def assessment_api_chat(request: Request, payload: dict, db: AsyncSession 
         result.chat_messages = chat_history
         result.chat_turn = 0
         await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
         return {"status": "success", "message": first_q, "chat_turn": 0, "phase_complete": False}
         
     chat_history.append({"role": "user", "content": user_message})
@@ -1406,6 +1470,7 @@ async def assessment_api_chat(request: Request, payload: dict, db: AsyncSession 
         result.personality = json.dumps(riasec)
         result.current_phase = 3
         await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
         return {
             "status": "success",
             "message": "That was great! Ready for the next phase?",
@@ -1418,6 +1483,7 @@ async def assessment_api_chat(request: Request, payload: dict, db: AsyncSession 
         result.chat_messages = chat_history
         result.chat_turn = next_turn
         await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
         
         return {"status": "success", "message": next_q, "chat_turn": next_turn, "phase_complete": False}
 
@@ -1436,6 +1502,7 @@ async def assessment_api_proxy(request: Request, payload: dict, db: AsyncSession
     
     result.current_phase = 4
     await db.commit()
+    sync_assessment_to_appwrite(user.id, result)
     return {"status": "success", "next_phase": 4}
 
 @app.post("/assessment/api/scenarios")
@@ -1452,6 +1519,7 @@ async def assessment_api_scenarios(request: Request, payload: dict, db: AsyncSes
     result.scenario_answers = answers
     result.current_phase = 5
     await db.commit()
+    sync_assessment_to_appwrite(user.id, result)
     
     return {"status": "success", "next_phase": 5}
 
@@ -1602,6 +1670,7 @@ async def assessment_api_compile(request: Request, db: AsyncSession = Depends(ge
             ]
             
         await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
         return {"status": "success", "redirect": "/assessment/result"}
         
     except Exception as e:
