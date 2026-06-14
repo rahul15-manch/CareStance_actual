@@ -292,25 +292,12 @@
         to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Custom button styles to ensure consistency and prevent build-less Tailwind limitations */
-    .btn-teal {
-        background-color: var(--neon-cyan) !important;
+    #intake-submit-btn, #chat-send-btn, #compile-btn {
+        background-color: #0d9488 !important;
         color: #ffffff !important;
     }
-    .btn-teal:hover {
+    #intake-submit-btn:hover, #chat-send-btn:hover, #compile-btn:hover {
         background-color: #0f766e !important;
-    }
-    .text-teal-accent {
-        color: var(--neon-cyan) !important;
-    }
-    .bg-teal-accent-dim {
-        background-color: rgba(13, 148, 136, 0.1) !important;
-    }
-    .bg-teal-ping {
-        background-color: var(--neon-cyan) !important;
-    }
-    .focus-teal-accent:focus {
-        border-color: var(--neon-cyan) !important;
     }
 </style>
 
@@ -327,7 +314,7 @@
             </div>
             <div>
                 <h1 class="text-2xl font-extrabold text-slate-900">Careo</h1>
-                <p class="text-xs font-semibold tracking-wider text-[#0d9488] uppercase">Your Career Guide</p>
+                <p class="text-xs font-semibold tracking-wider text-teal-600 uppercase">Your Career Guide</p>
             </div>
         </div>
         <div class="flex flex-col items-end gap-1">
@@ -344,12 +331,12 @@
         <!-- Loading Shield overlay -->
         <div id="loader" class="absolute inset-0 bg-white/95 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
             <div class="relative flex items-center justify-center mb-6">
-                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#0d9488]"></div>
+                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-teal-600"></div>
                 <div class="absolute h-10 w-10 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-[#0d9488]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                 </div>
             </div>
-            <p class="text-[#0d9488] font-extrabold text-sm tracking-widest uppercase animate-pulse" id="loader-text">Loading Assessment...</p>
+            <p class="text-teal-600 font-extrabold text-sm tracking-widest uppercase animate-pulse" id="loader-text">Loading Assessment...</p>
         </div>
 
         <!-- Upper Section Workspace -->
@@ -368,7 +355,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
                 </button>
                 <div class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2" id="bottom-status">
-                    <span class="h-2 w-2 rounded-full bg-teal-ping animate-ping"></span> Sync Ready
+                    <span class="h-2 w-2 rounded-full bg-teal-500 animate-ping"></span> Sync Ready
                 </div>
             </div>
         </div>
@@ -525,7 +512,7 @@
 
                 <!-- Alert Box -->
                 <div class="bg-teal-50 border border-teal-100/80 text-teal-800 rounded-2xl p-4 mb-8 flex items-center gap-3 text-sm">
-                    <i class="fas fa-info-circle text-[#0d9488] text-lg"></i>
+                    <i class="fas fa-info-circle text-teal-600 text-lg"></i>
                     <span>Your information is safe with us and will only be used to guide your career journey.</span>
                 </div>
 
@@ -534,10 +521,7 @@
                     <!-- Row 1: Full Name -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
                         <div class="flex items-center gap-4">
-                    <!-- Row 1: Full Name -->
-                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
-                        <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-teal-accent-dim text-teal-accent rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fas fa-user"></i>
                             </div>
                             <div>
@@ -547,7 +531,7 @@
                         </div>
                         <div class="w-full md:w-80">
                             <input type="text" name="name" required placeholder="Enter your full name" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus-teal-accent focus:bg-white focus:outline-none text-sm transition-all">
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
                             <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter a valid name (at least 2 characters).</div>
                         </div>
                     </div>
@@ -555,7 +539,7 @@
                     <!-- Row 2: Currently Pursuing -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
                         <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-teal-accent-dim text-teal-accent rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fas fa-graduation-cap"></i>
                             </div>
                             <div>
@@ -565,7 +549,7 @@
                         </div>
                         <div class="w-full md:w-80">
                             <input type="text" name="pursuing" required placeholder="Enter current education (e.g. Grade 12)" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus-teal-accent focus:bg-white focus:outline-none text-sm transition-all">
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
                             <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter your current studies (at least 2 characters).</div>
                         </div>
                     </div>
@@ -573,7 +557,7 @@
                     <!-- Row 3: Areas of Interest -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
                         <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-teal-accent-dim text-teal-accent rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fas fa-star"></i>
                             </div>
                             <div>
@@ -583,7 +567,7 @@
                         </div>
                         <div class="w-full md:w-80">
                             <input type="text" name="interests" required placeholder="Enter interests (e.g. Technology, Art)" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus-teal-accent focus:bg-white focus:outline-none text-sm transition-all">
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
                             <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter your interests.</div>
                         </div>
                     </div>
@@ -591,7 +575,7 @@
                     <!-- Row 4: Parent Income -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
                         <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-teal-accent-dim text-teal-accent rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fas fa-wallet"></i>
                             </div>
                             <div>
@@ -601,7 +585,7 @@
                         </div>
                         <div class="w-full md:w-80">
                             <input type="text" name="parent_income" required placeholder="Enter income in numbers (e.g. 800000)" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus-teal-accent focus:bg-white focus:outline-none text-sm transition-all">
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
                             <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter a valid numeric income (number only).</div>
                         </div>
                     </div>
@@ -609,7 +593,7 @@
                     <!-- Row 5: Parent Occupation -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
                         <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-teal-accent-dim text-teal-accent rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fas fa-users"></i>
                             </div>
                             <div>
@@ -619,7 +603,7 @@
                         </div>
                         <div class="w-full md:w-80">
                             <input type="text" name="parent_occupation" required placeholder="Enter parents' occupation (e.g. Service)" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus-teal-accent focus:bg-white focus:outline-none text-sm transition-all">
+                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
                             <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter parent's occupation.</div>
                         </div>
                     </div>
@@ -627,9 +611,9 @@
                     <!-- Footer Control Bar -->
                     <div class="flex justify-between items-center pt-6 border-t border-slate-100 mt-8">
                         <div class="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                            <i class="fas fa-shield-alt text-teal-accent"></i> Secure & Confidential
+                            <i class="fas fa-shield-alt text-teal-600"></i> Secure & Confidential
                         </div>
-                        <button type="submit" id="intake-submit-btn" class="px-8 py-3.5 rounded-xl btn-teal text-white font-extrabold transition-all text-sm flex items-center gap-2 shadow-md shadow-teal-600/10">
+                        <button type="submit" id="intake-submit-btn" class="px-8 py-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold transition-all text-sm flex items-center gap-2 shadow-md shadow-teal-600/10">
                             Save & Continue <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
@@ -700,7 +684,7 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<i class="fas fa-spinner animate-spin"></i> Processing...`;
         
-        document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-teal-ping animate-ping"></span> Querying extraction pipeline...`;
+        document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span> Querying extraction pipeline...`;
         
         try {
             const res = await fetch("/assessment/api/intake", {
@@ -925,8 +909,8 @@
                 </div>
                 
                 <div class="flex gap-2 pt-3 border-t border-slate-200 mt-2">
-                    <input type="text" id="chat-input" placeholder="Speak your mind to Alex..." class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-[#0d9488] focus:outline-none text-sm font-medium bg-white text-slate-900 placeholder-slate-400" onkeydown="if(event.key === 'Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" id="chat-send-btn" class="px-6 py-3 rounded-xl btn-teal text-white font-extrabold transition-all text-sm">Send</button>
+                    <input type="text" id="chat-input" placeholder="Speak your mind to Alex..." class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:outline-none text-sm font-medium bg-white text-slate-900 placeholder-slate-400" onkeydown="if(event.key === 'Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" id="chat-send-btn" class="px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold transition-all text-sm">Send</button>
                 </div>
             </div>
         `;
@@ -972,7 +956,7 @@
             if (btn) btn.disabled = true;
         }
 
-        document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-teal-ping animate-ping"></span> Alex is writing...`;
+        document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-teal-500 animate-ping"></span> Alex is writing...`;
 
         try {
             const res = await fetch("/assessment/api/chat", {
@@ -1042,8 +1026,8 @@
             <div class="grid grid-cols-1 gap-3 max-w-md mx-auto stagger-in" style="animation-delay: 0.1s;">
                 ${(q.options || []).map(opt => `
                     <button onclick="handleProxySelection('${q.question_id || q.id}', '${opt.option_text || opt.text || ''}', ${opt.multiplier})" class="premium-option-btn w-full flex items-center justify-between group">
-                        <span class="font-semibold text-slate-700 group-hover:text-[#0d9488]">${opt.option_text || opt.text || ''}</span>
-                        <svg class="w-5 h-5 text-slate-400 group-hover:text-[#0d9488] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <span class="font-semibold text-slate-700 group-hover:text-teal-600">${opt.option_text || opt.text || ''}</span>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 `).join('')}
             </div>
@@ -1111,8 +1095,8 @@
             <div class="grid grid-cols-1 gap-3 max-w-md mx-auto stagger-in" style="animation-delay: 0.15s;">
                 ${(sc.options || sc.choices || []).map(choice => `
                     <button onclick="handleScenarioSelection('${sc.id}', '${choice.label || choice.tag}')" class="premium-option-btn w-full flex items-center justify-between group">
-                        <span class="font-medium text-slate-700 group-hover:text-[#0d9488]">${choice.text || choice.value || ''}</span>
-                        <svg class="w-5 h-5 text-slate-400 group-hover:text-[#0d9488] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <span class="font-medium text-slate-700 group-hover:text-teal-600">${choice.text || choice.value || ''}</span>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                     </button>
                 `).join('')}
             </div>
@@ -1156,16 +1140,16 @@
         body.innerHTML = `
             <div class="text-center py-10 flex flex-col items-center justify-center stagger-in">
                 <div class="relative flex items-center justify-center mb-8">
-                    <div class="animate-ping absolute inline-flex h-20 w-20 rounded-full bg-teal-ping opacity-20"></div>
-                    <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-[#0d9488] to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-teal-600/10">
+                    <div class="animate-ping absolute inline-flex h-20 w-20 rounded-full bg-teal-500 opacity-20"></div>
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-teal-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-teal-600/10">
                         <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                     </div>
                 </div>
                 <h2 class="text-2xl font-extrabold text-slate-900">Shadow Compilation Ready</h2>
                 <p class="text-slate-500 max-w-md mt-3 text-sm leading-relaxed">Your reflex latency indices, RIASEC profiles, geographical variables, and ego coefficients are consolidated.</p>
                 
-                <button onclick="compileFinalResults()" id="compile-btn" class="mt-8 px-12 py-4 btn-teal text-white rounded-xl font-extrabold transition-all shadow-md shadow-teal-600/10 hover:scale-105 active:scale-95 tracking-widest uppercase text-xs">Execute Matrix Compilation</button>
-                <p id="compiling-indicator" class="hidden text-[#0d9488] font-bold mt-5 animate-pulse text-xs tracking-widest uppercase">Formulating career fit projections...</p>
+                <button onclick="compileFinalResults()" id="compile-btn" class="mt-8 px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-extrabold transition-all shadow-md shadow-teal-600/10 hover:scale-105 active:scale-95 tracking-widest uppercase text-xs">Execute Matrix Compilation</button>
+                <p id="compiling-indicator" class="hidden text-teal-600 font-bold mt-5 animate-pulse text-xs tracking-widest uppercase">Formulating career fit projections...</p>
             </div>
         `;
     }
