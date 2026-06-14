@@ -321,6 +321,13 @@ async def run_migrations():
 
 app = FastAPI(title="CareStance")
 
+@app.middleware("http")
+async def forward_proto_middleware(request: Request, call_next):
+    proto = request.headers.get("x-forwarded-proto")
+    if proto:
+        request.scope["scheme"] = proto
+    return await call_next(request)
+
 # Lightweight health endpoint for uptime checks
 @app.get("/_health")
 async def _health():
@@ -975,21 +982,27 @@ async def reset_password(
     
     return RedirectResponse(url="/login?message=Password updated successfully", status_code=status.HTTP_302_FOUND)
 
+def get_oauth_redirect_uri(request: Request):
+    host = request.headers.get("host", "")
+    if "localhost" in host or "127.0.0.1" in host:
+        return str(request.url_for('auth_callback'))
+    
+    base_url = os.getenv("BASE_URL") or os.getenv("APP_URL")
+    if base_url:
+        return f"{base_url.rstrip('/')}/auth/callback"
+    else:
+        redirect_uri = str(request.url_for('auth_callback'))
+        if "vercel.app" in str(request.base_url) or os.getenv("VERCEL"):
+            redirect_uri = redirect_uri.replace("http://", "https://")
+        return redirect_uri
+
 @app.get("/login/google")
 async def login_google(request: Request):
     if not os.getenv('GOOGLE_CLIENT_ID'):
         print("ERROR: GOOGLE_CLIENT_ID not found in environment!")
         return RedirectResponse(url='/login?error=Configuration missing', status_code=status.HTTP_302_FOUND)
     
-# Build redirect_uri: prefer BASE_URL env var, then APP_URL, fallback to request-based URL
-    base_url = os.getenv("BASE_URL") or os.getenv("APP_URL")
-    if base_url:
-        redirect_uri = f"{base_url.rstrip('/')}/auth/callback"
-    else:
-        redirect_uri = str(request.url_for('auth_callback'))
-        if "vercel.app" in str(request.base_url) or os.getenv("VERCEL"):
-            redirect_uri = redirect_uri.replace("http://", "https://")
-    
+    redirect_uri = get_oauth_redirect_uri(request)
     print(f"DEBUG: OAuth Redirect URI: {redirect_uri}")
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
@@ -997,8 +1010,8 @@ async def login_google(request: Request):
 async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
     try:
         try:
-            # authlib retrieves redirect_uri from session automatically — do NOT pass it again
-            token = await oauth.google.authorize_access_token(request)
+            redirect_uri = get_oauth_redirect_uri(request)
+            token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
         except Exception as e:
             import traceback
             print(f"OAuth Token Exchange Error: {e}")
