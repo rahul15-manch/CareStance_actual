@@ -141,10 +141,10 @@ def sync_assessment_to_appwrite(user_num_id, result):
                 
         # Handle JSON fields (serialize to string since Appwrite stores them as String attributes or text)
         for json_field in [
-            "telemetry_logs", "reality_answers", "chat_messages", "proxy_answers",
-            "scenario_answers", "worldview_answers", "future_self_answers",
-            "assessment_report", "raw_answers", "phase3_answers", "final_answers",
-            "stream_scores", "stream_pros", "stream_cons"
+            "telemetry_logs", "chat_messages", "proxy_answers",
+            "scenario_answers", "assessment_report", "raw_answers",
+            "phase3_answers", "final_answers", "stream_scores",
+            "stream_pros", "stream_cons"
         ]:
             val = getattr(result, json_field, None)
             if val is not None:

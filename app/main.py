@@ -270,10 +270,9 @@ async def run_migrations():
                            ('student_type', "VARCHAR DEFAULT '10th'"), ('current_phase', 'INTEGER DEFAULT 1'),
                            ('intake_turn', 'INTEGER DEFAULT 1'), ('intake_name', 'VARCHAR'),
                            ('intake_grade', 'INTEGER'), ('intake_stream', 'VARCHAR'),
-                           ('telemetry_logs', 'JSON'), ('reality_answers', 'JSON'),
+                           ('telemetry_logs', 'JSON'),
                            ('chat_messages', 'JSON'), ('chat_turn', 'INTEGER DEFAULT 0'),
                            ('proxy_answers', 'JSON'), ('scenario_answers', 'JSON'),
-                           ('worldview_answers', 'JSON'), ('future_self_answers', 'JSON'),
                            ('assessment_report', 'JSON')]:
                 if col not in ar_cols: migrations.append(f"ALTER TABLE assessment_results ADD COLUMN {col} {ty}")
             migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_recommended_stream ON assessment_results (recommended_stream)")
@@ -1129,13 +1128,10 @@ async def assessment_start(
             result.intake_grade = 10 if student_type == "10th" else 12
             result.intake_stream = stream
             result.telemetry_logs = None
-            result.reality_answers = None
             result.chat_messages = None
             result.chat_turn = 0
             result.proxy_answers = None
             result.scenario_answers = None
-            result.worldview_answers = None
-            result.future_self_answers = None
             result.assessment_report = None
             
             # Clear legacy fields
@@ -1190,13 +1186,10 @@ async def assessment_reset(request: Request, db: AsyncSession = Depends(get_db))
         result.current_phase = start_phase
         result.intake_turn = 1
         result.telemetry_logs = None
-        result.reality_answers = None
         result.chat_messages = None
         result.chat_turn = 0
         result.proxy_answers = None
         result.scenario_answers = None
-        result.worldview_answers = None
-        result.future_self_answers = None
         result.assessment_report = None
         
         # Clear legacy fields
