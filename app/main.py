@@ -303,14 +303,14 @@ async def run_migrations():
 
         if migrations:
             print(f"DEBUG: Found {len(migrations)} pending migrations.", flush=True)
-            with engine.connect() as conn:
+            async with engine.connect() as conn:
                 for sql in migrations:
                     try:
-                        conn.execute(text(sql))
+                        await conn.execute(text(sql))
                         print(f"DATABASE MIGRATION SUCCESS: {sql}", flush=True)
                     except Exception as me:
                         print(f"DATABASE MIGRATION SKIP/ERROR: {sql} -> {me}", flush=True)
-                conn.commit()
+                await conn.commit()
             print(f"DATABASE: Finished running {len(migrations)} migration queries.", flush=True)
         else:
             print("DATABASE: No new migrations detected.", flush=True)
@@ -1019,9 +1019,9 @@ async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
                 token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
         except Exception as e:
             import traceback
-            print(f"OAuth Token Exchange Error: {e}")
+            print(f"OAuth Token Exchange Fatal Error: {e}")
             traceback.print_exc()
-            error_msg = str(e).replace(" ", "+")[:200]
+            error_msg = f"Token+Exchange+Failed:+{str(e).replace(' ', '+')}"[:200]
             return RedirectResponse(url=f'/login?error={error_msg}', status_code=status.HTTP_302_FOUND)
         
         user_info = token.get('userinfo')
@@ -5987,7 +5987,7 @@ async def terms_page(request: Request, db: AsyncSession = Depends(get_db)):
 async def debug_migrate(request: Request, db: AsyncSession = Depends(get_db)):
     """Manually trigger migrations and return status."""
     try:
-        run_migrations()
+        await run_migrations()
         return {"status": "success", "message": "Migrations triggered. Check console/logs for details."}
     except Exception as e:
         import traceback
