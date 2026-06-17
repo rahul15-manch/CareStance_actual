@@ -14,7 +14,7 @@
                 <i class="fas fa-arrow-left text-slate-500"></i>
             </a>
             <div class="relative">
-                <img src="{{ other_user.profile_photo if other_user.profile_photo else 'https://ui-avatars.com/api/?name=' + other_user.full_name + '&background=random&size=96' }}"
+                <img src="{{ other_user.profile_photo if other_user.profile_photo else 'https://ui-avatars.com/api/?name=' + (other_user.full_name or 'User') + '&background=random&size=96' }}"
                     alt="{{ other_user.full_name }}"
                     class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-sm">
                 <div class="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full">

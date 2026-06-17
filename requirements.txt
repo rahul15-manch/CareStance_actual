@@ -17,4 +17,5 @@ redis
 appwrite==18.0.0
 aiosqlite
 hypercorn
-
+greenlet
+json-repair

@@ -254,7 +254,7 @@
             <div class="flex items-center gap-6">
                 <!-- Profile Image -->
                 <div class="relative group">
-                    <img src="{{ user.profile_photo if user.profile_photo else 'https://ui-avatars.com/api/?name=' + user.full_name + '&background=random' }}"
+                    <img src="{{ user.profile_photo if user.profile_photo else 'https://ui-avatars.com/api/?name=' + (user.full_name or 'User') + '&background=random' }}"
                         alt="Profile" class="w-20 h-20 rounded-2xl object-cover border-4 border-white/20 shadow-xl">
                     <button onclick="document.getElementById('photo-upload').click()"
                         class="absolute -bottom-2 -right-2 bg-[var(--navy)] text-white p-2 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">

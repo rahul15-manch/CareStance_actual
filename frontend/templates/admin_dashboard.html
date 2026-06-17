@@ -34,10 +34,10 @@
                 {% for prof in pending_counsellors %}
                 <div class="bg-white rounded-3xl p-6 shadow-xl border border-emerald-100 relative overflow-hidden">
                     <div class="flex items-start gap-4 mb-4">
-                        <img src="{{ prof.user.profile_photo if prof.user.profile_photo else 'https://ui-avatars.com/api/?name=' + prof.user.full_name }}"
+                        <img src="{{ prof.user.profile_photo if prof.user.profile_photo else 'https://ui-avatars.com/api/?name=' + (prof.user.full_name or 'User') }}"
                             class="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-50 shadow-md">
                         <div>
-                            <h3 class="font-bold text-slate-900 text-lg">{{ prof.user.full_name }}</h3>
+                            <h3 class="font-bold text-slate-900 text-lg">{{ (prof.user.full_name or 'User') }}</h3>
                             <p class="text-sm text-slate-500">{{ prof.user.email }}</p>
                             <span
                                 class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-1 inline-block">Counsellor</span>
@@ -232,7 +232,7 @@
                                 <!-- Coach Info -->
                                 <td class="px-5 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
-                                        <img src="{{ cp.user.profile_photo if cp.user.profile_photo else 'https://ui-avatars.com/api/?name=' + cp.user.full_name + '&background=8b5cf6&color=fff&bold=true' }}"
+                                        <img src="{{ cp.user.profile_photo if cp.user.profile_photo else 'https://ui-avatars.com/api/?name=' + (cp.user.full_name or 'User') + '&background=8b5cf6&color=fff&bold=true' }}"
                                             class="w-10 h-10 rounded-xl object-cover border-2 border-emerald-100 shadow-sm">
                                         <div>
                                             <div class="text-sm font-bold text-slate-900">{{ cp.user.full_name }}</div>

@@ -142,12 +142,12 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" id="similar-grid">
             {% for sd in similar_students %}
             <div class="student-card animate-card bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-lg overflow-hidden"
-                style="animation-delay: {{ loop.index0 * 0.08 }}s" data-name="{{ sd.user.full_name|lower }}">
+                data-delay="{{ loop.index0 * 0.08 }}s" data-name="{{ sd.user.full_name|lower }}">
 
                 <!-- Card Header with Gradient -->
                 <div class="h-20 bg-gradient-to-br from-emerald-400 via-green-500 to-teal-600 relative">
                     <div class="absolute -bottom-8 left-1/2 -translate-x-1/2">
-                        <img src="{{ sd.user.profile_photo if sd.user.profile_photo else 'https://ui-avatars.com/api/?name=' + sd.user.full_name + '&background=random&size=128' }}"
+                        <img src="{{ sd.user.profile_photo if sd.user.profile_photo else 'https://ui-avatars.com/api/?name=' + (sd.user.full_name or 'User') + '&background=random&size=128' }}"
                             alt="{{ sd.user.full_name }}"
                             class="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-lg">
                     </div>
@@ -244,11 +244,11 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {% for sd in students %}
             <div class="student-card animate-card bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-lg overflow-hidden"
-                style="animation-delay: {{ loop.index0 * 0.08 }}s" data-name="{{ sd.user.full_name|lower }}">
+                data-delay="{{ loop.index0 * 0.08 }}s" data-name="{{ sd.user.full_name|lower }}">
 
                 <div class="h-20 bg-gradient-to-br from-[var(--teal)] via-[var(--teal)] to-[var(--teal)] relative">
                     <div class="absolute -bottom-8 left-1/2 -translate-x-1/2">
-                        <img src="{{ sd.user.profile_photo if sd.user.profile_photo else 'https://ui-avatars.com/api/?name=' + sd.user.full_name + '&background=random&size=128' }}"
+                        <img src="{{ sd.user.profile_photo if sd.user.profile_photo else 'https://ui-avatars.com/api/?name=' + (sd.user.full_name or 'User') + '&background=random&size=128' }}"
                             alt="{{ sd.user.full_name }}"
                             class="w-16 h-16 rounded-2xl object-cover border-4 border-white shadow-lg">
                     </div>
@@ -340,6 +340,12 @@
 
 <!-- Search Script -->
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.student-card[data-delay]').forEach(card => {
+            card.style.animationDelay = card.getAttribute('data-delay');
+        });
+    });
+
     document.getElementById('student-search').addEventListener('input', function (e) {
         const query = e.target.value.toLowerCase();
         document.querySelectorAll('.student-card').forEach(card => {

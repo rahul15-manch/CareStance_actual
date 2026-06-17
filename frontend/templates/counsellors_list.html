@@ -25,7 +25,7 @@
             <div
                 class="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-sm border border-slate-100 hover:shadow-2xl hover:border-[var(--teal-light)] transition-all duration-500 group">
                 <div class="flex items-center gap-4 mb-6">
-                    <img src="{{ c.user.profile_photo if c.user.profile_photo else 'https://ui-avatars.com/api/?name=' + c.user.full_name }}"
+                    <img src="{{ c.user.profile_photo if c.user.profile_photo else 'https://ui-avatars.com/api/?name=' + (c.user.full_name or 'User') }}"
                         class="h-16 w-16 rounded-2xl object-cover border-2 border-[var(--teal-soft)] shadow-md group-hover:scale-110 transition-transform duration-500"
                         loading="lazy">
                     <div>
