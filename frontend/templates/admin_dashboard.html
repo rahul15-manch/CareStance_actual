@@ -38,7 +38,7 @@
                             alt="Profile photo of {{ prof.user.full_name }}"
                             class="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-50 shadow-md">
                         <div>
-                            <h3 class="font-bold text-slate-900 text-lg">{{ prof.user.full_name }}</h3>
+                            <h3 class="font-bold text-slate-900 text-lg">{{ (prof.user.full_name or 'User') }}</h3>
                             <p class="text-sm text-slate-500">{{ prof.user.email }}</p>
                             <span
                                 class="text-[10px] font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-1 inline-block">Counsellor</span>

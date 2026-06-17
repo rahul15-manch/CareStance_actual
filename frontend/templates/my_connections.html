@@ -198,6 +198,13 @@
     {% endif %}
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('[data-delay]').forEach(el => {
+            el.style.animationDelay = el.getAttribute('data-delay');
+        });
+    });
+</script>
 {% endblock %}
 
 {% block extra_head %}
