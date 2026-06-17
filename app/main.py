@@ -325,14 +325,14 @@ async def run_migrations():
 
         if migrations:
             print(f"DEBUG: Found {len(migrations)} pending migrations.", flush=True)
-            with engine.connect() as conn:
+            async with engine.connect() as conn:
                 for sql in migrations:
                     try:
-                        conn.execute(text(sql))
+                        await conn.execute(text(sql))
                         print(f"DATABASE MIGRATION SUCCESS: {sql}", flush=True)
                     except Exception as me:
                         print(f"DATABASE MIGRATION SKIP/ERROR: {sql} -> {me}", flush=True)
-                conn.commit()
+                await conn.commit()
             print(f"DATABASE: Finished running {len(migrations)} migration queries.", flush=True)
         else:
             print("DATABASE: No new migrations detected.", flush=True)
@@ -652,6 +652,15 @@ async def ads_txt():
         return FileResponse(ads_path)
     return Response(content="File not found", status_code=404)
 
+@app.get("/BingSiteAuth.xml")
+async def bing_site_auth():
+    # Bing verification file in the project root
+    bing_path = os.path.join(ROOT_DIR, "BingSiteAuth.xml")
+    if os.path.exists(bing_path):
+        from fastapi.responses import FileResponse
+        return FileResponse(bing_path)
+    return Response(content="File not found", status_code=404)
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: AsyncSession = Depends(get_db)):
     user = await get_current_user(request, db)
@@ -695,22 +704,26 @@ async def articles_page(request: Request, db: AsyncSession = Depends(get_db)):
         return HTMLResponse(content=f"Template Error: {e}<br><pre>{traceback.format_exc()}</pre>", status_code=500)
 
 @app.get("/robots.txt")
-async def robots_txt():
-    content = "User-agent: *\nAllow: /\nSitemap: https://carestance.me/sitemap.xml"
+async def robots_txt(request: Request):
+    host = request.url.hostname or "carestance.in"
+    content = f"User-agent: *\nAllow: /\nSitemap: https://{host}/sitemap.xml"
     return Response(content=content, media_type="text/plain")
 
 @app.get("/sitemap.xml")
-async def sitemap_xml():
+async def sitemap_xml(request: Request):
     # Simple static sitemap for now
-    content = """<?xml version="1.0" encoding="UTF-8"?>
+    host = request.url.hostname or "carestance.in"
+    scheme = request.url.scheme or "https"
+    base_url = f"{scheme}://{host}"
+    content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://carestance.me/</loc><priority>1.0</priority></url>
-  <url><loc>https://carestance.me/signup</loc><priority>0.8</priority></url>
-  <url><loc>https://carestance.me/login</loc><priority>0.8</priority></url>
-  <url><loc>https://carestance.me/founders</loc><priority>0.7</priority></url>
-  <url><loc>https://carestance.me/articles</loc><priority>0.9</priority></url>
-  <url><loc>https://carestance.me/privacy</loc><priority>0.5</priority></url>
-  <url><loc>https://carestance.me/terms</loc><priority>0.5</priority></url>
+  <url><loc>{base_url}/</loc><priority>1.0</priority></url>
+  <url><loc>{base_url}/signup</loc><priority>0.8</priority></url>
+  <url><loc>{base_url}/login</loc><priority>0.8</priority></url>
+  <url><loc>{base_url}/founders</loc><priority>0.7</priority></url>
+  <url><loc>{base_url}/articles</loc><priority>0.9</priority></url>
+  <url><loc>{base_url}/privacy</loc><priority>0.5</priority></url>
+  <url><loc>{base_url}/terms</loc><priority>0.5</priority></url>
 </urlset>"""
     return Response(content=content, media_type="application/xml")
 
@@ -1041,9 +1054,9 @@ async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
                 token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
         except Exception as e:
             import traceback
-            print(f"OAuth Token Exchange Error: {e}")
+            print(f"OAuth Token Exchange Fatal Error: {e}")
             traceback.print_exc()
-            error_msg = str(e).replace(" ", "+")[:200]
+            error_msg = f"Token+Exchange+Failed:+{str(e).replace(' ', '+')}"[:200]
             return RedirectResponse(url=f'/login?error={error_msg}', status_code=status.HTTP_302_FOUND)
         
         user_info = token.get('userinfo')
@@ -6289,7 +6302,7 @@ async def terms_page(request: Request, db: AsyncSession = Depends(get_db)):
 async def debug_migrate(request: Request, db: AsyncSession = Depends(get_db)):
     """Manually trigger migrations and return status."""
     try:
-        run_migrations()
+        await run_migrations()
         return {"status": "success", "message": "Migrations triggered. Check console/logs for details."}
     except Exception as e:
         import traceback

@@ -537,7 +537,7 @@
             <!-- Profile Photo Box -->
             <div class="db-card p-6 flex items-center gap-4">
                 <div class="relative group flex-shrink-0">
-                    <img src="{{ user.profile_photo if user.profile_photo else 'https://ui-avatars.com/api/?name=' + (user.full_name or 'User') + '&background=random' }}"
+                    <img src="{{ user.profile_photo if user.profile_photo else 'https://ui-avatars.com/api/?name=' ~ (user.full_name or 'User') ~ '&background=random' }}"
                         alt="Profile" class="w-16 h-16 rounded-2xl object-cover border-2 border-[var(--primary)] shadow-md">
                     <button onclick="document.getElementById('photo-upload').click()"
                         class="absolute -bottom-1 -right-1 text-white p-1.5 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity bg-[var(--navy)] hover:bg-[var(--teal)]">
