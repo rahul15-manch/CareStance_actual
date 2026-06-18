@@ -1,0 +1,420 @@
+[
+  {
+    "id": "P011",
+    "question": "You’re given a blank canvas, a block of clay, or a blank digital file with no instructions. What is your immediate reaction?",
+    "proxy_target": "IT_Artistic",
+    "options": [
+      { "text": "Excitement—I love creating something unique without any constraints.", "multiplier": 1.0 },
+      { "text": "I’d look for inspiration online first, then put my own creative spin on it.", "multiplier": 0.7 },
+      { "text": "I’d prefer a basic template or prompt to guide my initial steps.", "multiplier": 0.4 },
+      { "text": "Frustration—I work best when I have concrete requirements and a clear purpose.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P012",
+    "question": "When starting a complex new project, how do you manage your workspace, files, and tasks?",
+    "proxy_target": "IT_Conventional",
+    "options": [
+      { "text": "I create strict color-coded folders, structured checklists, and a set timeline.", "multiplier": 1.0 },
+      { "text": "I set up a standard organization system, though I adjust it as I go.", "multiplier": 0.7 },
+      { "text": "I keep things loosely organized in one place, finding structure as needed.", "multiplier": 0.4 },
+      { "text": "I dive straight in without organizing; rigid structures feel restrictive to me.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P013",
+    "question": "You and a group of friends decide to launch a small weekend side hustle. What role do you naturally grab?",
+    "proxy_target": "IT_Enterprising",
+    "options": [
+      { "text": "The Pitcher/Negotiator—managing sales, pitching to customers, and driving the goals.", "multiplier": 1.0 },
+      { "text": "The Strategist—organizing our plan, managing resources, and delegating tasks.", "multiplier": 0.7 },
+      { "text": "The Executor—doing the core work behind the scenes rather than selling or leading.", "multiplier": 0.4 },
+      { "text": "The Support—helping out quietly with whatever tasks are handed to me.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P014",
+    "question": "You run into an unexplained error message or a mysterious problem in a system. What do you do?",
+    "proxy_target": "IT_Investigative",
+    "options": [
+      { "text": "I deep-dive into documentation, research papers, and forums to understand the root cause.", "multiplier": 1.0 },
+      { "text": "I systematically test variables to isolate the issue step-by-step.", "multiplier": 0.7 },
+      { "text": "I search for a quick patch online that has worked for others.", "multiplier": 0.4 },
+      { "text": "I ask an expert or look for an alternative route that bypasses the problem.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P015",
+    "question": "If a physical device or household appliance stops working, how do you prefer to handle it?",
+    "proxy_target": "IT_Realistic",
+    "options": [
+      { "text": "I grab my tools, take it apart, and physically try to repair the mechanism myself.", "multiplier": 1.0 },
+      { "text": "I look up a teardown video or manual to see if it’s an easy physical fix.", "multiplier": 0.7 },
+      { "text": "I prefer software or digital troubleshooting; manual repairs aren't my style.", "multiplier": 0.4 },
+      { "text": "I call a technician or replace it immediately; I avoid hands-on mechanical tasks.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P016",
+    "question": "How would you ideally spend a Saturday afternoon working on a passion project?",
+    "proxy_target": "IT_Social",
+    "options": [
+      { "text": "Running a workshop, mentoring a peer, or collaborating actively with others.", "multiplier": 1.0 },
+      { "text": "Working in a shared space where I can bounce ideas off of teammates.", "multiplier": 0.7 },
+      { "text": "Working independently, but checking in with a small group occasionally.", "multiplier": 0.4 },
+      { "text": "Working completely alone in a quiet room with zero outside interruptions.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P017",
+    "question": "You see a headline about a breakthrough in a field completely unrelated to yours. What do you do?",
+    "proxy_target": "WS_Intellectual Curiosity",
+    "options": [
+      { "text": "Spend an hour reading articles and tracking down the original research paper out of pure interest.", "multiplier": 1.0 },
+      { "text": "Read a quick summary article to understand the general concept.", "multiplier": 0.7 },
+      { "text": "Save it for later, though I rarely get around to reading unrelated topics.", "multiplier": 0.4 },
+      { "text": "Ignore it; I prefer to stay focused strictly on information directly useful to my day-to-day work.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P018",
+    "question": "You notice a bottleneck or inefficiency in your team's workflow that nobody else has mentioned. What do you do?",
+    "proxy_target": "WS_Initiative",
+    "options": [
+      { "text": "Build a prototype solution or document a new process on my own and present it to the team.", "multiplier": 1.0 },
+      { "text": "Bring it up during the next meeting and offer to help coordinate a fix.", "multiplier": 0.7 },
+      { "text": "Mention it casually to a colleague to see if they think it’s worth changing.", "multiplier": 0.4 },
+      { "text": "Wait for a manager to address it; it's safer to focus strictly on my assigned tasks.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P019",
+    "question": "A group project is starting, but the project scope is vague and no leader has been selected. What happens?",
+    "proxy_target": "WS_Leadership Orientation",
+    "options": [
+      { "text": "I naturally step up, outline a plan of action, and coordinate who handles what.", "multiplier": 1.0 },
+      { "text": "I offer to lead if nobody else wants to, but I'm happy to co-lead.", "multiplier": 0.7 },
+      { "text": "I prefer to let someone else set the direction while I focus on my specific tasks.", "multiplier": 0.4 },
+      { "text": "I actively avoid leading; I work much better when someone else handles the management.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P020",
+    "question": "You’ve spent days trying to fix a bug, solve a problem, or build a model, and every attempt has failed. What's your play?",
+    "proxy_target": "WS_Perseverance",
+    "options": [
+      { "text": "I keep trying new angles, determined to break through no matter how long it takes.", "multiplier": 1.0 },
+      { "text": "I take a short break to clear my head, then dive back in with a fresh approach.", "multiplier": 0.7 },
+      { "text": "I'll try for a bit longer, but if I stay stuck, I’ll look for a way to pivot the project.", "multiplier": 0.4 },
+      { "text": "I step away and seek immediate help, or drop the task to focus on easier goals.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P021",
+    "question": "You are finalizing a report, project, or piece of code. How do you approach the final review stage?",
+    "proxy_target": "WS_Attention to Detail",
+    "options": [
+      { "text": "I review it line-by-line multiple times, checking every minor detail, formula, and formatting rule.", "multiplier": 1.0 },
+      { "text": "I do a thorough sweep of the main points and double-check key areas of concern.", "multiplier": 0.7 },
+      { "text": "I run a quick scan to make sure it looks presentable and functional.", "multiplier": 0.4 },
+      { "text": "I submit it once the core work is done; minor imperfections can be adjusted later.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P022",
+    "question": "Halfway through your project, the client or manager radically changes the requirements. How do you adjust?",
+    "proxy_target": "WS_Adaptability",
+    "options": [
+      { "text": "I immediately pivot, reassess my resources, and easily find a new path forward.", "multiplier": 1.0 },
+      { "text": "I take a moment to process the frustration, then update my plan to fit the new direction.", "multiplier": 0.7 },
+      { "text": "I struggle initially to let go of my progress, but I eventually adapt under pressure.", "multiplier": 0.4 },
+      { "text": "I find it highly disruptive; I prefer consistent, stable guidelines from start to finish.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P023",
+    "question": "When tasked with solving a standard problem, how do you prefer to approach the solution?",
+    "proxy_target": "WS_Innovation",
+    "options": [
+      { "text": "I try to invent a completely novel method or system that hasn't been tried before.", "multiplier": 1.0 },
+      { "text": "I look at existing solutions and try to improve upon them creatively.", "multiplier": 0.7 },
+      { "text": "I apply proven, standard methodologies that have guaranteed success rates.", "multiplier": 0.4 },
+      { "text": "I follow the exact step-by-step instructions of an established playbook.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P024",
+    "question": "What is the primary driver behind your hard work and late nights on a project?",
+    "proxy_target": "WS_Achievement Orientation",
+    "options": [
+      { "text": "Reaching ambitious goals, pushing personal standards, and delivering high results.", "multiplier": 1.0 },
+      { "text": "The satisfaction of doing a good job and receiving professional recognition.", "multiplier": 0.7 },
+      { "text": "Completing my duties and ensuring the project is stable and functional.", "multiplier": 0.4 },
+      { "text": "Meeting the minimum requirements to fulfill my responsibilities and maintain balance.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P025",
+    "question": "When working in a team, how do you handle sharing responsibilities and decision-making?",
+    "proxy_target": "WS_Cooperation",
+    "options": [
+      { "text": "I prioritize harmony, actively seek group consensus, and share the load equally.", "multiplier": 1.0 },
+      { "text": "I collaborate willingly, but prefer clearly defined boundaries for who is doing what.", "multiplier": 0.7 },
+      { "text": "I prefer to work on my section independently, checking in only when integration is needed.", "multiplier": 0.4 },
+      { "text": "I prefer complete control over my output; working too closely with others slows me down.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P026",
+    "question": "How important is building personal connections and socializing with coworkers or peers to your daily routine?",
+    "proxy_target": "WS_Social Orientation",
+    "options": [
+      { "text": "Essential—I work best when I am building relationships, chatting, and connecting on a human level.", "multiplier": 1.0 },
+      { "text": "Important—I enjoy regular social interactions, but focus mostly on the work tasks.", "multiplier": 0.7 },
+      { "text": "Minimal—I prefer to keep conversations strictly professional and transaction-oriented.", "multiplier": 0.4 },
+      { "text": "I actively avoid social chit-chat; I want to do my work and go home.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P027",
+    "question": "A critical crisis hits, systems go down, deadlines are in an hour, and people are beginning to panic. How do you respond?",
+    "proxy_target": "WS_Stress Tolerance",
+    "options": [
+      { "text": "I remain completely calm, clear-headed, and focused on finding the quickest path to safety.", "multiplier": 1.0 },
+      { "text": "I feel the pressure, but I can manage my anxiety and keep working productively.", "multiplier": 0.7 },
+      { "text": "My stress levels spike, and I need a few moments to calm down before I can think clearly.", "multiplier": 0.4 },
+      { "text": "I quickly become overwhelmed; I work much better in stable environments without intense pressure.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P028",
+    "question": "You receive highly critical, blunt feedback about a project you poured your heart into. What is your reaction?",
+    "proxy_target": "WS_Self-Control",
+    "options": [
+      { "text": "I listen calmly without interrupting, control my emotions, and process the feedback objectively.", "multiplier": 1.0 },
+      { "text": "I feel defensive initially, but I manage to keep my composure and thank them.", "multiplier": 0.7 },
+      { "text": "I find it hard to hide my frustration or disappointment during the discussion.", "multiplier": 0.4 },
+      { "text": "I express my strong disagreement immediately; I find it difficult to stay passive under criticism.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P029",
+    "question": "When stepping into a room of experts to present your work, how secure do you feel in your abilities?",
+    "proxy_target": "WS_Self-Confidence",
+    "options": [
+      { "text": "Completely secure—I know what I bring to the table and can defend my decisions confidently.", "multiplier": 1.0 },
+      { "text": "Generally secure, though I still feel a bit of nervous imposter syndrome.", "multiplier": 0.7 },
+      { "text": "I rely heavily on positive feedback from others to feel good about my performance.", "multiplier": 0.4 },
+      { "text": "Highly anxious—I constantly second-guess my knowledge and choices in front of peers.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P030",
+    "question": "When making an important decision with potential risks, how do you approach the final choice?",
+    "proxy_target": "WS_Cautiousness",
+    "options": [
+      { "text": "I spend significant time gathering data, evaluating risks, and verifying backups before taking action.", "multiplier": 1.0 },
+      { "text": "I do some basic planning and risk mitigation, then proceed carefully.", "multiplier": 0.7 },
+      { "text": "I trust my instincts and take calculated risks quickly to avoid stalling.", "multiplier": 0.4 },
+      { "text": "I dive in headfirst; I’d rather deal with consequences later than hesitate now.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P031",
+    "question": "How do you feel when you are handed a highly open-ended assignment with vague instructions?",
+    "proxy_target": "WS_Tolerance for Ambiguity",
+    "options": [
+      { "text": "Excited—I love having the freedom to interpret the goals and define my own path.", "multiplier": 1.0 },
+      { "text": "Comfortable, provided I can check in occasionally to verify I’m on the right track.", "multiplier": 0.7 },
+      { "text": "A bit anxious—I prefer having at least some clear examples or milestones defined.", "multiplier": 0.4 },
+      { "text": "Stressed—I need explicit, step-by-step instructions to feel secure in my work.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P032",
+    "question": "You are analyzing a set of general rules, policies, or technical laws. How easily can you apply them to a specific case?",
+    "proxy_target": "AB_Deductive Reasoning",
+    "options": [
+      { "text": "Very easily—I can instantly spot how high-level rules dictate the outcome of a specific situation.", "multiplier": 1.0 },
+      { "text": "With some concentration, I can map general guidelines down to specific logical steps.", "multiplier": 0.7 },
+      { "text": "I sometimes struggle to bridge the gap between abstract policies and specific cases.", "multiplier": 0.4 },
+      { "text": "I find it highly confusing; I need someone to show me exactly how the rule applies to this case.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P033",
+    "question": "When looking at a complex spreadsheet or system architecture, how quickly do you translate the layout into mathematical models?",
+    "proxy_target": "AB_Mathematical Reasoning",
+    "options": [
+      { "text": "Instantly—I naturally see the quantitative formulas and mathematical relationships in data systems.", "multiplier": 1.0 },
+      { "text": "Reasonably well, though I have to sit down and write out the variables to be certain.", "multiplier": 0.7 },
+      { "text": "Slowly—I can handle basic formulas, but advanced quantitative modeling takes considerable effort.", "multiplier": 0.4 },
+      { "text": "I struggle; I prefer descriptive conceptual models over mathematical formulas.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P034",
+    "question": "You are monitoring a complex workflow or codebase. How quickly do you notice when something is slightly 'off'?",
+    "proxy_target": "AB_Problem Sensitivity",
+    "options": [
+      { "text": "Immediately—I have an intuitive radar for spotting potential errors before they escalate into major bugs.", "multiplier": 1.0 },
+      { "text": "Fairly quickly, usually as soon as the first anomalous behavior presents itself.", "multiplier": 0.7 },
+      { "text": "Only when a clear error warning pops up or a task fails to execute.", "multiplier": 0.4 },
+      { "text": "I rarely notice subtle anomalies; I rely on others to flag issues for me.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P035",
+    "question": "When organizing a complex project plan or multi-step technical protocol, how do you arrange the steps?",
+    "proxy_target": "AB_Information Ordering",
+    "options": [
+      { "text": "I naturally arrange everything into a highly logical, optimal sequence that maximizes efficiency.", "multiplier": 1.0 },
+      { "text": "I follow standard, established sequences, making minor adjustments where necessary.", "multiplier": 0.7 },
+      { "text": "I list the steps as they come to mind, organizing them later during execution.", "multiplier": 0.4 },
+      { "text": "I struggle with step-by-step sequencing; I prefer working on tasks organically as they arise.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P036",
+    "question": "You have grouped your project files or data into specific categories. How easily can you re-classify them under a totally different system?",
+    "proxy_target": "AB_Category Flexibility",
+    "options": [
+      { "text": "Effortlessly—I can instantly see multiple valid ways to group the same set of information.", "multiplier": 1.0 },
+      { "text": "With some thought, I can reorganize the taxonomy to fit a new angle.", "multiplier": 0.7 },
+      { "text": "I find it tedious and tend to stick closely to my initial classification system.", "multiplier": 0.4 },
+      { "text": "Highly confusing—once a category system is set, changing it disrupts my entire understanding.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P037",
+    "question": "When brainstorming a solution, how often do you come up with an approach that surprised your peers?",
+    "proxy_target": "AB_Originality",
+    "options": [
+      { "text": "Frequently—I naturally think outside the box and propose highly unusual, creative ideas.", "multiplier": 1.0 },
+      { "text": "Occasionally, though my ideas are usually built on existing frameworks.", "multiplier": 0.7 },
+      { "text": "Rarely—I prefer applying standard, dependable strategies that are known to work.", "multiplier": 0.4 },
+      { "text": "Never—I stick strictly to established rules and traditional methods.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P038",
+    "question": "How easily can you picture a physical object, a system diagram, or a layout rotating in your mind's eye?",
+    "proxy_target": "AB_Visualization",
+    "options": [
+      { "text": "Very easily—I can mentally manipulate, rotate, and construct complex 3D layouts in detail.", "multiplier": 1.0 },
+      { "text": "Reasonably well; I can sketch it out on paper to help my mental picture.", "multiplier": 0.7 },
+      { "text": "Only basic shapes; complex geometries or architectures quickly get fuzzy.", "multiplier": 0.4 },
+      { "text": "I struggle—I cannot easily mentally visualize objects or structures in 3D.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P039",
+    "question": "You are presented with a long list of arbitrary terms, shortcuts, or system variables. How easily can you recall them later?",
+    "proxy_target": "AB_Memorization",
+    "options": [
+      { "text": "Effortlessly—I have a strong memory for retaining names, codes, and raw information quickly.", "multiplier": 1.0 },
+      { "text": "Well enough, though I prefer to use quick reference sheets to be safe.", "multiplier": 0.7 },
+      { "text": "Slowly—I need repetitive exposure over several days to commit details to memory.", "multiplier": 0.4 },
+      { "text": "Poorly—I rely completely on documentation, bookmarks, and search functions.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P040",
+    "question": "When reading a dense, academic paper or a highly dry legal contract, how easily do you digest the core argument?",
+    "proxy_target": "AB_Written Comprehension",
+    "options": [
+      { "text": "Easily—I quickly grasp complex terminology and understand the core logic of dense texts.", "multiplier": 1.0 },
+      { "text": "With steady concentration, though I sometimes have to reread sections to fully process them.", "multiplier": 0.7 },
+      { "text": "Slowly—I need a simplified summary or a guide to help navigate dry, academic writing.", "multiplier": 0.4 },
+      { "text": "I struggle—I find highly technical or dense prose extremely difficult to digest.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P041",
+    "question": "You are checking a log of data or a visual screen for minor discrepancies. How quickly can your eyes spot the anomaly?",
+    "proxy_target": "AB_Perceptual Speed",
+    "options": [
+      { "text": "In a fraction of a second—I can scan patterns and instantly detect differences or errors.", "multiplier": 1.0 },
+      { "text": "Reasonably fast, as long as I am scanning systematically row-by-row.", "multiplier": 0.7 },
+      { "text": "At a moderate pace; I prefer not to rush to avoid missing details.", "multiplier": 0.4 },
+      { "text": "Slowly—I take considerable time to visually process and compare structures.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P042",
+    "question": "You are working in a bustling, open-plan office or a noisy cafe. How easily can you block out the background noise?",
+    "proxy_target": "AB_Selective Attention",
+    "options": [
+      { "text": "Completely—I can hyper-focus on my screen and entirely tune out external conversations.", "multiplier": 1.0 },
+      { "text": "Reasonably well, especially if I have headphones playing instrumental music.", "multiplier": 0.7 },
+      { "text": "Only for short bursts; sudden noises or clear speech quickly break my concentration.", "multiplier": 0.4 },
+      { "text": "Not at all—I require complete, uninterrupted silence to focus on cognitive tasks.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P043",
+    "question": "You are asked to quickly list potential use cases, marketing slogans, or features for a new app. What happens?",
+    "proxy_target": "AB_Fluency of Ideas",
+    "options": [
+      { "text": "I can generate 20+ distinct, creative possibilities in just a few minutes.", "multiplier": 1.0 },
+      { "text": "I can produce a solid list of 5-10 strong ideas after a bit of brainstorming.", "multiplier": 0.7 },
+      { "text": "I can come up with 2 or 3 standard ideas, but then my brain stalls out.", "multiplier": 0.4 },
+      { "text": "I struggle—I prefer to evaluate and refine one specific idea rather than generate many.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P044",
+    "question": "When explaining a highly technical concept to a non-technical audience, how smoothly do you deliver the explanation?",
+    "proxy_target": "AB_Oral Expression",
+    "options": [
+      { "text": "Very smoothly—I speak clearly, use relatable analogies, and naturally hold attention.", "multiplier": 1.0 },
+      { "text": "Reasonably well, though I occasionally slip into technical jargon that confuses people.", "multiplier": 0.7 },
+      { "text": "Hesitantly—I know the concept well, but finding the right words on the spot is challenging.", "multiplier": 0.4 },
+      { "text": "I struggle—I prefer to present my ideas in writing rather than explaining them out loud.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P045",
+    "question": "You are looking at a messy set of user feedback, system logs, or behavioral data. How easily can you spot the underlying pattern?",
+    "proxy_target": "AB_Inductive Reasoning",
+    "options": [
+      { "text": "Very easily—I naturally spot trends and synthesize scattered details into a cohesive theory.", "multiplier": 1.0 },
+      { "text": "With some analysis, I can connect the dots and find the common thread.", "multiplier": 0.7 },
+      { "text": "Slowly—I prefer when someone else defines the hypothesis so I can test it.", "multiplier": 0.4 },
+      { "text": "I struggle—disorganized data looks like random noise to me without pre-existing rules.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P046",
+    "question": "You need to quickly calculate discounts, conversion rates, or budget margins during a live discussion. What do you do?",
+    "proxy_target": "AB_Number Facility",
+    "options": [
+      { "text": "I calculate the exact percentages or estimates in my head instantly.", "multiplier": 1.0 },
+      { "text": "I scribble the math on a notepad quickly to confirm my estimate.", "multiplier": 0.7 },
+      { "text": "I open a calculator app or spreadsheet to avoid making mental errors.", "multiplier": 0.4 },
+      { "text": "I ask someone else to verify the numbers; mental math is not my strong suit.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P047",
+    "question": "You are listening to a complex verbal explanation of a system or a problem. How easily do you follow?",
+    "proxy_target": "AB_Oral Comprehension",
+    "options": [
+      { "text": "Perfectly—I quickly digest spoken information, follow the logical chain, and retain key points.", "multiplier": 1.0 },
+      { "text": "Reasonably well, though I prefer taking quick notes to make sure I don't miss anything.", "multiplier": 0.7 },
+      { "text": "Slowly—I easily lose track of complex spoken details and need people to repeat themselves.", "multiplier": 0.4 },
+      { "text": "I struggle—I need to see things written down or diagrammed visually to understand them.", "multiplier": 0.1 }
+    ]
+  },
+  {
+    "id": "P048",
+    "question": "When tasked with writing a technical summary, blog post, or status report, how easily do you draft the text?",
+    "proxy_target": "AB_Written Expression",
+    "options": [
+      { "text": "Very easily—I write clearly, structure my thoughts logically, and find the perfect tone quickly.", "multiplier": 1.0 },
+      { "text": "Reasonably well, though I spend considerable time editing and refining the phrasing.", "multiplier": 0.7 },
+      { "text": "With difficulty—translating my technical thoughts into clear prose takes significant effort.", "multiplier": 0.4 },
+      { "text": "I struggle—I strongly prefer verbal discussions, bullet points, or coding over formal writing.", "multiplier": 0.1 }
+    ]
+  }
+]
