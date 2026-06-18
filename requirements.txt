@@ -14,8 +14,6 @@ httpx
 mangum
 razorpay
 redis
-appwrite==18.0.0
+appwrite==15.3.0
 aiosqlite
 hypercorn
-greenlet
-json-repair

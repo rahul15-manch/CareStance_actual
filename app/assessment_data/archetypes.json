@@ -1,0 +1,115 @@
+{
+  "archetypes": [
+    {
+      "id": "ARC_001",
+      "archetype_name": "FOCUSED SPECIALIST",
+      "tagline": "Precision & Mastery",
+      "description": "Thrives on deep expertise in a single domain.",
+      "classification": {
+        "nature": "Introvert",
+        "goal_status": "Goal Directed"
+      },
+      "feature_vector_ranges": {
+        "IT_Social": [-1.0, -0.4],
+        "IT_Conventional": [0.6, 1.0],
+        "IT_Realistic": [0.6, 1.0],
+        "WS_Attention to Detail": [0.8, 1.0],
+        "WS_Perseverance": [0.7, 1.0],
+        "WS_Achievement Orientation": [0.7, 1.0],
+        "WS_Tolerance for Ambiguity": [-1.0, -0.2],
+        "AB_Selective Attention": [0.8, 1.0]
+      }
+    },
+    {
+      "id": "ARC_002",
+      "archetype_name": "QUIET EXPLORER",
+      "tagline": "Curiosity & Depth",
+      "description": "Discovers through quiet observation and rigorous analysis.",
+      "classification": {
+        "nature": "Introvert",
+        "goal_status": "Non-Goal Directed"
+      },
+      "feature_vector_ranges": {
+        "IT_Investigative": [0.7, 1.0],
+        "IT_Social": [-1.0, -0.3],
+        "WS_Intellectual Curiosity": [0.8, 1.0],
+        "WS_Tolerance for Ambiguity": [0.3, 0.7],
+        "WS_Leadership Orientation": [-1.0, -0.3],
+        "AB_Inductive Reasoning": [0.6, 1.0]
+      }
+    },
+    {
+      "id": "ARC_003",
+      "archetype_name": "STRATEGIC BUILDER",
+      "tagline": "Strategy & Systems",
+      "description": "Systems thinker who builds frameworks and sees hidden patterns.",
+      "classification": {
+        "nature": "Ambivert",
+        "goal_status": "Goal Directed"
+      },
+      "feature_vector_ranges": {
+        "IT_Social": [-0.3, 0.4],
+        "IT_Conventional": [0.5, 0.9],
+        "WS_Achievement Orientation": [0.6, 1.0],
+        "WS_Cautiousness": [0.3, 0.8],
+        "AB_Information Ordering": [0.7, 1.0],
+        "AB_Deductive Reasoning": [0.6, 1.0]
+      }
+    },
+    {
+      "id": "ARC_004",
+      "archetype_name": "DYNAMIC GENERALIST",
+      "tagline": "Breadth & Synthesis",
+      "description": "Jack of all trades; master of integrating diverse domains.",
+      "classification": {
+        "nature": "Ambivert",
+        "goal_status": "Non-Goal Directed"
+      },
+      "feature_vector_ranges": {
+        "IT_Social": [-0.3, 0.5],
+        "WS_Intellectual Curiosity": [0.7, 1.0],
+        "WS_Tolerance for Ambiguity": [0.4, 0.8],
+        "WS_Cautiousness": [-0.6, 0.1],
+        "AB_Category Flexibility": [0.8, 1.0],
+        "AB_Fluency of Ideas": [0.6, 0.9]
+      }
+    },
+    {
+      "id": "ARC_005",
+      "archetype_name": "VISIONARY LEADER",
+      "tagline": "Vision & Impact",
+      "description": "Born to lead, inspire, and transform raw ideas into movements.",
+      "classification": {
+        "nature": "Extrovert",
+        "goal_status": "Goal Directed"
+      },
+      "feature_vector_ranges": {
+        "IT_Enterprising": [0.7, 1.0],
+        "WS_Leadership Orientation": [0.8, 1.0],
+        "WS_Self-Confidence": [0.7, 1.0],
+        "WS_Initiative": [0.8, 1.0],
+        "WS_Social Orientation": [0.6, 1.0],
+        "AB_Oral Expression": [0.7, 1.0]
+      }
+    },
+    {
+      "id": "ARC_006",
+      "archetype_name": "ADAPTIVE EXPLORER",
+      "tagline": "Agility & Range",
+      "description": "Highly versatile; navigates uncertainty with extreme confidence.",
+      "classification": {
+        "nature": "Extrovert",
+        "goal_status": "Non-Goal Directed"
+      },
+      "feature_vector_ranges": {
+        "IT_Social": [0.5, 1.0],
+        "WS_Adaptability": [0.8, 1.0],
+        "WS_Tolerance for Ambiguity": [0.7, 1.0],
+        "WS_Innovation": [0.6, 1.0],
+        "WS_Cautiousness": [-1.0, -0.3],
+        "AB_Perceptual Speed": [0.6, 0.9],
+        "AB_Category Flexibility": [0.6, 0.9]
+      }
+    }
+  ]
+}

@@ -25,6 +25,10 @@ from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy import select, and_, or_, func
 from .database import AsyncSessionLocal, engine, get_db, Base, SQLALCHEMY_DATABASE_URL
 import re
+
+def sync_assessment_to_appwrite(user_id, result):
+    pass  # Appwrite sync disabled — local DB only
+
 from urllib.parse import urlparse
 from . import models
 from .email_utils import (
@@ -325,14 +329,14 @@ async def run_migrations():
 
         if migrations:
             print(f"DEBUG: Found {len(migrations)} pending migrations.", flush=True)
-            async with engine.connect() as conn:
+            async with engine.begin() as conn:
                 for sql in migrations:
                     try:
+                        from sqlalchemy import text
                         await conn.execute(text(sql))
                         print(f"DATABASE MIGRATION SUCCESS: {sql}", flush=True)
                     except Exception as me:
                         print(f"DATABASE MIGRATION SKIP/ERROR: {sql} -> {me}", flush=True)
-                await conn.commit()
             print(f"DATABASE: Finished running {len(migrations)} migration queries.", flush=True)
         else:
             print("DATABASE: No new migrations detected.", flush=True)
@@ -1046,12 +1050,7 @@ async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
     try:
         try:
             redirect_uri = get_oauth_redirect_uri(request)
-            try:
-                # Try calling without explicit redirect_uri to let Authlib load it from session state
-                token = await oauth.google.authorize_access_token(request)
-            except Exception as inner_e:
-                print(f"DEBUG: Authlib direct authorize_access_token failed: {inner_e}. Retrying with explicit redirect_uri.")
-                token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
+            token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
         except Exception as e:
             import traceback
             print(f"OAuth Token Exchange Fatal Error: {e}")
@@ -1429,25 +1428,38 @@ async def assessment_api_questions(request: Request, db: AsyncSession = Depends(
     student_type = result.student_type or "10th"
     phase = result.current_phase or 0
     
-    data = assessment_engine.load_grade_data(student_type)
-    
     if phase == 0 and student_type == "12th":
         return {"message": "Hello! I'm Alex, your career mentor. Let's start with your name. What's your name?"}
+
     elif phase == 1:
+        # ── NAYA: Founder ke real cards (cards_10th.json / cards_12th.json) ──
         import random
-        cards = data.get("cards", [])
+        from app.pipeline.vector_utils import load_cards
+        cards = load_cards(student_type)  # returns A001-A060 / C101-C160 with multipliers
         shuffled = list(cards)
         random.seed(result.id or 42)
         random.shuffle(shuffled)
         return {"cards": shuffled[:10]}
+
     elif phase == 2:
         return {"chat_messages": result.chat_messages or [], "chat_turn": result.chat_turn or 0}
+
     elif phase == 3:
-        return {"proxy_questions": data.get("proxy_questions", [])}
+        # ── NAYA: Founder ke real proxy MCQs (phase3_mcqs.json, P011-P048) ──
+        import random
+        from app.pipeline.vector_utils import load_json
+        proxy_questions = load_json("phase3_mcqs.json")
+        shuffled_q = list(proxy_questions) if isinstance(proxy_questions, list) else []
+        random.seed((result.id or 42) + 1)
+        random.shuffle(shuffled_q)
+        return {"proxy_questions": shuffled_q[:8]}
+
     elif phase == 4:
+        data = assessment_engine.load_grade_data(student_type)
         return {"scenarios": data.get("scenarios", [])}
     else:
         return {"status": "phase_not_applicable"}
+      
 
 @app.post("/assessment/api/swipe")
 async def assessment_api_swipe(request: Request, payload: dict, db: AsyncSession = Depends(get_db)):
@@ -1568,156 +1580,164 @@ async def assessment_api_compile(request: Request, db: AsyncSession = Depends(ge
     user = await get_current_user(request, db)
     if not user:
         raise HTTPException(status_code=401, detail="Unauthorized")
-        
+
     result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
     if not result:
         raise HTTPException(status_code=404, detail="Assessment not found")
-        
+
     student_type = result.student_type or "10th"
-    
+
     try:
-        # Retrieve logs and calculate telemetry metrics
-        swipes = result.telemetry_logs or []
-        telemetry_metrics = assessment_engine.calculate_telemetry_metrics(swipes, student_type)
-        latent_profile = telemetry_metrics.get("latent_profile", {})
-        
-        # Retrieve messages to compute RIASEC vector
-        chat_history = result.chat_messages or []
-        riasec = assessment_engine.extract_riasec_vector(chat_history)
-        
-        # Retrieve proxies and build feasibility
-        proxies = result.proxy_answers or []
-        feasibility = {}
-        grade_data = assessment_engine.load_grade_data(student_type)
-        q_map = {q["id"]: q for q in grade_data.get("proxy_questions", [])}
-        
-        for p in proxies:
-            qid = p.get("question_id") or p.get("id")
-            if not qid: continue
-            
-            if "multiplier" in p:
-                mult = p["multiplier"]
-            else:
-                answer_text = p.get("answer")
-                mult = 1.0
-                if qid in q_map:
-                    for opt in q_map[qid].get("options", []):
-                        if opt.get("text") == answer_text or opt.get("option_text") == answer_text:
-                            mult = opt.get("multiplier", 1.0)
-                            break
-            
-            target = q_map.get(qid, {}).get("proxy_target", "Geographic_Mobility")
-            feasibility[target] = mult
-            
-        # Retrieve scenarios and compute identity
-        scenarios = result.scenario_answers or []
-        s_map = {s["id"]: s for s in grade_data.get("scenarios", [])}
-        x_scores = []
-        y_scores = []
-        for ans in scenarios:
-            sid = ans.get("scenario_id") or ans.get("id")
-            if not sid: continue
-            
-            if "x_score" in ans:
-                x_scores.append(ans["x_score"])
-                y_scores.append(ans["y_score"])
-            else:
-                selected_tag = ans.get("selected_tag") or ans.get("selected_label")
-                selected_idx = ans.get("selected_option_index")
-                if sid in s_map:
-                    opts = s_map[sid].get("options", [])
-                    chosen_opt = None
-                    if selected_idx is not None and 0 <= selected_idx < len(opts):
-                        chosen_opt = opts[selected_idx]
-                    elif selected_tag:
-                        for opt in opts:
-                            if opt.get("label") == selected_tag or opt.get("text") == selected_tag:
-                                chosen_opt = opt
-                                break
-                    if chosen_opt:
-                        mapping = chosen_opt.get("mapping", {})
-                        x_scores.append(mapping.get("x", 0.5))
-                        y_scores.append(mapping.get("y", 0.5))
-                        
-        identity = {
-            "x": sum(x_scores)/len(x_scores) if x_scores else 0.5,
-            "y": sum(y_scores)/len(y_scores) if y_scores else 0.5
+        from app.pipeline import run_full_pipeline
+
+        # ── STEP 1: Phase 1 input (abhi ke liye intake se jo mila wahi use kia) ──
+        phase1_input = {
+            "mobile": "0000000000",
+            "name": result.intake_name or user.full_name or "Student",
+            "grade": str(result.intake_grade or (10 if student_type == "10th" else 12)),
+            "current_course": result.intake_stream or "Science",
+            "selected_interests": ["Science"],
+            "mother_occupation": "Professional",
+            "father_occupation": "Professional",
+            "family_income": "5_10lpa",
         }
-        
-        # Calculate career predictions (fallback)
-        top_10 = assessment_engine.generate_career_predictions(
-            latent_profile,
-            riasec,
-            identity,
-            feasibility
+
+        # ── STEP 2: Phase 2 swipes — REAL card IDs jo UI se aaye (A001, C101, etc.) ──
+        swipes = result.telemetry_logs or []
+        phase2_swipe_data = [
+            {
+                "card_id": s.get("card_id"),
+                "direction": s.get("direction"),
+                "dwell_ms": s.get("dwell_ms", 1000),
+            }
+            for s in swipes
+        ]
+
+        # ── STEP 3: Phase 3 MCQ answers — REAL proxy question IDs (P011, etc.) ──
+        proxy_answers = result.proxy_answers or []
+        phase3_mcq_data = [
+            {
+                "question_id": p.get("question_id") or p.get("id"),
+                "answer": p.get("answer"),
+                "multiplier": p.get("multiplier"),
+            }
+            for p in proxy_answers
+        ]
+
+        # ── STEP 4: Phase 4 placeholder (creativity score abhi default) ──
+        phase4_data = {
+            "objects_shown": [],
+            "relationships": [],
+            "time_taken_seconds": 180,
+            "total_objects": 10,
+        }
+
+        # ── STEP 5: NAYA PIPELINE CHALAO (cosine similarity occupation matrix se) ──
+        pipeline_result = run_full_pipeline(
+            phase1_input=phase1_input,
+            phase2_swipes=phase2_swipe_data,
+            phase3_responses=phase3_mcq_data,
+            phase4_data=phase4_data,
+            top_n=10,
         )
-        
-        # Reconcile predictions
-        final_matches = assessment_engine.reconcile_results(
-            top_10,
-            feasibility,
-            identity,
-            latent_profile=latent_profile,
-            riasec=riasec
-        )
-        
+
+        student_profile = pipeline_result["student_profile"]
+        top_careers     = pipeline_result["top_careers"]
+        dashboard       = pipeline_result["dashboard"]
+
+        # ── STEP 6: Stream recommendation (10th ke liye) ───────────────────────
         stream_rec = None
         if student_type == "10th":
-            stream_rec = assessment_engine.recommend_10th_stream(latent_profile, riasec, identity)
-            result.recommended_stream = stream_rec.get("recommended_stream")
-            result.stream_scores = {
-                "Science": round(latent_profile.get("LOG", 0.5)*40 + latent_profile.get("TEC", 0.5)*30 + riasec.get("riasec_vector", {}).get("I", 5)*3),
-                "Commerce": round(latent_profile.get("FIN", 0.5)*40 + latent_profile.get("DET", 0.5)*30 + riasec.get("riasec_vector", {}).get("C", 5)*3),
-                "Humanities": round(latent_profile.get("ALT", 0.5)*40 + latent_profile.get("AES", 0.5)*30 + riasec.get("riasec_vector", {}).get("S", 5)*3)
+            interests = student_profile.get("vector", {})
+            science_score    = interests.get("IT_Investigative", 0.5) * 40 + interests.get("IT_Realistic", 0.5) * 35
+            commerce_score   = interests.get("IT_Conventional", 0.5) * 40 + interests.get("IT_Enterprising", 0.5) * 35
+            humanities_score = interests.get("IT_Social", 0.5) * 40 + interests.get("IT_Artistic", 0.5) * 35
+
+            scores_map = {
+                "Science":    round(science_score),
+                "Commerce":   round(commerce_score),
+                "Humanities": round(humanities_score),
             }
-            tot_score = sum(result.stream_scores.values()) or 1
-            result.stream_scores = {k: min(99, max(10, int(v * 100 / tot_score))) for k, v in result.stream_scores.items()}
-            
-            details = stream_rec.get("stream_details", {})
-            result.final_analysis = details.get("justification")
-            result.stream_pros = details.get("subjects", [])
-            result.stream_cons = details.get("skills", [])
-            
+            total = sum(scores_map.values()) or 1
+            normalized = {k: min(99, max(10, int(v * 100 / total))) for k, v in scores_map.items()}
+            winner = max(normalized, key=normalized.get)
+
+            stream_details = {
+                "Science": {
+                    "justification": "Your strong Investigative and Realistic traits suggest you enjoy solving problems, understanding how things work, and analytical thinking — perfect for Science stream.",
+                    "subjects": ["Physics", "Chemistry", "Mathematics", "Biology / Computer Science"],
+                    "skills": ["Analytical Reasoning", "Problem Solving", "Technical Aptitude"],
+                },
+                "Commerce": {
+                    "justification": "Your high Conventional and Enterprising scores show you are goal-oriented, organized, and business-minded — Commerce will be your strongest path.",
+                    "subjects": ["Accountancy", "Business Studies", "Economics", "Applied Math"],
+                    "skills": ["Numerical Proficiency", "Strategic Planning", "Organizational Efficiency"],
+                },
+                "Humanities": {
+                    "justification": "Your Social and Artistic traits indicate deep interest in human behavior, culture, and creative expression — Humanities will let you thrive.",
+                    "subjects": ["Psychology", "Sociology", "Political Science", "History / Literature"],
+                    "skills": ["Empathetic Communication", "Critical Theory", "Creative Expression"],
+                },
+            }
+
+            stream_rec = {"recommended_stream": winner, "stream_details": stream_details[winner]}
+
+            result.recommended_stream = winner
+            result.stream_scores      = normalized
+            result.final_analysis     = stream_details[winner]["justification"]
+            result.stream_pros        = stream_details[winner]["subjects"]
+            result.stream_cons        = stream_details[winner]["skills"]
         else:
-            result.recommended_stream = None
-            result.stream_scores = None
-            result.final_analysis = riasec.get("narrative_summary")
-            result.stream_pros = []
-            result.stream_cons = []
-            
-        # Standardize report structure
-        report = {
-            "student_type": student_type,
-            "phase_1_summary": telemetry_metrics,
-            "phase_4_coordinates": identity,
-            "riasec_analysis": riasec,
-            "stream_recommendation": stream_rec,
-            "final_recommendations": final_matches.get("refined_matches", [])
-        }
-        
-        result.assessment_report = report
-        result.confidence = telemetry_metrics.get("consistency_index", 0.88)
-        
-        # Populate key columns for dashboard/counselor integrations
-        result.personality = riasec.get("dominant_trait", "Realistic")
-        result.goal_status = "Assessment compiled."
-        result.reasoning = riasec.get("narrative_summary", "")
-        
-        if student_type == "12th":
+            result.recommended_stream = dashboard.get("dominant_riasec", "")
+            result.stream_scores      = None
+            result.final_analysis     = f"Based on your profile, your dominant trait is {dashboard.get('dominant_riasec', 'Investigative')}. Your top career matches were identified using vector similarity across 1000+ real occupations."
             result.stream_pros = [
-                {"title": r["career"], "reason": r["pivot_notes"], "status": r["feasibility_status"], "confidence": r["confidence_score"]}
-                for r in final_matches.get("refined_matches", [])
+                {
+                    "title":      c["title"],
+                    "reason":     f"Match: {c['match_percent']}% based on your interests, behavior, and abilities.",
+                    "status":     "Optimal Fit",
+                    "confidence": c["match_score"],
+                }
+                for c in top_careers[:3]
             ]
-            
+            result.stream_cons = []
+
+        # ── STEP 7: Final report save karo ──────────────────────────────────────
+        report = {
+            "student_type":          student_type,
+            "pipeline_version":      "v2_vector_real_data",
+            "top_careers":           top_careers,
+            "dashboard":             dashboard,
+            "stream_recommendation": stream_rec,
+            "personality_archetype": dashboard.get("personality_archetype", ""),
+            "final_recommendations": [
+                {
+                    "career":             c["title"],
+                    "confidence_score":   c["match_score"],
+                    "feasibility_status": "Optimal Fit",
+                    "pivot_notes":        f"{c['match_percent']}% match based on your interests, behavior, and abilities.",
+                }
+                for c in top_careers[:3]
+            ],
+        }
+
+        result.assessment_report = report
+        result.confidence  = min(0.98, max(0.82, top_careers[0]["match_score"] if top_careers else 0.88))
+        result.personality = dashboard.get("dominant_riasec", "Realistic")
+        result.goal_status = "Assessment compiled via vector pipeline."
+        result.reasoning   = result.final_analysis or ""
+
         await db.commit()
         sync_assessment_to_appwrite(user.id, result)
         return {"status": "success", "redirect": "/assessment/result"}
-        
+
     except Exception as e:
-        print(f"Compilation error: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"Pipeline compilation error: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to compile report: {str(e)}")
-
+    
 @app.get("/assessment/result", response_class=HTMLResponse)
 async def assessment_result(request: Request, db: AsyncSession = Depends(get_db)):
     user = await get_current_user(request, db)
