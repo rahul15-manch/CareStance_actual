@@ -10,7 +10,7 @@ from functools import lru_cache
 from types import SimpleNamespace
 from . import email_utils
 from .appwrite_client import databases, account, storage, DB_ID, COLLECTIONS
-from .appwrite_helper import get_user_by_id, get_user_by_email, update_assessment_simulation
+from .appwrite_helper import get_user_by_id, get_user_by_email, update_assessment_simulation, sync_assessment_to_appwrite
 from dotenv import load_dotenv
 from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
@@ -100,7 +100,7 @@ from .utils.cache_utils import user_cache
 
 async def generate_content_with_fallback(prompt):
     """
-    Attempts to generate content using Gemini (Async) with high-tier fallback to Groq.
+    Attempts to generate content using Groq primarily, with fallback to Gemini.
     Uses Redis caching to avoid repetitive API calls.
     """
     # Check Cache
@@ -110,49 +110,71 @@ async def generate_content_with_fallback(prompt):
         return cached_response
 
     print("AI CACHE MISS")
-    try:
-        # Using 1.5 Flash latest for stability
-        model = get_gemini_model("gemini-1.5-flash-latest")
-        response = await model.generate_content_async(prompt)
-        text = response.text
-    except Exception as e:
-        print(f"DEBUG: Gemini API Error Type: {type(e)}")
-        print(f"Gemini Error (Switching to Groq): {e}")
-        gclient = get_groq_client()
-        if not gclient:
-            raise e
-
+    
+    # Try Groq first as requested
+    gclient = get_groq_client()
+    text = None
+    groq_err = None
+    if gclient:
         try:
-            # Fallback to high-reasoning Llama model
             chat_completion = await gclient.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model="llama-3.3-70b-versatile",
             )
             text = chat_completion.choices[0].message.content
-        except Exception as groq_e:
-            raise Exception(f"Dual API Failure. Gemini: {e}, Groq: {groq_e}")
+        except Exception as e:
+            groq_err = e
+            print(f"Groq Error (Switching to Gemini): {e}")
+    else:
+        print("Groq client not available. Falling back to Gemini.")
 
-    # Enhanced JSON Extraction Logic
+    if not text:
+        # Fallback to Gemini
+        try:
+            model = get_gemini_model("gemini-2.5-flash")
+            response = await model.generate_content_async(prompt)
+            text = response.text
+        except Exception as gemini_e:
+            raise Exception(f"Dual API Failure. Groq: {groq_err}, Gemini: {gemini_e}")
+
+    # --- Robust Multi-Layer JSON Repair ---
+    # Layer 1: Try json_repair (handles most LLM malformed JSON automatically)
     try:
-        # Remove potential markdown wrappers
-        text = re.sub(r'```json\s*|\s*```', '', text).strip()
-        # Find the first { and the last }
-        start_idx = text.find('{')
-        end_idx = text.rfind('}')
+        from json_repair import repair_json
+        # Strip markdown fences first
+        cleaned = re.sub(r'```json\s*|\s*```', '', text).strip()
+        # Extract the outermost JSON object
+        start_idx = cleaned.find('{')
+        end_idx = cleaned.rfind('}')
         if start_idx != -1 and end_idx != -1:
-            text = text[start_idx:end_idx + 1]
-        
-        # Clean trailing commas before closing braces/brackets
-        text = re.sub(r",\s*([\]}])", r"\1", text)
-        
-        # Save to Cache
-        ai_cache.set(prompt, text)
-        
-        return text
+            cleaned = cleaned[start_idx:end_idx + 1]
+        repaired = repair_json(cleaned, return_objects=False)
+        # Validate it round-trips as valid JSON
+        json.loads(repaired)
+        ai_cache.set(prompt, repaired)
+        return repaired
+    except Exception as repair_err:
+        print(f"json_repair failed, falling back to regex cleanup: {repair_err}")
+
+    # Layer 2: Regex-based cleanup (trailing commas, whitespace issues)
+    try:
+        cleaned = re.sub(r'```json\s*|\s*```', '', text).strip()
+        start_idx = cleaned.find('{')
+        end_idx = cleaned.rfind('}')
+        if start_idx != -1 and end_idx != -1:
+            cleaned = cleaned[start_idx:end_idx + 1]
+        # Remove trailing commas before } or ]
+        cleaned = re.sub(r",\s*([\]}])", r"\1", cleaned)
+        # Validate
+        json.loads(cleaned)
+        ai_cache.set(prompt, cleaned)
+        return cleaned
     except Exception:
-        # Still cache raw text if extraction fails partially
-        ai_cache.set(prompt, text)
-        return text
+        pass
+
+    # Layer 3: Return raw text as last resort (let caller handle it)
+    ai_cache.set(prompt, text)
+    return text
 
 async def check_content_moderation(text_content: str):
     """
@@ -634,6 +656,15 @@ async def ads_txt():
         return FileResponse(ads_path)
     return Response(content="File not found", status_code=404)
 
+@app.get("/BingSiteAuth.xml")
+async def bing_site_auth():
+    # Bing verification file in the project root
+    bing_path = os.path.join(ROOT_DIR, "BingSiteAuth.xml")
+    if os.path.exists(bing_path):
+        from fastapi.responses import FileResponse
+        return FileResponse(bing_path)
+    return Response(content="File not found", status_code=404)
+
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request, db: AsyncSession = Depends(get_db)):
     user = await get_current_user(request, db)
@@ -677,22 +708,26 @@ async def articles_page(request: Request, db: AsyncSession = Depends(get_db)):
         return HTMLResponse(content=f"Template Error: {e}<br><pre>{traceback.format_exc()}</pre>", status_code=500)
 
 @app.get("/robots.txt")
-async def robots_txt():
-    content = "User-agent: *\nAllow: /\nSitemap: https://carestance.me/sitemap.xml"
+async def robots_txt(request: Request):
+    host = request.url.hostname or "carestance.in"
+    content = f"User-agent: *\nAllow: /\nSitemap: https://{host}/sitemap.xml"
     return Response(content=content, media_type="text/plain")
 
 @app.get("/sitemap.xml")
-async def sitemap_xml():
+async def sitemap_xml(request: Request):
     # Simple static sitemap for now
-    content = """<?xml version="1.0" encoding="UTF-8"?>
+    host = request.url.hostname or "carestance.in"
+    scheme = request.url.scheme or "https"
+    base_url = f"{scheme}://{host}"
+    content = f"""<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://carestance.me/</loc><priority>1.0</priority></url>
-  <url><loc>https://carestance.me/signup</loc><priority>0.8</priority></url>
-  <url><loc>https://carestance.me/login</loc><priority>0.8</priority></url>
-  <url><loc>https://carestance.me/founders</loc><priority>0.7</priority></url>
-  <url><loc>https://carestance.me/articles</loc><priority>0.9</priority></url>
-  <url><loc>https://carestance.me/privacy</loc><priority>0.5</priority></url>
-  <url><loc>https://carestance.me/terms</loc><priority>0.5</priority></url>
+  <url><loc>{base_url}/</loc><priority>1.0</priority></url>
+  <url><loc>{base_url}/signup</loc><priority>0.8</priority></url>
+  <url><loc>{base_url}/login</loc><priority>0.8</priority></url>
+  <url><loc>{base_url}/founders</loc><priority>0.7</priority></url>
+  <url><loc>{base_url}/articles</loc><priority>0.9</priority></url>
+  <url><loc>{base_url}/privacy</loc><priority>0.5</priority></url>
+  <url><loc>{base_url}/terms</loc><priority>0.5</priority></url>
 </urlset>"""
     return Response(content=content, media_type="application/xml")
 
@@ -1018,9 +1053,9 @@ async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
             token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
         except Exception as e:
             import traceback
-            print(f"OAuth Token Exchange Error: {e}")
+            print(f"OAuth Token Exchange Fatal Error: {e}")
             traceback.print_exc()
-            error_msg = str(e).replace(" ", "+")[:200]
+            error_msg = f"Token+Exchange+Failed:+{str(e).replace(' ', '+')}"[:200]
             return RedirectResponse(url=f'/login?error={error_msg}', status_code=status.HTTP_302_FOUND)
         
         user_info = token.get('userinfo')
@@ -3458,27 +3493,40 @@ Present the scenario story first, then clearly list Option A and Option B on sep
         new_idx = current_idx
         done = False
 
-    # Call Gemini (with Groq fallback)
+    # Call Groq (with Gemini fallback)
     try:
-        if GEMINI_API_KEY:
+        gclient = get_groq_client()
+        if gclient:
             try:
-                model_ai = get_gemini_model("gemini-2.0-flash")
-                response = await model_ai.generate_content_async(prompt)
-                ai_text = response.text
-            except Exception:
-                model_ai = get_gemini_model("gemini-1.5-flash")
-                response = await model_ai.generate_content_async(prompt)
-                ai_text = response.text
-        else:
-            gclient = get_groq_client()
-            if gclient:
                 completion = await gclient.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="llama-3.3-70b-versatile",
                 )
                 ai_text = completion.choices[0].message.content
-            else:
-                ai_text = f"[Demo Mode] {scenario_text}"
+            except Exception as groq_err:
+                print(f"Groq error: {groq_err}. Falling back to Gemini.")
+                if GEMINI_API_KEY:
+                    try:
+                        model_ai = get_gemini_model("gemini-2.0-flash")
+                        response = await model_ai.generate_content_async(prompt)
+                        ai_text = response.text
+                    except Exception:
+                        model_ai = get_gemini_model("gemini-2.5-flash")
+                        response = await model_ai.generate_content_async(prompt)
+                        ai_text = response.text
+                else:
+                    raise groq_err
+        elif GEMINI_API_KEY:
+            try:
+                model_ai = get_gemini_model("gemini-2.0-flash")
+                response = await model_ai.generate_content_async(prompt)
+                ai_text = response.text
+            except Exception:
+                model_ai = get_gemini_model("gemini-2.5-flash")
+                response = await model_ai.generate_content_async(prompt)
+                ai_text = response.text
+        else:
+            ai_text = f"[Demo Mode] {scenario_text}"
     except Exception as e:
         ai_text = f"I'm having a moment of reflection. ({str(e)}) Please try again."
 
@@ -4431,27 +4479,40 @@ Welcome the student warmly (1 sentence), then present this first question:
         new_idx = current_idx
         done = False
 
-    # Call Gemini with Groq fallback
+    # Call Groq with Gemini fallback
     try:
-        if GEMINI_API_KEY:
+        gclient = get_groq_client()
+        if gclient:
             try:
-                model_ai = get_gemini_model("gemini-2.0-flash")
-                response = await model_ai.generate_content_async(prompt)
-                ai_text = response.text
-            except Exception:
-                model_ai = get_gemini_model("gemini-1.5-flash")
-                response = await model_ai.generate_content_async(prompt)
-                ai_text = response.text
-        else:
-            gclient = get_groq_client()
-            if gclient:
                 completion = await gclient.chat.completions.create(
                     messages=[{"role": "user", "content": prompt}],
                     model="llama-3.3-70b-versatile",
                 )
                 ai_text = completion.choices[0].message.content
-            else:
-                ai_text = f"[Demo Mode] {current_q_text}"
+            except Exception as groq_err:
+                print(f"Groq error: {groq_err}. Falling back to Gemini.")
+                if GEMINI_API_KEY:
+                    try:
+                        model_ai = get_gemini_model("gemini-2.0-flash")
+                        response = await model_ai.generate_content_async(prompt)
+                        ai_text = response.text
+                    except Exception:
+                        model_ai = get_gemini_model("gemini-2.5-flash")
+                        response = await model_ai.generate_content_async(prompt)
+                        ai_text = response.text
+                else:
+                    raise groq_err
+        elif GEMINI_API_KEY:
+            try:
+                model_ai = get_gemini_model("gemini-2.0-flash")
+                response = await model_ai.generate_content_async(prompt)
+                ai_text = response.text
+            except Exception:
+                model_ai = get_gemini_model("gemini-2.5-flash")
+                response = await model_ai.generate_content_async(prompt)
+                ai_text = response.text
+        else:
+            ai_text = f"[Demo Mode] {current_q_text}"
     except Exception as e:
         ai_text = f"I seem to be in deep thought right now. ({str(e)}) Please try again."
 
@@ -4634,11 +4695,41 @@ Response (Concise, Markdown formatted):
         from .database import AsyncSessionLocal
         async with AsyncSessionLocal() as local_db:
             try:
-                # TRY GEMINI FIRST
-                if GEMINI_API_KEY:
+                # TRY GROQ FIRST
+                gclient = get_groq_client()
+                if gclient:
+                    try:
+                        print(f"AI Chat for User {user_id}: Trying Groq...")
+                        stream = await gclient.chat.completions.create(
+                            messages=[{"role": "user", "content": prompt}],
+                            model="llama-3.3-70b-versatile",
+                            stream=True,
+                        )
+                        async for chunk in stream:
+                            if chunk.choices[0].delta.content:
+                                text_chunk = chunk.choices[0].delta.content
+                                full_response_text += text_chunk
+                                yield text_chunk
+                    except Exception as groq_e:
+                        print(f"Chatbot Groq Error: {groq_e}. Trying Gemini fallback.")
+                        if GEMINI_API_KEY:
+                            try:
+                                model = get_gemini_model("gemini-2.5-flash")
+                                response = await model.generate_content_async(prompt, stream=True)
+                                async for chunk in response:
+                                    if chunk.text:
+                                        text_chunk = chunk.text
+                                        full_response_text += text_chunk
+                                        yield text_chunk
+                            except Exception as gemini_e:
+                                print(f"Chatbot Gemini Error: {gemini_e}")
+                                yield f"I'm sorry, both AI services are currently unavailable. (Groq: {str(groq_e)}, Gemini: {str(gemini_e)})"
+                        else:
+                            yield f"AI Service error: {str(groq_e)}"
+                elif GEMINI_API_KEY:
                     try:
                         print(f"AI Chat for User {user_id}: Trying Gemini...")
-                        model = get_gemini_model("gemini-1.5-flash")
+                        model = get_gemini_model("gemini-2.5-flash")
                         response = await model.generate_content_async(prompt, stream=True)
                         async for chunk in response:
                             if chunk.text:
@@ -4646,29 +4737,10 @@ Response (Concise, Markdown formatted):
                                 full_response_text += text_chunk
                                 yield text_chunk
                     except Exception as gemini_e:
-                        print(f"Chatbot Gemini Error: {gemini_e}. Trying Groq fallback.")
-                        # FALLBACK TO GROQ
-                        gclient = get_groq_client()
-                        if gclient:
-                            try:
-                                stream = await gclient.chat.completions.create(
-                                    messages=[{"role": "user", "content": prompt}],
-                                    model="llama-3.3-70b-versatile",
-                                    stream=True,
-                                )
-                                async for chunk in stream:
-                                    if chunk.choices[0].delta.content:
-                                        text_chunk = chunk.choices[0].delta.content
-                                        full_response_text += text_chunk
-                                        yield text_chunk
-                            except Exception as groq_e:
-                                print(f"Chatbot Groq Error: {groq_e}")
-                                yield f"I'm sorry, both AI services are currently unavailable. (Gemini: {str(gemini_e)}, Groq: {str(groq_e)})"
-                        else:
-                            yield f"AI Service error: {str(gemini_e)}"
+                        yield f"AI Service error: {str(gemini_e)}"
                 else:
                      # Demo Mode Simulation
-                     fake_response = "I'm in demo mode (No API Key). Based on your profile, I'd suggest exploring based on your interests! (Please set GEMINI_API_KEY to get real AI responses)"
+                     fake_response = "I'm in demo mode (No API Key). Based on your profile, I'd suggest exploring based on your interests! (Please set GEMINI_API_KEY or GROQ_API_KEY to get real AI responses)"
                      for word in fake_response.split():
                          text_chunk = word + " "
                          full_response_text += text_chunk
@@ -4790,84 +4862,327 @@ async def generate_career_path(request: Request, path_req: CareerPathRequest, db
     final_insight = result.final_analysis or ""
 
     prompt = f"""
-    You are an expert 'Student Success Architect' and Career Mentor.
-    
-    Student Profile:
-    - Current Stage: {current_class} (Handle this as the starting point)
-    - Archetype: {archetype} (Influences the learning style and interaction)
-    - Personality: {personality} (Determines the type of environment suggested)
-    - Goal Career: {path_req.career_title}
-    - Deep Analysis Context: {phase3_insight[:400]}
-    - Recommendation Engine Notes: {final_insight[:400]}
+You are CareStance's Elite Career Architect, Industry Mentor, and Student Success Strategist.
 
-    TASK:
-    Create a "Zero-to-Hero" Career Roadmap. The journey MUST start from absolute BASICS (Phase 1-2) and evolve into PROFESSIONAL/PRO level (Phase 5-6).
-    
-    Tone: 
-    - Student-friendly, encouraging, and visionary. 
-    - Use "We" and "You" to make it feel like a partnership. 
-    - Avoid dry corporate jargon where simple, inspiring words work better.
+Student Profile:
+- Current Stage: {current_class}
+- Archetype: {archetype}
+- Personality: {personality}
+- Goal Career: {path_req.career_title}
+- Deep Analysis Context: {phase3_insight[:600]}
+- Recommendation Engine Notes: {final_insight[:600]}
 
-    Provide exactly 6 Milestone Steps:
-    - Step 1-2: Foundations (The "Basics" - Learning, early exploration, building mindset). 
-    - Step 3-4: Intermediate (Core skill building, first real projects, networking).
-    - Step 5-6: Professional (Specialization, portfolio polishing, high-level internships, job readiness).
+TASK:
 
-    For EACH step, include:
-    1. Action Name (Catchy & motivating)
-    2. Description (Explain WHY this step matters for their specific profile - 3 sentences)
-    3. Skills to acquire (3 specific skills relevant to {path_req.career_title})
-    4. Resources (MUST provide 2 specific, HIGHLY ACCURATE resources. EACH resource MUST be an object with a "name" and a functional "url". PRIORITIZE DIRECT LINKS to the **most viewed/popular** YouTube videos or verified courses (Coursera, Udemy, Official Docs). Use HIGHLY SPECIFIC search queries ONLY as a secondary fallback if a direct video link is absolutely unavailable for the specific topic. Plain text without URLs is FORBIDDEN.)
-    5. Student Project (1 "Masterpiece" project. MUST include: A catchy Name, a precise Description, specific **Tools to use** (libraries/software), and key **Parameters/Challenges** to think about for a professional finish. Format it clearly.)
-    6. Detailed Task (A precise, actionable, and detailed task for the student to complete for this specific step)
-    7. Timeline (Realistic estimate, e.g., "Months 1-3")
+Create a highly personalized "Zero-to-Hero Career Journey" for this student.
 
-    Additional Career Insights:
-    - Internships: 2 specific "Dream Internships" or types of roles to hunt for.
-    - Career Outlook:
-        - Salary Journey: Entry-level to Senior potential (in INR or USD as appropriate).
-        - Top 3 Companies: Famous places that hire this role.
-        - Hiring Trends: A detailed paragraph on current hiring demand, specific roles being filled, and what recruiters look for in {path_req.career_title}.
-        - Future Scope: Why this career is a "Safe Bet" or "High Growth" path for the next decade.
+IMPORTANT:
 
-    OUTPUT FORMAT (VALID JSON ONLY):
+DO NOT generate a fixed number of roadmap steps.
+
+First analyze:
+
+1. Complexity of {path_req.career_title}
+2. Required education level
+3. Skill depth required
+4. Certification requirements
+5. Industry expectations
+6. Portfolio requirements
+7. Experience requirements
+8. Time required to become job-ready
+
+Based on this analysis dynamically determine the roadmap size.
+
+Roadmap Guidelines:
+
+- Simple Careers → 6-8 milestones
+- Moderate Careers → 8-10 milestones
+- Advanced Careers → 10-14 milestones
+- Highly Specialized Careers → 14-20 milestones
+
+Examples:
+
+Data Analyst → 8 Milestones
+Software Engineer → 10 Milestones
+AI/ML Engineer → 12 Milestones
+Cybersecurity Engineer → 12 Milestones
+Doctor → 18 Milestones
+Research Scientist → 16 Milestones
+Lawyer → 15 Milestones
+Chartered Accountant → 14 Milestones
+
+The roadmap must feel like a complete progression journey.
+
+Every roadmap should include these phases:
+
+Phase 1:
+Discovery & Career Awareness
+
+Phase 2:
+Foundations & Mindset Building
+
+Phase 3:
+Core Skills Development
+
+Phase 4:
+Applied Learning
+
+Phase 5:
+Projects & Portfolio Building
+
+Phase 6:
+Industry Exposure
+
+Phase 7:
+Professional Readiness
+
+Phase 8:
+Career Launch
+
+Add additional phases if the career requires deeper specialization.
+
+Tone:
+
+- Student-friendly
+- Inspirational
+- Future-focused
+- Motivational
+- Personalized
+
+Use "You" and "We".
+
+Avoid generic career advice.
+
+For EACH roadmap milestone include:
+
+1. Action Name
+   - Catchy
+   - Motivational
+   - Career-specific
+
+2. Stage
+   Example:
+   Foundations
+   Core Skills
+   Portfolio Building
+   Career Launch
+
+3. Description
+   - 3-5 personalized sentences
+   - Explain WHY this milestone matters
+   - Connect it to student's personality and archetype
+   - Explain how it moves them closer to becoming a {path_req.career_title}
+
+4. Skills To Acquire
+   - 4 to 6 highly relevant skills
+
+5. Resources
+
+MUST provide exactly 3 resources.
+
+Each resource MUST be:
+
+{{
+"name": "...",
+"url": "...",
+"type": "youtube/course/documentation/article",
+"difficulty": "Beginner/Intermediate/Advanced"
+}}
+
+Rules:
+
+- Prefer Official Documentation
+- Coursera
+- DeepLearning.AI
+- MIT OpenCourseWare
+- Stanford Online
+- Harvard Online
+- Google Learning
+- Microsoft Learn
+- IBM SkillsBuild
+- Udemy Best Sellers
+
+Never generate fake URLs.
+
+6. Student Project
+
+Must contain:
+
+{{
+"name": "...",
+"description": "...",
+"tools": ["...", "..."],
+"parameters": ["...", "..."],
+"difficulty": "...",
+"portfolio_value": "..."
+}}
+
+Project Requirements:
+
+- Step 1 projects should be beginner-friendly
+- Difficulty must progressively increase
+- Final projects should be industry-level
+- Projects should be portfolio-worthy
+
+7. Detailed Task
+
+Provide a precise action plan.
+
+Bad Example:
+"Learn Python"
+
+Good Example:
+"Complete Python fundamentals including loops, functions, OOP, exception handling and build three mini projects."
+
+8. Timeline
+
+Examples:
+
+"Weeks 1-2"
+"Months 1-3"
+"Months 4-6"
+
+Provide realistic estimates.
+
+9. Gamification
+
+Provide:
+
+{{
+"xp_points": 100,
+"achievement_badge": "...",
+"unlocks": "..."
+}}
+
+10. CareerBuddy Prompt
+
+Generate a contextual AI mentor prompt:
+
+Example:
+
+"Review my first machine learning project and suggest improvements."
+
+Additional Career Insights:
+
+Internships:
+
+Provide 3 dream internships or entry-level roles.
+
+Format:
+
+{{
+"title": "...",
+"why_it_matters": "..."
+}}
+
+Career Outlook:
+
+Provide:
+
+- Salary Journey
+- Entry Level Salary
+- Mid Level Salary
+- Senior Level Salary
+- Leadership Level Salary
+- Top 5 Companies
+- Hiring Trends
+- Future Scope
+- Automation Risk
+- Global Opportunities
+
+Hiring Trends:
+
+Provide a detailed paragraph explaining:
+
+- Current demand
+- Recruiter expectations
+- Most hired roles
+- Important certifications
+- Emerging skills
+
+Future Scope:
+
+Explain why this field will or will not grow over the next decade.
+
+Success Metrics:
+
+Generate measurable success indicators.
+
+Examples:
+
+- Complete 5 projects
+- Earn AWS Certification
+- Reach 500 GitHub Contributions
+- Publish Portfolio Website
+
+OUTPUT FORMAT (VALID JSON ONLY):
+
+{{
+  "career_title": "{path_req.career_title}",
+  "career_complexity": "...",
+  "estimated_total_duration": "...",
+  "total_milestones": 0,
+
+  "path_steps": [
     {{
-      "career_title": "{path_req.career_title}",
-      "path_steps": [
-        {{ 
-          "step": 1, 
-          "action": "...", 
-          "description": "...", 
-          "skills": ["...", "...", "..."],
-          "courses": [
-            {{ "name": "...", "url": "..." }},
-            {{ "name": "...", "url": "..." }}
-          ],
-          "project": {{
-            "name": "Catchy Project Name",
-            "description": "Short, inspiring project description...",
-            "tools": ["Tool 1", "Tool 2"],
-            "parameters": ["Key Factor 1", "Key Factor 2"]
-          }},
-          "detailed_task": "A precise, step-by-step action for this specific goal...",
-          "timeline": "...",
-          "completed": false
-        }},
-        ... (Total 6)
+      "step": 1,
+      "stage": "...",
+      "action": "...",
+      "description": "...",
+      "skills": ["...", "..."],
+      "courses": [
+        {{
+          "name": "...",
+          "url": "...",
+          "type": "...",
+          "difficulty": "..."
+        }}
       ],
-      "internships": ["...", "..."],
-      "career_outlook": {{
-        "salary_range": "...",
-        "top_companies": ["...", "...", "..."],
-        "hiring_trends": "Detailed hiring trends and recruiter expectations...",
-        "future_scope": "..."
+      "project": {{
+        "name": "...",
+        "description": "...",
+        "tools": [],
+        "parameters": [],
+        "difficulty": "...",
+        "portfolio_value": "..."
       }},
-      "reminders": [
-        {{ "milestone": "...", "reminder": "..." }},
-        ...
-      ]
+      "detailed_task": "...",
+      "timeline": "...",
+      "xp_points": 100,
+      "achievement_badge": "...",
+      "unlocks": "...",
+      "careerbuddy_prompt": "...",
+      "completed": false
     }}
-    """
+  ],
+
+  "internships": [],
+
+  "career_outlook": {{
+    "salary_journey": {{
+      "entry_level": "...",
+      "mid_level": "...",
+      "senior_level": "...",
+      "leadership_level": "..."
+    }},
+    "top_companies": [],
+    "hiring_trends": "...",
+    "future_scope": "...",
+    "automation_risk": "...",
+    "global_opportunities": "..."
+  }},
+
+  "success_metrics": [],
+
+  "motivational_message": "..."
+}}
+
+Return ONLY VALID JSON.
+No markdown.
+No explanations.
+No text outside JSON.
+"""
+
 
     try:
         clean_text = await generate_content_with_fallback(prompt)
@@ -6007,7 +6322,7 @@ async def terms_page(request: Request, db: AsyncSession = Depends(get_db)):
 async def debug_migrate(request: Request, db: AsyncSession = Depends(get_db)):
     """Manually trigger migrations and return status."""
     try:
-        run_migrations()
+        await run_migrations()
         return {"status": "success", "message": "Migrations triggered. Check console/logs for details."}
     except Exception as e:
         import traceback
