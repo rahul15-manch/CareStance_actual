@@ -101,9 +101,25 @@ def run_phase4(student_profile: dict, phase4_data: dict = None) -> dict:
     task = get_phase4_task(archetype, student_type)
     phase4_json = build_phase4_json(task, vector)
 
+    if isinstance(phase4_data, dict):
+        submitted_nodes = phase4_data.get("nodes")
+        submitted_connections = phase4_data.get("connections")
+        submitted_task = phase4_data.get("task")
+
+        if isinstance(submitted_task, dict) and submitted_task:
+            task = submitted_task
+
+        if isinstance(submitted_nodes, list):
+            phase4_json["nodes"] = submitted_nodes
+
+        if isinstance(submitted_connections, list):
+            phase4_json["connections"] = submitted_connections
+
     student_profile["phase4_task"] = task
     student_profile["phase4_json"] = phase4_json
-    student_profile["phase4_creativity_score"] = 0.7  # Default
+    node_count = len(phase4_json.get("nodes", []))
+    connection_count = len(phase4_json.get("connections", []))
+    student_profile["phase4_creativity_score"] = min(1.0, round(0.45 + (node_count * 0.03) + (connection_count * 0.05), 4))
     return student_profile
 
 
@@ -187,6 +203,7 @@ def run_full_pipeline(
     return {
         "student_profile": profile,
         "top_careers": top_careers,
+        "phase4_task": profile.get("phase4_task", {}),
         "phase4_json": profile.get("phase4_json", {}),
         "dashboard": {
             "career_match_score": best_match,
