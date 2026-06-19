@@ -17,3 +17,5 @@ redis
 appwrite==15.3.0
 aiosqlite
 hypercorn
+pandas
+numpy

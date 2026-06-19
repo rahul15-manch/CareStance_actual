@@ -1156,7 +1156,7 @@ async def assessment_start(
     stream: Optional[str] = None,
     db: AsyncSession = Depends(get_db)
 ):
-    """Phase 0 / Start: Reset and initialize assessment"""
+    """Start/reset the assessment at display Phase 1."""
     user = await get_current_user(request, db)
     if not user:
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
@@ -1167,8 +1167,8 @@ async def assessment_start(
         # Check/Create Result
         result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
         
-        # Grade 12 starts at current_phase=0 (Intake Chat), Grade 10 starts at current_phase=1 (Swipe)
-        start_phase = 0 if student_type == "12th" else 1
+        # Both tracks start with basic information, then continue into vector-based phases.
+        start_phase = 0
         
         if result:
             # Clear all previous progress fields
@@ -1234,8 +1234,7 @@ async def assessment_reset(request: Request, db: AsyncSession = Depends(get_db))
     
     result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
     if result:
-        start_phase = 0 if result.student_type == "12th" else 1
-        result.current_phase = start_phase
+        result.current_phase = 0
         result.intake_turn = 1
         result.telemetry_logs = None
         result.chat_messages = None
@@ -1288,11 +1287,16 @@ async def assessment_api_state(request: Request, db: AsyncSession = Depends(get_
     result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
     if not result:
         return {"status": "no_assessment"}
+
+    display_phase_map = {0: 1, 1: 2, 2: 3, 3: 3, 4: 4, 5: 5}
+    display_phase = display_phase_map.get(result.current_phase, 1)
         
     return {
         "status": "success",
         "student_type": result.student_type,
         "current_phase": result.current_phase,
+        "display_phase": display_phase,
+        "total_phases": 5,
         "intake_name": result.intake_name,
         "intake_grade": result.intake_grade,
         "intake_stream": result.intake_stream,
@@ -1307,8 +1311,8 @@ async def assessment_api_intake(request: Request, payload: dict, db: AsyncSessio
         raise HTTPException(status_code=401, detail="Unauthorized")
         
     result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
-    if not result or result.student_type != "12th":
-        raise HTTPException(status_code=404, detail="Assessment not found or invalid type")
+    if not result:
+        raise HTTPException(status_code=404, detail="Assessment not found")
         
     # Check if payload is from the new form submission
     if "name" in payload and "pursuing" in payload and "interests" in payload:
@@ -1334,7 +1338,7 @@ async def assessment_api_intake(request: Request, payload: dict, db: AsyncSessio
             raise HTTPException(status_code=400, detail="Invalid parent occupation")
             
         result.intake_name = name
-        result.intake_grade = 12
+        result.intake_grade = 10 if result.student_type == "10th" else 12
         result.intake_stream = pursuing
         result.raw_answers = {
             "name": name,
@@ -1360,7 +1364,7 @@ async def assessment_api_intake(request: Request, payload: dict, db: AsyncSessio
                 "normalization_confidence": 0.95
             }
         }
-        return {"status": "success", "content": "Metadata locked. Transitioning to Phase 1.", "is_complete": True, "payload": validation_payload}
+        return {"status": "success", "content": "Metadata locked. Transitioning to Phase 2.", "is_complete": True, "payload": validation_payload}
 
     # Fallback to legacy chat interface payload
     user_message = payload.get("message", "").strip()
@@ -1407,13 +1411,71 @@ async def assessment_api_intake(request: Request, payload: dict, db: AsyncSessio
                     "normalization_confidence": 0.95
                 }
             }
-            response_text = "Metadata locked. Transitioning to Phase 1."
+            response_text = "Metadata locked. Transitioning to Phase 2."
             result.current_phase = 1
             is_complete = True
 
     await db.commit()
     sync_assessment_to_appwrite(user.id, result)
     return {"status": "success", "content": response_text, "is_complete": is_complete, "payload": validation_payload}
+
+def _selected_interests_from_result(result) -> list:
+    raw = result.raw_answers or {}
+    interests = raw.get("interests") if isinstance(raw, dict) else None
+    if isinstance(interests, str):
+        parts = [p.strip() for p in re.split(r"[,/|]", interests) if p.strip()]
+        return parts or [interests.strip()]
+    if isinstance(interests, list) and interests:
+        return interests
+    return [result.intake_stream or "Science"]
+
+def _phase1_input_from_result(user, result) -> dict:
+    raw = result.raw_answers or {}
+    income = raw.get("parent_income") if isinstance(raw, dict) else None
+    parent_occupation = raw.get("parent_occupation") if isinstance(raw, dict) else None
+    return {
+        "mobile": user.contact_number or "0000000000",
+        "name": result.intake_name or user.full_name or "Student",
+        "grade": str(result.intake_grade or (10 if result.student_type == "10th" else 12)),
+        "current_course": result.intake_stream or "Science",
+        "selected_interests": _selected_interests_from_result(result),
+        "mother_occupation": parent_occupation or "Professional",
+        "father_occupation": parent_occupation or "Professional",
+        "family_income": str(income or "5_10lpa"),
+    }
+
+def _phase2_swipe_data(result) -> list:
+    return [
+        {
+            "card_id": s.get("card_id"),
+            "direction": s.get("direction"),
+            "dwell_ms": s.get("dwell_ms", 1000),
+            "reaction_ms": s.get("reaction_ms", 500),
+        }
+        for s in (result.telemetry_logs or [])
+    ]
+
+def _phase3_mcq_data(result) -> list:
+    return [
+        {
+            "question_id": p.get("question_id") or p.get("id"),
+            "answer": p.get("answer"),
+            "multiplier": p.get("multiplier"),
+        }
+        for p in (result.proxy_answers or [])
+    ]
+
+def _profile_until_phase2(user, result) -> dict:
+    from app.pipeline import run_phase1, run_phase2
+
+    profile = run_phase1(_phase1_input_from_result(user, result))
+    return run_phase2(profile, _phase2_swipe_data(result))
+
+def _profile_until_phase3(user, result) -> dict:
+    from app.pipeline import run_phase3
+
+    profile = _profile_until_phase2(user, result)
+    return run_phase3(profile, _phase3_mcq_data(result))
 
 @app.get("/assessment/api/questions")
 async def assessment_api_questions(request: Request, db: AsyncSession = Depends(get_db)):
@@ -1428,8 +1490,8 @@ async def assessment_api_questions(request: Request, db: AsyncSession = Depends(
     student_type = result.student_type or "10th"
     phase = result.current_phase or 0
     
-    if phase == 0 and student_type == "12th":
-        return {"message": "Hello! I'm Alex, your career mentor. Let's start with your name. What's your name?"}
+    if phase == 0:
+        return {"status": "intake_required"}
 
     elif phase == 1:
         # ── NAYA: Founder ke real cards (cards_10th.json / cards_12th.json) ──
@@ -1437,26 +1499,32 @@ async def assessment_api_questions(request: Request, db: AsyncSession = Depends(
         from app.pipeline.vector_utils import load_cards
         cards = load_cards(student_type)  # returns A001-A060 / C101-C160 with multipliers
         shuffled = list(cards)
-        random.seed(result.id or 42)
         random.shuffle(shuffled)
         return {"cards": shuffled[:10]}
 
     elif phase == 2:
-        return {"chat_messages": result.chat_messages or [], "chat_turn": result.chat_turn or 0}
+        result.current_phase = 3
+        await db.commit()
+        sync_assessment_to_appwrite(user.id, result)
+        return {"status": "chat_phase_removed", "next_phase": 3}
 
     elif phase == 3:
-        # ── NAYA: Founder ke real proxy MCQs (phase3_mcqs.json, P011-P048) ──
         import random
         from app.pipeline.vector_utils import load_json
         proxy_questions = load_json("phase3_mcqs.json")
-        shuffled_q = list(proxy_questions) if isinstance(proxy_questions, list) else []
-        random.seed((result.id or 42) + 1)
-        random.shuffle(shuffled_q)
-        return {"proxy_questions": shuffled_q[:8]}
+        questions = list(proxy_questions) if isinstance(proxy_questions, list) else []
+        random.shuffle(questions)
+        return {"proxy_questions": questions[:8]}
 
     elif phase == 4:
-        data = assessment_engine.load_grade_data(student_type)
-        return {"scenarios": data.get("scenarios", [])}
+        from app.pipeline import run_phase4
+        profile = _profile_until_phase3(user, result)
+        profile = run_phase4(profile)
+        return {
+            "phase4_task": profile.get("phase4_task", {}),
+            "phase4_json": profile.get("phase4_json", {}),
+            "archetype": profile.get("personality_archetype", ""),
+        }
     else:
         return {"status": "phase_not_applicable"}
       
@@ -1474,70 +1542,21 @@ async def assessment_api_swipe(request: Request, payload: dict, db: AsyncSession
     swipes = payload.get("swipes", [])
     result.telemetry_logs = swipes
     
-    # Standard 13-parameter calculations
-    metrics = assessment_engine.calculate_telemetry_metrics(swipes, result.student_type)
-    result.personality = json.dumps(metrics.get("latent_profile", {}))
-    result.confidence = metrics.get("consistency_index", 0.85)
+    profile = _profile_until_phase2(user, result)
+    vector = profile.get("vector", {})
+    result.personality = profile.get("personality_archetype", "")
+    result.phase_2_category = profile.get("personality_archetype", "")
+    result.confidence = round(sum(vector.values()) / max(len(vector), 1), 4)
     
-    result.current_phase = 2
+    result.current_phase = 3
     await db.commit()
     sync_assessment_to_appwrite(user.id, result)
     
-    return {"status": "success", "next_phase": 2}
+    return {"status": "success", "next_phase": 3}
 
 @app.post("/assessment/api/chat")
 async def assessment_api_chat(request: Request, payload: dict, db: AsyncSession = Depends(get_db)):
-    user = await get_current_user(request, db)
-    if not user:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-        
-    result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
-    if not result:
-        raise HTTPException(status_code=404, detail="Assessment not found")
-        
-    user_message = payload.get("message", "").strip()
-    chat_history = result.chat_messages or []
-    
-    if len(chat_history) == 0 and not user_message:
-        first_q = assessment_engine.get_alex_response(0, "")
-        chat_history.append({"role": "ai", "content": first_q})
-        result.chat_messages = chat_history
-        result.chat_turn = 0
-        await db.commit()
-        sync_assessment_to_appwrite(user.id, result)
-        return {"status": "success", "message": first_q, "chat_turn": 0, "phase_complete": False}
-        
-    chat_history.append({"role": "user", "content": user_message})
-    turn = result.chat_turn or 0
-    next_turn = turn + 1
-    
-    max_turns = 6
-    
-    if next_turn >= max_turns:
-        result.chat_messages = chat_history
-        result.chat_turn = next_turn
-        
-        # Extract RIASEC vector when complete
-        riasec = assessment_engine.extract_riasec_vector(chat_history)
-        result.personality = json.dumps(riasec)
-        result.current_phase = 3
-        await db.commit()
-        sync_assessment_to_appwrite(user.id, result)
-        return {
-            "status": "success",
-            "message": "That was great! Ready for the next phase?",
-            "chat_turn": next_turn,
-            "phase_complete": True
-        }
-    else:
-        next_q = assessment_engine.get_alex_response(next_turn, user_message)
-        chat_history.append({"role": "ai", "content": next_q})
-        result.chat_messages = chat_history
-        result.chat_turn = next_turn
-        await db.commit()
-        sync_assessment_to_appwrite(user.id, result)
-        
-        return {"status": "success", "message": next_q, "chat_turn": next_turn, "phase_complete": False}
+    raise HTTPException(status_code=410, detail="Assessment chat phase has been removed")
 
 @app.post("/assessment/api/proxy")
 async def assessment_api_proxy(request: Request, payload: dict, db: AsyncSession = Depends(get_db)):
@@ -1591,46 +1610,16 @@ async def assessment_api_compile(request: Request, db: AsyncSession = Depends(ge
         from app.pipeline import run_full_pipeline
 
         # ── STEP 1: Phase 1 input (abhi ke liye intake se jo mila wahi use kia) ──
-        phase1_input = {
-            "mobile": "0000000000",
-            "name": result.intake_name or user.full_name or "Student",
-            "grade": str(result.intake_grade or (10 if student_type == "10th" else 12)),
-            "current_course": result.intake_stream or "Science",
-            "selected_interests": ["Science"],
-            "mother_occupation": "Professional",
-            "father_occupation": "Professional",
-            "family_income": "5_10lpa",
-        }
+        phase1_input = _phase1_input_from_result(user, result)
 
         # ── STEP 2: Phase 2 swipes — REAL card IDs jo UI se aaye (A001, C101, etc.) ──
-        swipes = result.telemetry_logs or []
-        phase2_swipe_data = [
-            {
-                "card_id": s.get("card_id"),
-                "direction": s.get("direction"),
-                "dwell_ms": s.get("dwell_ms", 1000),
-            }
-            for s in swipes
-        ]
+        phase2_swipe_data = _phase2_swipe_data(result)
 
         # ── STEP 3: Phase 3 MCQ answers — REAL proxy question IDs (P011, etc.) ──
-        proxy_answers = result.proxy_answers or []
-        phase3_mcq_data = [
-            {
-                "question_id": p.get("question_id") or p.get("id"),
-                "answer": p.get("answer"),
-                "multiplier": p.get("multiplier"),
-            }
-            for p in proxy_answers
-        ]
+        phase3_mcq_data = _phase3_mcq_data(result)
 
         # ── STEP 4: Phase 4 placeholder (creativity score abhi default) ──
-        phase4_data = {
-            "objects_shown": [],
-            "relationships": [],
-            "time_taken_seconds": 180,
-            "total_objects": 10,
-        }
+        phase4_data = result.scenario_answers or {}
 
         # ── STEP 5: NAYA PIPELINE CHALAO (cosine similarity occupation matrix se) ──
         pipeline_result = run_full_pipeline(
@@ -1638,7 +1627,7 @@ async def assessment_api_compile(request: Request, db: AsyncSession = Depends(ge
             phase2_swipes=phase2_swipe_data,
             phase3_responses=phase3_mcq_data,
             phase4_data=phase4_data,
-            top_n=10,
+            top_n=3,
         )
 
         student_profile = pipeline_result["student_profile"]
@@ -1708,6 +1697,8 @@ async def assessment_api_compile(request: Request, db: AsyncSession = Depends(ge
             "pipeline_version":      "v2_vector_real_data",
             "top_careers":           top_careers,
             "dashboard":             dashboard,
+            "phase4_task":           pipeline_result.get("phase4_task", {}),
+            "phase4_workspace":      pipeline_result.get("phase4_json", {}),
             "stream_recommendation": stream_rec,
             "personality_archetype": dashboard.get("personality_archetype", ""),
             "final_recommendations": [

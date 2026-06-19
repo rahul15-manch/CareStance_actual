@@ -177,7 +177,7 @@
         box-shadow: 0 4px 12px rgba(13, 148, 136, 0.1);
     }
 
-    /* Fira Code Style for Console logs (Phase 0) */
+    /* Fira Code Style for Console logs */
     .console-bubble {
         font-family: 'Fira Code', 'Courier New', monospace;
         font-size: 0.85rem;
@@ -368,7 +368,9 @@
     let swipeLogs = [];
     let swipeCards = [];
     let activeSwipeIndex = 0;
-    
+    let activeScenarioIdx = 0;
+    const total = (activePhaseData.scenarios || []).length;
+    const sc = activePhaseData.scenarios[activeScenarioIdx];
     // Voice synthesizers
     let speechSynth = window.speechSynthesis;
     let activeUtterance = null;
@@ -412,9 +414,8 @@
 
     function updateHeader() {
         const isG12 = assessmentState.student_type === "12th";
-        // G12 has 6 phases (0 to 5), G10 has 5 phases (1 to 5)
-        const totalPhases = isG12 ? 6 : 5;
-        const currentLabelVal = isG12 ? (assessmentState.current_phase + 1) : assessmentState.current_phase;
+        const totalPhases = assessmentState.total_phases || 5;
+        const currentLabelVal = assessmentState.display_phase || 1;
         
         const gradeTitle = document.getElementById("grade-title");
         if (gradeTitle) {
@@ -449,7 +450,7 @@
             } else if (phase === 1) {
                 renderSwipePhase();
             } else if (phase === 2) {
-                renderChatPhase();
+                await refreshState();
             } else if (phase === 3) {
                 renderProxyPhase();
             } else if (phase === 4) {
@@ -473,15 +474,9 @@
         let text = "";
         const phase = assessmentState.current_phase;
         
-        if (phase === 0) {
-            const lastAI = document.querySelector(".chat-bubble.ai:last-child");
-            if (lastAI) text = lastAI.innerText;
-        } else if (phase === 1) {
+        if (phase === 1) {
             const activeCard = swipeCards[activeSwipeIndex];
             if (activeCard) text = activeCard.content || activeCard.text || "";
-        } else if (phase === 2) {
-            const lastAI = document.querySelector(".chat-bubble.ai:last-child");
-            if (lastAI) text = lastAI.innerText;
         } else {
             const pText = document.querySelector("#phase-body h2, #phase-body p");
             if (pText) text = pText.innerText;
@@ -498,7 +493,7 @@
         }
     }
 
-    // --- PHASE 0: CLINICAL CONVERSATIONAL INTAKE (G12 ONLY) ---
+    // --- PHASE 1: STUDENT INTAKE ---
     function renderIntakePhase() {
         const body = document.getElementById("phase-body");
         body.innerHTML = `
@@ -719,7 +714,7 @@
         }
     }
 
-    // --- PHASE 1: REFLEX PREFERENCE CARD SWIPES (BOTH) ---
+    // --- PHASE 2: REFLEX PREFERENCE CARD SWIPES (BOTH) ---
     function renderSwipePhase() {
         swipeCards = activePhaseData.cards || [];
         activeSwipeIndex = 0;
@@ -1066,24 +1061,16 @@
         }
     }
 
-    // --- PHASE 4: IDENTITY DILEMMA SCENARIOS (BOTH) ---
-    let scenarioAnswersLog = [];
-    let activeScenarioIdx = 0;
+    // --- PHASE 4: SEQUENCE PLANNER TASK (BOTH) ---
+    let phase4Items = [];
+    let phase4Connections = [];
+    let phase4NextId = 1;
+    let phase4DraggedTool = null;
 
     function renderScenariosPhase() {
-        scenarioAnswersLog = [];
-        activeScenarioIdx = 0;
-        showScenarioQuestion();
-    }
-
-    function showScenarioQuestion() {
-        const total = activePhaseData.scenarios.length;
-        if (activeScenarioIdx >= total) {
-            submitScenarioAnswers();
-            return;
-        }
-
-        const sc = activePhaseData.scenarios[activeScenarioIdx];
+        const task = activePhaseData.phase4_task || {};
+        const phase4Json = activePhaseData.phase4_json || {};
+        const tools = task.tools_required || (phase4Json.nodes || []).map(n => n.label) || [];
         const body = document.getElementById("phase-body");
         body.innerHTML = `
             <div class="text-center mb-6 stagger-in">
@@ -1105,24 +1092,161 @@
                 <span class="text-xs font-semibold text-slate-500">${activeScenarioIdx} / ${total} Dilemmas Resolved</span>
             </div>
         `;
+
+        wirePhase4Planner();
+        seedPhase4Nodes(phase4Json.nodes || []);
+        renderPhase4Canvas();
     }
 
-    function handleScenarioSelection(scId, tag) {
-        scenarioAnswersLog.push({
-            scenario_id: scId,
-            selected_tag: tag
+    function wirePhase4Planner() {
+        document.querySelectorAll(".phase4-tool").forEach(el => {
+            el.addEventListener("dragstart", e => {
+                phase4DraggedTool = decodeURIComponent(el.dataset.tool || "");
+                e.dataTransfer.effectAllowed = "copy";
+            });
         });
-        activeScenarioIdx++;
-        showScenarioQuestion();
+
+        const canvas = document.getElementById("phase4-canvas");
+        canvas.addEventListener("dragover", e => e.preventDefault());
+        canvas.addEventListener("drop", e => {
+            e.preventDefault();
+            if (!phase4DraggedTool) return;
+            const rect = canvas.getBoundingClientRect();
+            addPhase4Node(phase4DraggedTool, e.clientX - rect.left, e.clientY - rect.top);
+            phase4DraggedTool = null;
+        });
+    }
+
+    function seedPhase4Nodes(nodes) {
+        phase4Items = [];
+        phase4Connections = [];
+        phase4NextId = 1;
+        nodes.slice(0, 3).forEach((node, idx) => {
+            addPhase4Node(node.label, 40 + idx * 210, 45 + idx * 70, node.description || "");
+        });
+    }
+
+    function addPhase4Node(label, x, y, description = "") {
+        phase4Items.push({
+            id: phase4NextId++,
+            label,
+            description,
+            x: Math.max(12, Math.round(x || 24)),
+            y: Math.max(12, Math.round(y || 24))
+        });
+        renderPhase4Canvas();
+    }
+
+    function renderPhase4Canvas() {
+        const canvas = document.getElementById("phase4-canvas");
+        if (!canvas) return;
+        canvas.querySelectorAll(".phase4-node, .phase4-connection").forEach(el => el.remove());
+        document.getElementById("phase4-empty").style.display = phase4Items.length ? "none" : "flex";
+
+        phase4Connections.forEach(conn => {
+            const from = phase4Items.find(i => i.id === conn.from);
+            const to = phase4Items.find(i => i.id === conn.to);
+            if (!from || !to) return;
+            const line = document.createElement("div");
+            const x1 = from.x + 80;
+            const y1 = from.y + 32;
+            const x2 = to.x + 80;
+            const y2 = to.y + 32;
+            const length = Math.hypot(x2 - x1, y2 - y1);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            line.className = "phase4-connection absolute h-[2px] bg-cyan-300/70 origin-left";
+            line.style.left = x1 + "px";
+            line.style.top = y1 + "px";
+            line.style.width = length + "px";
+            line.style.transform = `rotate(${angle}deg)`;
+            canvas.appendChild(line);
+        });
+
+        phase4Items.forEach(item => {
+            const node = document.createElement("div");
+            node.className = "phase4-node absolute w-44 rounded-xl border border-cyan-400/30 bg-slate-950/90 p-3 shadow-xl cursor-move";
+            node.style.left = item.x + "px";
+            node.style.top = item.y + "px";
+            node.innerHTML = `
+                <div class="text-sm font-bold text-white leading-snug">${item.label}</div>
+                <textarea class="mt-2 w-full h-14 rounded-lg bg-black/40 border border-white/10 text-xs text-slate-200 p-2 resize-none" placeholder="Describe this step...">${item.description || ""}</textarea>
+                <button class="mt-2 text-[10px] font-bold uppercase tracking-widest text-red-300 hover:text-red-200">Remove</button>
+            `;
+            node.querySelector("textarea").addEventListener("input", e => item.description = e.target.value);
+            node.querySelector("button").addEventListener("click", () => {
+                phase4Items = phase4Items.filter(i => i.id !== item.id);
+                phase4Connections = phase4Connections.filter(c => c.from !== item.id && c.to !== item.id);
+                renderPhase4Canvas();
+            });
+            node.addEventListener("mousedown", e => startPhase4NodeDrag(e, item));
+            canvas.appendChild(node);
+        });
+
+        refreshPhase4Selects();
+    }
+
+    function startPhase4NodeDrag(e, item) {
+        if (e.target.tagName === "TEXTAREA" || e.target.tagName === "BUTTON") return;
+        const canvas = document.getElementById("phase4-canvas");
+        const rect = canvas.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left - item.x;
+        const offsetY = e.clientY - rect.top - item.y;
+
+        function move(ev) {
+            item.x = Math.max(8, Math.round(ev.clientX - rect.left - offsetX));
+            item.y = Math.max(8, Math.round(ev.clientY - rect.top - offsetY));
+            renderPhase4Canvas();
+        }
+        function stop() {
+            document.removeEventListener("mousemove", move);
+            document.removeEventListener("mouseup", stop);
+        }
+        document.addEventListener("mousemove", move);
+        document.addEventListener("mouseup", stop);
+    }
+
+    function refreshPhase4Selects() {
+        const from = document.getElementById("phase4-from");
+        const to = document.getElementById("phase4-to");
+        if (!from || !to) return;
+        const options = phase4Items.map(item => `<option value="${item.id}">${item.label}</option>`).join("");
+        from.innerHTML = options;
+        to.innerHTML = options;
+    }
+
+    function addPhase4Connection() {
+        const from = parseInt(document.getElementById("phase4-from").value, 10);
+        const to = parseInt(document.getElementById("phase4-to").value, 10);
+        if (!from || !to || from === to) return;
+        if (!phase4Connections.some(c => c.from === from && c.to === to)) {
+            phase4Connections.push({ from, to });
+            renderPhase4Canvas();
+        }
+    }
+
+    function clearPhase4Canvas() {
+        phase4Items = [];
+        phase4Connections = [];
+        renderPhase4Canvas();
     }
 
     async function submitScenarioAnswers() {
-        showLoader("Synthesizing ego metrics...");
+        if (phase4Items.length === 0) {
+            alert("Add at least one resource to the workspace before exporting.");
+            return;
+        }
+        showLoader("Exporting sequence JSON...");
         try {
             const res = await fetch("/assessment/api/scenarios", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ answers: scenarioAnswersLog })
+                body: JSON.stringify({
+                    answers: {
+                        task: activePhaseData.phase4_task || {},
+                        nodes: phase4Items,
+                        connections: phase4Connections
+                    }
+                })
             });
             const data = await res.json();
             if (data.status === "success") {
@@ -1139,6 +1263,7 @@
         const body = document.getElementById("phase-body");
         body.innerHTML = `
             <div class="text-center py-10 flex flex-col items-center justify-center stagger-in">
+                <span class="cyber-badge mb-4">Phase 5: Career Matching</span>
                 <div class="relative flex items-center justify-center mb-8">
                     <div class="animate-ping absolute inline-flex h-20 w-20 rounded-full bg-teal-500 opacity-20"></div>
                     <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-teal-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-teal-600/10">
