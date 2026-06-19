@@ -299,6 +299,67 @@
     #intake-submit-btn:hover, #chat-send-btn:hover, #compile-btn:hover {
         background-color: #0f766e !important;
     }
+
+    /* --- ENHANCED SEQUENCE PLANNER STYLES --- */
+    .workspace-grid {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(248, 250, 252, 0.95) 100%);
+        background-image: 
+            radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+        background-size: 32px 32px;
+    }
+
+    .planner-palette-item {
+        background: white;
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        border-radius: 12px;
+        transition: all 0.2s ease;
+        cursor: grab;
+    }
+
+    .planner-palette-item:hover {
+        background: rgba(13, 148, 136, 0.05);
+        border-color: rgba(13, 148, 136, 0.3);
+        transform: translateX(4px);
+    }
+
+    .planner-node {
+        background: white;
+        border: 1px solid rgba(13, 148, 136, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+        min-width: 200px;
+    }
+
+    .planner-node.selected {
+        border-color: #0d9488;
+        box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.1);
+    }
+
+    .connection-path {
+        stroke: #0d9488;
+        stroke-width: 2;
+        fill: none;
+        stroke-dasharray: 5, 5;
+        animation: dash-flow 0.5s linear infinite;
+    }
+
+    @keyframes dash-flow {
+        to { stroke-dashoffset: -10; }
+    }
+
+    .node-connector {
+        width: 10px;
+        height: 10px;
+        background: #0d9488;
+        border-radius: 50%;
+        position: absolute;
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: crosshair;
+        border: 2px solid white;
+    }
 </style>
 
 <div class="cyber-bg-glow"></div>
@@ -1023,32 +1084,49 @@
         
         body.innerHTML = `
             <div class="text-center mb-6 stagger-in">
-                <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '5' : '4'}: Strategic Architecture</span>
-                <h2 class="text-2xl font-bold mt-2 text-slate-900 leading-relaxed font-outfit">Project: ${task.task}</h2>
-                <p class="text-slate-500 text-sm mt-1">Design the sequence of operation. Drag required tools onto the canvas and link them.</p>
-            </div>
-
-            <div class="flex flex-col lg:flex-row gap-4 h-[600px] border border-slate-200 rounded-3xl overflow-hidden bg-slate-50 stagger-in">
-                <!-- Palette -->
-                <aside class="w-full lg:w-64 bg-white border-r border-slate-200 overflow-y-auto p-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Available Tools</h3>
-                    <div id="planner-palette" class="space-y-2">
-                        <!-- Tools injected here -->
+                <header class="flex flex-col gap-2 p-4 border-b border-slate-100 bg-slate-50/30">
+                    <div class="flex items-center gap-2">
+                        <span class="w-8 h-8 flex items-center justify-center bg-teal-100 text-teal-600 rounded-lg text-sm font-bold">4</span>
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Phase 4: Sequence Planner</h2>
                     </div>
-                </aside>
+                    <div class="p-3 bg-white border border-teal-100 rounded-xl">
+                        <p class="text-xs font-bold text-teal-700 mb-1">Scenario: ${task.title}</p>
+                        <p class="text-[11px] text-slate-600 leading-relaxed">${task.description}</p>
+                    </div>
+                </header>
 
-                <!-- Canvas -->
-                <main class="flex-1 relative bg-white overflow-hidden" id="planner-canvas-container">
-                    <div id="planner-canvas" class="absolute inset-0 z-10 w-full h-full">
-                        <div id="planner-empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none">
-                            <p class="text-sm">Drag tools here to start mapping</p>
+                <div class="flex flex-1 overflow-hidden h-[450px]">
+                    <aside class="w-48 border-r border-slate-100 p-3 overflow-y-auto bg-slate-50/50">
+                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tool Palette</h3>
+                        <div id="planner-palette" class="flex flex-col gap-2">
                         </div>
-                    </div>
-                    
-                    <div class="absolute bottom-4 right-4 z-20">
-                        <button onclick="submitPlannerProject()" id="planner-submit-btn" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold shadow-xl hover:bg-black transition-all">Complete Architecture →</button>
-                    </div>
-                </main>
+                    </aside>
+
+                    <main class="flex-1 relative bg-white workspace-grid overflow-hidden" id="planner-canvas-container" style="user-select: none;">
+                        <svg id="planner-connections-svg" class="absolute inset-0 pointer-events-none w-full h-full z-0">
+                            <defs>
+                                <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488" />
+                                </marker>
+                            </defs>
+                        </svg>
+
+                        <div id="planner-canvas" class="absolute inset-0 z-10 w-full h-full overflow-hidden">
+                            <div id="planner-empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none">
+                                <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl mb-2">📥</div>
+                                <p class="text-[11px] font-bold">Drag tools here to create your pathway</p>
+                                <p class="text-[9px] text-slate-400 mt-1">Connect them to show dependencies</p>
+                            </div>
+                        </div>
+                        
+                        <div class="absolute bottom-4 right-4 z-30 flex items-center gap-3">
+                            <span id="linking-mode-indicator" class="hidden text-[10px] font-bold bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full border border-teal-200 animate-pulse">
+                                🔗 Linking Mode Active
+                            </span>
+                            <button onclick="submitPlannerProject()" id="planner-submit-btn" class="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold shadow-lg hover:bg-teal-700 transition-all">Submit Strategy →</button>
+                        </div>
+                    </main>
+                </div>
             </div>
         `;
 
@@ -1056,21 +1134,21 @@
     }
 
     const TOOL_RESOURCES = [
-        { type: 'database', label: 'Cloud Database', icon: '🗄️' },
-        { type: 'ai_model', label: 'AI / ML Model', icon: '🧠' },
-        { type: 'frontend', label: 'Frontend UI', icon: '💻' },
-        { type: 'api', label: 'API Gateway', icon: '🔌' },
-        { type: 'strategy', label: 'GTM Strategy', icon: '🎯' },
-        { type: 'team', label: 'Core Team', icon: '👥' },
-        { type: 'security', label: 'Security Protocols', icon: '🔒' },
-        { type: 'budget', label: 'Budget & Funding', icon: '💰' },
-        { type: 'marketing', label: 'Marketing Campaign', icon: '📢' },
-        { type: 'timeline', label: 'Timeline', icon: '📅' }
+        { type: 'database', label: 'Cloud Database', icon: '🗄️', category: 'Tech' },
+        { type: 'ai_model', label: 'AI Engine', icon: '🧠', category: 'Tech' },
+        { type: 'frontend', label: 'Dashboard UI', icon: '💻', category: 'Tech' },
+        { type: 'api', label: 'Backend API', icon: '🔌', category: 'Tech' },
+        { type: 'strategy', label: 'Market Strategy', icon: '🎯', category: 'Business' },
+        { type: 'team', label: 'Core Team', icon: '👥', category: 'People' },
+        { type: 'security', label: 'Cyber Security', icon: '🔒', category: 'Ops' },
+        { type: 'budget', label: 'Funding', icon: '💰', category: 'Business' },
+        { type: 'marketing', label: 'Growth Plan', icon: '📢', category: 'Business' },
+        { type: 'timeline', label: 'Milestones', icon: '📅', category: 'Ops' }
     ];
 
     function initPlanner(requiredTools) {
         const palette = document.getElementById("planner-palette");
-        const allowed = requiredTools.map(t => t.toLowerCase());
+        const allowed = (requiredTools || []).map(t => t.toLowerCase());
         
         const filtered = TOOL_RESOURCES.filter(tr => 
             allowed.length === 0 || allowed.some(a => tr.label.toLowerCase().includes(a) || tr.type.toLowerCase().includes(a))
@@ -1079,10 +1157,9 @@
         palette.innerHTML = filtered.map(item => `
             <div class="planner-palette-item group flex items-center gap-2 p-2 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-grab transition-all" 
                  draggable="true" 
-                 onpointerdown="event.dataTransfer.setData('tool', '${JSON.stringify(item).replace(/'/g, "&apos;")}')"
                  ondragstart="event.dataTransfer.setData('tool', '${JSON.stringify(item).replace(/'/g, "&apos;")}')">
                 <span class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-lg group-hover:bg-teal-100 group-hover:text-teal-600 transition-colors">${item.icon}</span>
-                <span class="text-xs font-semibold text-slate-700">${item.label}</span>
+                <span class="text-[10px] font-bold text-slate-700">${item.label}</span>
             </div>
         `).join('');
 
@@ -1094,37 +1171,143 @@
             if (!raw) return;
             const toolData = JSON.parse(raw);
             const rect = e.currentTarget.getBoundingClientRect();
-            const x = e.clientX - rect.left - 70;
-            const y = e.clientY - rect.top - 40;
+            const x = e.clientX - rect.left - 40;
+            const y = e.clientY - rect.top - 20;
 
             const id = nextPlannerId++;
             plannerWorkspaceItems.push({ ...toolData, id, x, y, description: "" });
             renderPlannerWorkspace();
         });
+
+        container.addEventListener('pointermove', handlePointerMove);
+        container.addEventListener('pointerup', handlePointerUp);
+    }
+
+    function handlePointerMove(e) {
+        if (draggingNodeId !== null) {
+            const container = document.getElementById('planner-canvas-container');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left - dragOffset.x;
+            const y = e.clientY - rect.top - dragOffset.y;
+            
+            const item = plannerWorkspaceItems.find(it => it.id === draggingNodeId);
+            if (item) {
+                item.x = x;
+                item.y = y;
+                renderPlannerWorkspace();
+            }
+        }
+    }
+
+    function handlePointerUp() {
+        draggingNodeId = null;
+    }
+
+    function startDragging(e, id) {
+        e.stopPropagation();
+        const nodeRect = e.currentTarget.getBoundingClientRect();
+        dragOffset.x = e.clientX - nodeRect.left;
+        dragOffset.y = e.clientY - nodeRect.top;
+        draggingNodeId = id;
+    }
+
+    function toggleLink(e, id) {
+        e.stopPropagation();
+        if (!linkingMode) {
+            linkingMode = true;
+            selectedSourceId = id;
+            document.getElementById('linking-mode-indicator').classList.remove('hidden');
+        } else {
+            if (selectedSourceId !== id) {
+                const exists = plannerConnections.some(c => c.from === selectedSourceId && c.to === id);
+                if (!exists) {
+                    plannerConnections.push({ from: selectedSourceId, to: id });
+                }
+            }
+            linkingMode = false;
+            selectedSourceId = null;
+            document.getElementById('linking-mode-indicator').classList.add('hidden');
+        }
+        renderPlannerWorkspace();
     }
 
     function renderPlannerWorkspace() {
         const canvas = document.getElementById('planner-canvas');
         const empty = document.getElementById('planner-empty-state');
+        const svg = document.getElementById('planner-connections-svg');
+        
         empty.style.display = plannerWorkspaceItems.length > 0 ? 'none' : 'flex';
 
-        canvas.innerHTML = plannerWorkspaceItems.map(item => `
-            <div class="planner-node absolute bg-white border border-slate-200 rounded-xl p-3 shadow-md cursor-pointer group hover:border-teal-500 transition-all font-outfit" 
-                 style="left: ${item.x}px; top: ${item.y}px; width: 140px; z-index: 100;">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-lg">${item.icon}</span>
-                    <span class="text-[10px] font-bold text-slate-800 uppercase tracking-tighter">${item.label}</span>
+        svg.innerHTML = `
+            <defs>
+                <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488" />
+                </marker>
+            </defs>
+        `;
+        
+        plannerConnections.forEach(conn => {
+            const from = plannerWorkspaceItems.find(it => it.id === conn.from);
+            const to = plannerWorkspaceItems.find(it => it.id === conn.to);
+            if (from && to) {
+                const x1 = from.x + 90;
+                const y1 = from.y + 40;
+                const x2 = to.x + 10;
+                const y2 = to.y + 20;
+                
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const d = `M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`;
+                path.setAttribute("d", d);
+                path.setAttribute("class", "connection-path");
+                path.setAttribute("marker-end", "url(#arrowhead)");
+                svg.appendChild(path);
+            }
+        });
+
+        const existingNodes = Array.from(canvas.querySelectorAll('.planner-node'));
+        const nodeMap = new Map();
+        
+        plannerWorkspaceItems.forEach(item => {
+            let node = canvas.querySelector(`[data-id="${item.id}"]`);
+            if (!node) {
+                node = document.createElement('div');
+                node.className = `planner-node absolute p-2 cursor-grab group transition-shadow`;
+                node.setAttribute('data-id', item.id);
+                canvas.appendChild(node);
+            }
+            node.style.left = `${item.x}px`;
+            node.style.top = `${item.y}px`;
+            node.style.width = `180px`;
+            node.style.zIndex = item.id === draggingNodeId ? 200 : 100;
+            
+            const isSelected = selectedSourceId === item.id;
+            node.innerHTML = `
+                <div class="flex items-center justify-between mb-1" onpointerdown="startDragging(event, ${item.id})">
+                    <div class="flex items-center gap-1.5 overflow-hidden">
+                        <span class="text-xs">${item.icon}</span>
+                        <span class="text-[9px] font-extrabold text-slate-800 uppercase truncate">${item.label}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="toggleLink(event, ${item.id})" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-teal-100 text-[10px] ${isSelected ? 'bg-teal-500 text-white animate-pulse' : 'text-slate-500'}">🔗</button>
+                        <button onclick="deleteNode(event, ${item.id})" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-red-100 text-[10px] text-slate-500">✕</button>
+                    </div>
                 </div>
-                <textarea class="w-full text-[10px] bg-slate-50 border-none focus:ring-0 rounded p-1 h-12" 
-                          placeholder="Note..." 
-                          onchange="updateNodeDesc(${item.id}, this.value)">${item.description}</textarea>
-                <button onclick="deletePlannerNode(${item.id})" class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white rounded-full text-[10px] hidden group-hover:flex items-center justify-center shadow-lg">✕</button>
-            </div>
-        `).join('');
+                <textarea onchange="updateNodeDesc(${item.id}, this.value)" 
+                          class="w-full text-[9px] bg-slate-50 border-slate-100 focus:bg-white focus:ring-1 focus:ring-teal-500 rounded p-1.5 h-14 resize-none leading-tight" 
+                          placeholder="What purpose does this serve?">${item.description}</textarea>
+                ${isSelected ? '<div class="absolute inset-0 border-2 border-teal-400 rounded-16 pointer-events-none"></div>' : ''}
+            `;
+            nodeMap.set(item.id, true);
+        });
+
+        existingNodes.forEach(rn => {
+            const id = parseInt(rn.getAttribute('data-id'));
+            if (!nodeMap.has(id)) rn.remove();
+        });
     }
 
-    window.updateNodeDesc = (id, val) => {
-        const item = plannerWorkspaceItems.find(i => i.id === id);
+    function updateNodeDesc(id, val) {
+        const item = plannerWorkspaceItems.find(it => it.id === id);
         if (item) item.description = val;
     };
 
@@ -1141,7 +1324,10 @@
             const res = await fetch("/assessment/api/phase4_complete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ workflow: plannerWorkspaceItems })
+                body: JSON.stringify({ 
+                    workflow: plannerWorkspaceItems,
+                    connections: plannerConnections
+                })
             });
             const data = await res.json();
             if (data.status === "success") {
