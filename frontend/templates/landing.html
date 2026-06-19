@@ -15,7 +15,8 @@
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     /* ── THEME VARIABLES ── */
     :root {
@@ -24,30 +25,164 @@
       --navy-light: #1e293b;
       --navy-muted: #475569;
       --navy-soft: #f1f5f9;
-      
+
       --teal: #0d9488;
       --teal-light: #14b8a6;
       --teal-soft: #f0fdfa;
-      
-      --yellow: #f59e0b;
-      --yellow-light: #fbbf24;
+
+      --yellow: #43b9bf;
+      --yellow-light: #159cb4;
       --yellow-soft: #fefce8;
 
-      --orange: #ea580c;
+      --orange: #297be7;
       --orange-light: #ffedd5;
 
       --bg-light: #f8fafc;
       --bg-white: #ffffff;
       --text-dim: #64748b;
       --border: #e2e8f0;
-      
+
       --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
       --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
       --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-      
+
       --font-sans: 'Plus Jakarta Sans', sans-serif;
       --font-serif: 'Playfair Display', serif;
       --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── DARK MODE VARIABLES ── */
+    html.dark {
+      --navy: #e2e8f0;
+      --navy-light: #cbd5e1;
+      --navy-muted: #94a3b8;
+      --navy-soft: #1e293b;
+
+      --teal: #2dd4bf;
+      --teal-light: #1a3a38;
+      --teal-soft: #0d2220;
+
+      --yellow: #3168a7;
+      --yellow-light: #1c6a91;
+      --yellow-soft: #1c1a08;
+
+      --orange: #41769c;
+      --orange-light: #102952;
+
+      --bg-light: #0f172a;
+      --bg-white: #1e293b;
+      --text-dim: #94a3b8;
+      --border: #334155;
+
+      --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+    }
+
+    /* ── DARK MODE OVERRIDES ── */
+    html.dark body {
+      background-color: #0f172a;
+    }
+
+    html.dark #f-main-nav {
+      background: linear-gradient(90deg, rgba(12, 45, 121, 0.92), rgba(45, 212, 190, 0.389));
+    }
+
+    /* Dark Mode Glassmorphism for Cards */
+    html.dark .card {
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(12px);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    html.dark .mobile-menu {
+
+      background: #1e293b;
+    }
+
+    html.dark .msg-ai {
+      background: #273549;
+      color: #cbd5e1;
+    }
+
+    html.dark .chat-input-bar input {
+      background: #273549;
+      color: #e2e8f0;
+    }
+
+    html.dark .sim-scenario {
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    html.dark .sim-choice {
+      background: #273549;
+      color: #cbd5e1;
+    }
+
+    html.dark .sim-choice:hover {
+      background: #1a3a38;
+      color: #2dd4bf;
+    }
+
+    html.dark .counsel-card::before,
+    html.dark .counsel-card::after {
+      background: #1e293b;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    /* Section tags and buttons fixed for dark mode visibility */
+    html.dark .section-tag {
+      color: #ffffff !important;
+      background: var(--teal) !important;
+    }
+
+    html.dark .section-tag i {
+      color: #ffffff !important;
+    }
+
+    html.dark .section-desc {
+      color: #94a3b8;
+    }
+
+    /* Icon brightness fixes */
+    html.dark .arch-tag,
+    html.dark .pipe-icon-badge,
+    html.dark .trust-icon,
+    html.dark .arch-icon {
+      color: #ffffff !important;
+    }
+
+    /* Deep black/blue background fixes for dark mode */
+    html.dark .hero {
+      background: radial-gradient(circle at 85% 15%, rgba(45, 212, 191, 0.15) 0%, rgba(15, 23, 42, 0) 60%),
+                  radial-gradient(circle at 15% 85%, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0) 60%) !important;
+    }
+
+    html.dark .roadmap-section {
+      background: linear-gradient(180deg, #0f172a 0%, #000000 50%, #0f172a 100%) !important;
+    }
+
+    /* ── DARK MODE TOGGLE BUTTON ── */
+    #dark-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      background: var(--bg-white);
+      color: var(--navy);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    #dark-toggle:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+      transform: rotate(15deg) scale(1.08);
     }
 
     /* ── BASE RESET ── */
@@ -84,10 +219,7 @@
     }
 
     /* ── TYPOGRAPHY ── */
-    h1,
-    h2,
-    h3,
-    h4 {
+    h1, h2, h3, h4 {
       font-weight: 700;
       letter-spacing: -0.01em;
       color: var(--navy);
@@ -107,36 +239,57 @@
       text-align: center;
     }
 
-    /* ── CARDS & SECTIONS ── */
-    .card {
-      background: var(--bg-white);
-      border: 1px solid var(--border);
-      border-radius: 1.25rem;
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-      overflow: hidden;
-    }
-
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: var(--shadow-lg);
-      border-color: rgba(13, 148, 136, 0.3);
-    }
-
-    /* ── LABELS & TAGS ── */
+    /* Darker section tags in light mode */
     .section-tag {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       background: var(--teal-light);
-      color: var(--teal);
+      color: #0f172a !important;
+      font-weight: 800;
       padding: 0.4rem 1.1rem;
       border-radius: 2rem;
       font-size: 0.8rem;
-      font-weight: 700;
       letter-spacing: 0.02em;
       text-transform: uppercase;
       margin-bottom: 1.25rem;
+    }
+
+    .section-tag i {
+      color: #0f172a !important;
+    }
+
+    /* Darker archetype tag text */
+    .arch-tag {
+      color: #0f172a !important;
+      font-weight: 800;
+    }
+
+    .arch-icon {
+      color: #0f172a !important;
+    }
+
+    .trust-icon {
+      color: #0f172a !important;
+    }
+
+    .pipe-icon-badge {
+      color: #0f172a !important;
+    }
+
+    .card {
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-10px) scale(1.03);
+      border-color: rgba(13, 148, 136, 0.45);
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12), 0 8px 18px rgba(13, 148, 136, 0.15);
     }
 
     .section-title {
@@ -146,10 +299,13 @@
     }
 
     .section-desc {
-      max-width: 620px;
+      max-width: 700px;
       margin: 0 auto 3.5rem auto;
-      font-size: 1.1rem;
-      color: var(--navy-muted);
+      font-size: 1.2rem;
+      line-height: 1.8;
+      color: #334155;
+      font-weight: 500;
+      font-family: var(--font-serif);
     }
 
     /* ── BUTTONS ── */
@@ -187,7 +343,7 @@
     }
 
     .btn-secondary:hover {
-      background-color: #fafafa;
+      background-color: #ca7c10;
       border-color: var(--teal);
       transform: translateY(-3px);
     }
@@ -199,7 +355,7 @@
       left: 0;
       right: 0;
       z-index: 1000;
-      background: rgba(250, 250, 249, 0.9);
+      background: linear-gradient(90deg, rgb(109, 204, 183), rgba(7, 123, 114, 0.497));
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       transition: var(--transition);
@@ -212,6 +368,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 1rem;
     }
 
     .nav-logo {
@@ -317,20 +474,9 @@
     }
 
     @keyframes pulse-simple {
-      0% {
-        transform: scale(0.9);
-        opacity: 1;
-      }
-
-      50% {
-        transform: scale(1.15);
-        opacity: 0.6;
-      }
-
-      100% {
-        transform: scale(0.9);
-        opacity: 1;
-      }
+      0% { transform: scale(0.9); opacity: 1; }
+      50% { transform: scale(1.15); opacity: 0.6; }
+      100% { transform: scale(0.9); opacity: 1; }
     }
 
     .hero-title {
@@ -353,19 +499,21 @@
 
     .hero-stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
       gap: 1rem;
     }
 
     .stat-chip {
-      padding: 1.1rem;
-      text-align: center;
+      padding: 1.1rem 1.6rem;
+      min-width: 145px;
+      padding-right: 100px;
     }
 
     .stat-num {
-      font-size: 1.6rem;
+      font-size: 1.35rem;
       font-weight: 800;
       color: var(--teal);
+      white-space: nowrap;
     }
 
     .stat-label {
@@ -401,25 +549,18 @@
     }
 
     .mascot-img:hover {
-        transform: scale(1.05) rotate(2deg);
+      transform: scale(1.05) rotate(2deg);
     }
 
     .section-mascot-wrap {
-        max-width: 280px;
-        margin: 0 auto 2rem;
-        position: relative;
+      max-width: 280px;
+      margin: 0 auto 2rem;
+      position: relative;
     }
 
     @keyframes gentle-bob {
-
-      0%,
-      100% {
-        transform: translateY(0) rotate(0deg);
-      }
-
-      50% {
-        transform: translateY(-8px) rotate(1deg);
-      }
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(1deg); }
     }
 
     .speech-bubble {
@@ -443,10 +584,7 @@
     }
 
     @keyframes pop-bubble {
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .speech-bubble::after {
@@ -508,8 +646,16 @@
       transition: transform 0.5s ease;
     }
 
-    .pipeline-card:hover .pipeline-img-wrap img {
-      transform: scale(1.08);
+    .pipeline-card:hover {
+      transform: translateY(-14px) scale(1.04);
+    }
+
+    .pipeline-card:hover .pipe-num {
+      color: rgba(13, 148, 136, 0.25);
+    }
+
+    .pipeline-card:hover .pipe-icon-badge {
+      transform: scale(1.12);
     }
 
     .pipeline-content {
@@ -536,6 +682,7 @@
       justify-content: center;
       font-size: 1.15rem;
       margin-bottom: 1.25rem;
+      transition: all .35s ease;
     }
 
     .pipe-icon-cyan {
@@ -544,7 +691,7 @@
     }
 
     .pipe-icon-purple {
-      background: var(--yellow-soft);
+      background: var(--yellow-light);
       color: var(--yellow);
     }
 
@@ -559,13 +706,14 @@
     }
 
     .pipeline-card h3 {
-      font-size: 1.15rem;
-      margin-bottom: 0.65rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 700;
     }
 
     .pipeline-card p {
-      font-size: 0.88rem;
-      color: var(--navy-muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      line-height: 1.7;
     }
 
     /* ── ARCHETYPES ── */
@@ -613,6 +761,10 @@
       font-weight: 700;
       padding: 0.35rem 0.85rem;
       border-radius: 1rem;
+    }
+
+    .arch-card:hover {
+      transform: translateY(-10px) scale(1.03) rotate(-0.6deg);
     }
 
     /* ── SIMULATIONS ── */
@@ -783,7 +935,7 @@
       color: var(--bg-white);
     }
 
-    /* ── COUNSELLOR BOOKING WITH REAL IMAGES ── */
+    /* ── COUNSELLOR BOOKING ── */
     .counsel-section {
       padding: 6.5rem 0;
       background: linear-gradient(180deg, var(--bg-light) 0%, var(--teal-light) 100%);
@@ -792,51 +944,88 @@
     .counsel-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.75rem;
+      gap: 2rem;
     }
 
     .counsel-card {
-      padding: 2.5rem 2rem;
+      position: relative;
+      padding: 3rem 2rem;
       text-align: center;
-    }
-
-    .counsel-img-frame {
-      width: 6.5rem;
-      height: 6.5rem;
-      border-radius: 50%;
-      margin: 0 auto 1.5rem auto;
-      overflow: hidden;
-      border: 3px solid var(--teal);
+      background: var(--bg-white);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      overflow: visible;
+      transition: all 0.35s ease;
       box-shadow: var(--shadow-sm);
     }
 
+    .counsel-card::before {
+      content: "";
+      position: absolute;
+      top: -12px; left: 50%;
+      transform: translateX(-50%);
+      width: 85%; height: 26px;
+      background: white;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 100px 100px 20px 20px;
+      z-index: -1;
+    }
+
+    .counsel-card::after {
+      content: "";
+      position: absolute;
+      bottom: -12px; left: 50%;
+      transform: translateX(-50%);
+      width: 85%; height: 26px;
+      background: white;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 20px 20px 100px 100px;
+      z-index: -1;
+    }
+
+    .counsel-card:hover {
+      transform: translateY(-12px) scale(1.04);
+      border-color: rgba(13, 148, 136, 0.35);
+      box-shadow: 0 24px 40px rgba(15, 23, 42, 0.15), 0 8px 18px rgba(13, 148, 136, 0.15);
+    }
+
+    .counsel-img-frame {
+      width: 7rem; height: 7rem;
+      border-radius: 50%;
+      margin: 0 auto 1.75rem auto;
+      overflow: hidden;
+      border: 3px solid var(--teal);
+      box-shadow: 0 10px 25px rgba(13, 148, 136, 0.18);
+      transition: all 0.35s ease;
+    }
+
+    .counsel-card:hover .counsel-img-frame {
+      transform: scale(1.08);
+    }
+
     .counsel-img-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      width: 100%; height: 100%; object-fit: cover;
     }
 
     .counsel-card h4 {
-      font-size: 1.2rem;
-      margin-bottom: 0.35rem;
+      font-size: 1.3rem; font-weight: 800; color: var(--navy); margin-bottom: 0.4rem;
     }
 
     .counsel-spec {
-      font-size: 0.88rem;
-      color: var(--navy-muted);
-      margin-bottom: 0.75rem;
+      font-size: 0.95rem; color: var(--navy-muted); margin-bottom: 1rem; line-height: 1.5;
     }
 
     .counsel-rating {
-      font-size: 0.85rem;
-      color: var(--yellow);
-      font-weight: 700;
+      display: inline-block; padding: 0.45rem 1rem; border-radius: 999px;
+      background: var(--yellow-soft); color: var(--yellow); font-size: 0.85rem; font-weight: 700;
     }
 
     /* ── ROADMAPS ── */
     .roadmap-section {
       padding: 6.5rem 0;
-      background: linear-gradient(180deg, var(--teal-light) 0%, var(--bg-light) 50%, var(--yellow-light) 100%);
+      background: linear-gradient(180deg, var(--teal-soft) 0%, var(--bg-light) 50%, var(--teal-light) 100%);
     }
 
     .roadmap-timeline {
@@ -848,12 +1037,11 @@
     .roadmap-timeline::before {
       content: '';
       position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 50%;
+      top: 0; bottom: 0; left: 50%;
       transform: translateX(-50%);
-      width: 2px;
-      background-color: var(--border);
+      width: 3px;
+      background: linear-gradient(180deg, transparent, var(--teal), transparent);
+      box-shadow: 0 0 12px var(--teal);
     }
 
     .roadmap-step {
@@ -875,6 +1063,15 @@
 
     .step-card {
       padding: 1.75rem;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 1.25rem;
+    }
+
+    html.dark .step-card {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .step-card h4 {
@@ -916,6 +1113,7 @@
       justify-content: center;
       font-size: 1.4rem;
       margin: 0 auto 1.5rem auto;
+      transition: all .35s ease;
     }
 
     .trust-icon-teal {
@@ -936,6 +1134,14 @@
     .trust-card h3 {
       font-size: 1.3rem;
       margin-bottom: 0.75rem;
+    }
+
+    .trust-card:hover {
+      transform: translateY(-10px) scale(1.03);
+    }
+
+    .trust-card:hover .trust-icon {
+      transform: scale(1.15);
     }
 
     /* ── FINAL CTA ── */
@@ -1047,22 +1253,14 @@
 
     /* ── RESPONSIVE DESIGN ── */
     @media (max-width: 1024px) {
-
-      .hero-grid,
-      .chat-layout {
+      .hero-grid, .chat-layout {
         grid-template-columns: 1fr;
         gap: 3rem;
       }
-
       .hero-visual {
         order: -1;
       }
-
-      .pipeline-grid,
-      .arch-grid,
-      .sim-grid,
-      .counsel-grid,
-      .trust-grid {
+      .pipeline-grid, .arch-grid, .sim-grid, .counsel-grid, .trust-grid {
         grid-template-columns: repeat(2, 1fr);
       }
     }
@@ -1071,43 +1269,32 @@
       .nav-links {
         display: none;
       }
-
       .mobile-toggle {
         display: block;
       }
-
-      .section-title,
-      .hero-title {
+      .section-title, .hero-title {
         font-size: 2.25rem;
       }
-
-      .pipeline-grid,
-      .arch-grid,
-      .sim-grid,
-      .counsel-grid,
-      .trust-grid {
+      .pipeline-grid, .arch-grid, .sim-grid, .counsel-grid, .trust-grid {
         grid-template-columns: 1fr;
       }
-
       .hero-stats {
-        grid-template-columns: repeat(2, 1fr);
+        display: grid;
+        grid-template-columns: repeat(4, minmax(120px, 1fr));
+        gap: 1rem;
       }
-
       .roadmap-timeline::before {
         left: 1.5rem;
       }
-
       .roadmap-step {
         width: 100%;
         padding-left: 3rem !important;
         padding-right: 1.5rem !important;
         text-align: left !important;
       }
-
       .roadmap-step:nth-child(even) {
         left: 0;
       }
-
       .footer-grid {
         grid-template-columns: 1fr;
         gap: 2rem;
@@ -1138,6 +1325,9 @@
         <a href="/signup" class="btn-nav-cta">Get Started</a>
         {% endif %}
       </div>
+      <button id="dark-toggle" aria-label="Toggle dark mode">
+        <i class="fa-solid fa-moon" id="dark-toggle-icon"></i>
+      </button>
       <button class="mobile-toggle" id="f-menu-toggle" aria-label="Menu">
         <i class="fa-solid fa-bars" id="f-menu-icon"></i>
       </button>
@@ -1195,7 +1385,7 @@
         <div class="hero-visual">
           <div class="mascot-container">
             <div class="speech-bubble">Hey there! I'm your CareStance guide. Let's find your dream path together!</div>
-            <img src="mascot.png" alt="CareStance Mascot" class="mascot-img"
+            <img src="/static/images/careo.png" alt="CareStance Mascot" class="mascot-img"
               onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
           </div>
         </div>
@@ -1210,9 +1400,13 @@
         <div class="section-tag"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Career Discovery</div>
         <h2 class="section-title">Multi-Phase Intelligence <span class="text-serif">Pipeline</span></h2>
         <div class="section-mascot-wrap">
-            <img src="/static/images/mascot_telling.png" alt="CareStance Mascot Telling" class="mascot-img" onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
+          <img src="/static/images/mascot_telling.png" alt="CareStance Mascot Telling" class="mascot-img"
+            onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
         </div>
-        <p class="section-desc">We guide you through 4 clear steps to uncover your natural strengths and navigate the career landscape with confidence.</p>
+        <p class="section-desc typewriter">
+          We guide you through 4 clear steps to uncover your natural strengths and navigate the career landscape with
+          confidence.
+        </p>
       </div>
       <div class="pipeline-grid stagger-parent">
         <!-- Pipeline Card 1 -->
@@ -1271,18 +1465,22 @@
     </div>
   </section>
 
-  <!-- ── PERSONALITY ARCHETYPES ── -->
+  <!-- ── PERSONALITY ARCHETYPES (Updated Color Alternations) ── -->
   <section id="archetypes" class="archetype-section">
     <div class="container">
       <div class="text-center reveal">
         <div class="section-tag"><i class="fa-solid fa-dna"></i> Personality Archetypes</div>
         <h2 class="section-title">Discover Your Dominant <span class="text-serif">Archetype</span></h2>
         <div class="section-mascot-wrap" style="max-width: 220px;">
-            <img src="/static/images/mascot_amazed.png" alt="CareStance Mascot Amazed" class="mascot-img" onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
+          <img src="/static/images/mascot_amazed.png" alt="CareStance Mascot Amazed" class="mascot-img"
+            onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
         </div>
-        <p class="section-desc">Identify which of our six structural personality profiles matches your natural working style.</p>
+        <p class="section-desc typewriter">
+          Identify which of our six structural personality profiles matches your natural working style.
+        </p>
       </div>
       <div class="arch-grid stagger-parent">
+        <!-- 1. Blue -->
         <div class="arch-card card stagger-child">
           <div class="arch-icon" style="background:var(--teal-light);color:var(--teal)"><i
               class="fa-solid fa-crosshairs"></i></div>
@@ -1290,41 +1488,46 @@
           <p>Thrives on deep, domain-specific expertise. Relies on structured precision and technical execution.</p>
           <span class="arch-tag" style="background:var(--teal-light);color:var(--teal)">Precision · Mastery</span>
         </div>
+        <!-- 2. Yellow -->
         <div class="arch-card card stagger-child">
-          <div class="arch-icon" style="background:var(--orange-light);color:var(--orange)"><i
+          <div class="arch-icon" style="background:var(--yellow-light);color:var(--yellow)"><i
               class="fa-solid fa-magnifying-glass"></i></div>
           <h3>Quiet Explorer</h3>
           <p>Curious, observant, and deeply analytical. Learns through systematic observation and deep-dives.</p>
-          <span class="arch-tag" style="background:var(--orange-light);color:var(--orange)">Curiosity · Depth</span>
+          <span class="arch-tag" style="background:var(--yellow-light);color:var(--yellow)">Curiosity · Depth</span>
         </div>
+        <!-- 3. Blue -->
         <div class="arch-card card stagger-child">
-          <div class="arch-icon" style="background:var(--yellow-light);color:var(--yellow)"><i
+          <div class="arch-icon" style="background:var(--teal-light);color:var(--teal)"><i
               class="fa-solid fa-chess"></i></div>
           <h3>Strategic Builder</h3>
           <p>Draws patterns out of complexity. Thinks in structures, long-term frameworks, and structural safety.</p>
-          <span class="arch-tag" style="background:var(--yellow-light);color:var(--yellow)">Strategy · Systems</span>
+          <span class="arch-tag" style="background:var(--teal-light);color:var(--teal)">Strategy · Systems</span>
         </div>
+        <!-- 4. Yellow -->
         <div class="arch-card card stagger-child">
-          <div class="arch-icon" style="background:var(--orange-light);color:var(--orange)"><i
+          <div class="arch-icon" style="background:var(--yellow-light);color:var(--yellow)"><i
               class="fa-solid fa-shuffle"></i></div>
           <h3>Adaptive Explorer</h3>
           <p>Agile, dynamic, and responsive under pressure. Learns quickly by testing new ideas in real-time.</p>
-          <span class="arch-tag" style="background:var(--orange-light);color:var(--orange)">Agility · Range</span>
+          <span class="arch-tag" style="background:var(--yellow-light);color:var(--yellow)">Agility · Range</span>
         </div>
+        <!-- 5. Blue -->
         <div class="arch-card card stagger-child">
-          <div class="arch-icon" style="background:var(--yellow-light);color:var(--yellow)"><i
+          <div class="arch-icon" style="background:var(--teal-light);color:var(--teal)"><i
               class="fa-solid fa-crown"></i></div>
           <h3>Visionary Leader</h3>
           <p>Drawn to community impact, team empowerment, and moving abstract concepts to shared execution.</p>
-          <span class="arch-tag" style="background:var(--yellow-light);color:var(--yellow)">Vision · Impact</span>
+          <span class="arch-tag" style="background:var(--teal-light);color:var(--teal)">Vision · Impact</span>
         </div>
+        <!-- 6. Yellow -->
         <div class="arch-card card stagger-child">
-          <div class="arch-icon" style="background:var(--teal-light);color:var(--teal)"><i
+          <div class="arch-icon" style="background:var(--yellow-light);color:var(--yellow)"><i
               class="fa-solid fa-arrows-spin"></i></div>
           <h3>Dynamic Generalist</h3>
           <p>Excellent at connecting multiple fields together. Thrives on high adaptability and structural integration.
           </p>
-          <span class="arch-tag" style="background:var(--teal-light);color:var(--teal)">Breadth · Synthesis</span>
+          <span class="arch-tag" style="background:var(--yellow-light);color:var(--yellow)">Breadth · Synthesis</span>
         </div>
       </div>
     </div>
@@ -1337,9 +1540,11 @@
         <div class="section-tag"><i class="fa-solid fa-gamepad"></i> Interactive Scenarios</div>
         <h2 class="section-title">Test-Drive Real Career <span class="text-serif">Decisions</span></h2>
         <div class="section-mascot-wrap" style="max-width: 250px;">
-            <img src="/static/images/mascot_explaining.png" alt="CareStance Mascot Explaining" class="mascot-img" onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
+          <img src="/static/images/mascot_explaining.png" alt="CareStance Mascot Explaining" class="mascot-img"
+            onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
         </div>
-        <p class="section-desc">Experience mock daily scenarios across actual industries to evaluate where your judgment excels.</p>
+        <p class="section-desc">Experience mock daily scenarios across actual industries to evaluate where your judgment
+          excels.</p>
       </div>
       <div class="sim-grid stagger-parent">
         <div class="sim-card card stagger-child">
@@ -1388,9 +1593,11 @@
           <div class="section-tag"><i class="fa-solid fa-robot"></i> Conversational Guide</div>
           <h2 class="section-title">Clear Up Your Career <span class="text-serif">Questions</span></h2>
           <div style="max-width: 200px; margin-bottom: 1.5rem;">
-              <img src="/static/images/mascot_asking.png" alt="CareStance Mascot Asking" class="mascot-img" onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
+            <img src="/static/images/mascot_asking.png" alt="CareStance Mascot Asking" class="mascot-img"
+              onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
           </div>
-          <p class="section-desc">Our assistant is available to clarify details about university admissions, structural skills requirements, and alternative career mappings.</p>
+          <p class="section-desc">Our assistant is available to clarify details about university admissions, structural
+            skills requirements, and alternative career mappings.</p>
           <div style="margin-top:2rem">
             <a href="/signup" class="btn-primary"><i class="fa-solid fa-message"></i> Try Conversation</a>
           </div>
@@ -1399,7 +1606,7 @@
           <div class="chat-titlebar">
             <!-- Integrated Mascot as Avatar -->
             <div class="chat-avatar-mascot">
-              <img src="mascot.png" alt="Mascot Avatar"
+              <img src="/static/images/careo.png" alt="Mascot Avatar"
                 onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
             </div>
             <div>
@@ -1477,32 +1684,34 @@
         <div class="section-tag"><i class="fa-solid fa-route"></i> Career Roadmaps</div>
         <h2 class="section-title">Four Stages to <span class="text-serif">Your Career Launch</span></h2>
         <div class="section-mascot-wrap" style="max-width: 200px;">
-            <img src="/static/images/mascot_thinking.png" alt="CareStance Mascot Thinking" class="mascot-img" onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
+          <img src="/static/images/mascot_thinking.png" alt="CareStance Mascot Thinking" class="mascot-img"
+            onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
         </div>
-        <p class="section-desc">Understand how our platform transforms structural assessments into an actionable professional pathway.</p>
+        <p class="section-desc">Understand how our platform transforms structural assessments into an actionable
+          professional pathway.</p>
       </div>
       <div class="roadmap-timeline stagger-parent">
         <div class="roadmap-step stagger-child">
-          <div class="step-card card">
+          <div class="step-card">
             <h4>🎯 1. Structural Strengths</h4>
             <p>Complete your core assessments to clarify your natural cognitive styles and work priorities.</p>
           </div>
         </div>
         <div class="roadmap-step stagger-child">
-          <div class="step-card card">
+          <div class="step-card">
             <h4>📚 2. Core Skill Mapping</h4>
             <p>Review key subject areas, targeted certificates, and baseline skills critical for success in your match.
             </p>
           </div>
         </div>
         <div class="roadmap-step stagger-child">
-          <div class="step-card card">
+          <div class="step-card">
             <h4>🚀 3. Practical Practice</h4>
             <p>Take part in test-drive scenarios and initial mock simulations to refine practical decision skills.</p>
           </div>
         </div>
         <div class="roadmap-step stagger-child">
-          <div class="step-card card">
+          <div class="step-card">
             <h4>🏆 4. Vetted Strategy</h4>
             <p>Refine your academic plans, university list, and internship routes through verified advisory counseling.
             </p>
@@ -1546,10 +1755,12 @@
     <div class="container reveal">
       <h2 class="font-display">Your Future Is Waiting<br><span class="text-serif">to Be Discovered</span></h2>
       <div class="section-mascot-wrap" style="max-width: 240px; margin-top: 2rem;">
-          <img src="/static/images/mascot_excited.png" alt="CareStance Mascot Excited" class="mascot-img" onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
+        <img src="/static/images/mascot_excited.png" alt="CareStance Mascot Excited" class="mascot-img"
+          onerror="this.src='https://i.ibb.co/XzB9h5Z/Carestance-Mascot-Waving.png';">
       </div>
       <p>Start your clean, friendly self-discovery profile today. No credit card required.</p>
-      <a href="/signup" class="btn-primary" style="font-size:1.05rem;padding:1.1rem 2.75rem"><i class="fa-solid fa-rocket"></i> Begin Free Profile</a>
+      <a href="/signup" class="btn-primary" style="font-size:1.05rem;padding:1.1rem 2.75rem"><i
+          class="fa-solid fa-rocket"></i> Begin Free Profile</a>
     </div>
   </section>
 
@@ -1639,11 +1850,9 @@
 
     // ── GSAP SCROLL TRIGGER ANIMATIONS ──
     document.addEventListener("DOMContentLoaded", () => {
-      // Check if GSAP is available
       if (typeof gsap !== "undefined") {
         gsap.registerPlugin(ScrollTrigger);
 
-        // Fade-in on Scroll for Headers & Intro blocks
         gsap.utils.toArray(".reveal").forEach((elem) => {
           gsap.fromTo(elem,
             { opacity: 0, y: 30 },
@@ -1661,7 +1870,6 @@
           );
         });
 
-        // Staggered grid items loading smoothly
         gsap.utils.toArray(".stagger-parent").forEach((parent) => {
           const children = parent.querySelectorAll(".stagger-child");
           gsap.fromTo(children,
@@ -1683,6 +1891,24 @@
       }
     });
   </script>
+  <script>
+    // ── DARK MODE TOGGLE ──
+    const darkToggle = document.getElementById('dark-toggle');
+    const darkIcon = document.getElementById('dark-toggle-icon');
+    const html = document.documentElement;
+
+    if (localStorage.getItem('theme') === 'dark') {
+      html.classList.add('dark');
+      darkIcon.className = 'fa-solid fa-sun';
+    }
+
+    darkToggle.addEventListener('click', () => {
+      const isDark = html.classList.toggle('dark');
+      darkIcon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+  </script>
+
 </body>
 
 </html>
