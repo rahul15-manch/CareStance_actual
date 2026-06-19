@@ -43,6 +43,13 @@ from .data.career_keywords import career_keywords
 from .utils.resource_aggregator import ResourceAggregator
 from .services import simulation_service
 from .services import assessment_engine
+
+try:
+    from app.pipeline.feature_extractor import FeatureExtractor
+    extractor_tool = FeatureExtractor()
+except Exception as e:
+    print(f"FeatureExtractor Load Error: {e}")
+    extractor_tool = None
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -199,9 +206,9 @@ async def check_content_moderation(text_content: str):
         print(f"Moderation Error: {e}")
         return False, "None"
 
-from data.questions_data import questions
-from data.questions_12th import questions_12th
-from data.questions_above_12th import questions_above_12th
+from .data.questions_data import questions
+from .data.questions_12th import questions_12th
+from .data.questions_above_12th import questions_above_12th
 
 # Auto-migrate: add missing columns to existing tables
 async def run_migrations():
@@ -1050,7 +1057,7 @@ async def auth_callback(request: Request, db: AsyncSession = Depends(get_db)):
     try:
         try:
             redirect_uri = get_oauth_redirect_uri(request)
-            token = await oauth.google.authorize_access_token(request, redirect_uri=redirect_uri)
+            token = await oauth.google.authorize_access_token(request)
         except Exception as e:
             import traceback
             print(f"OAuth Token Exchange Fatal Error: {e}")
@@ -1489,18 +1496,23 @@ async def assessment_api_questions(request: Request, db: AsyncSession = Depends(
         
     student_type = result.student_type or "10th"
     phase = result.current_phase or 0
+    vector = {}
+    if result.personality:
+        try:
+            vector = json.loads(result.personality)
+        except:
+            vector = {}
     
     if phase == 0:
         return {"status": "intake_required"}
 
     elif phase == 1:
-        # ── NAYA: Founder ke real cards (cards_10th.json / cards_12th.json) ──
-        import random
-        from app.pipeline.vector_utils import load_cards
-        cards = load_cards(student_type)  # returns A001-A060 / C101-C160 with multipliers
+        # Phase 2 (User Term): Swipe Cards
+        from .pipeline.vector_utils import load_cards
+        cards = load_cards(student_type)
         shuffled = list(cards)
         random.shuffle(shuffled)
-        return {"cards": shuffled[:10]}
+        return {"cards": shuffled[:12]} # Increased to 12
 
     elif phase == 2:
         result.current_phase = 3
@@ -1550,7 +1562,9 @@ async def assessment_api_swipe(request: Request, payload: dict, db: AsyncSession
     
     result.current_phase = 3
     await db.commit()
-    sync_assessment_to_appwrite(user.id, result)
+    # Archetype calculate for logs
+    from .pipeline.vector_utils import classify_archetype
+    arch = classify_archetype(metrics.get("latent_profile", {}))
     
     return {"status": "success", "next_phase": 3}
 
@@ -1668,6 +1682,7 @@ async def assessment_api_compile(request: Request, db: AsyncSession = Depends(ge
                     "skills": ["Empathetic Communication", "Critical Theory", "Creative Expression"],
                 },
             }
+
 
             stream_rec = {"recommended_stream": winner, "stream_details": stream_details[winner]}
 
@@ -3326,7 +3341,7 @@ async def delete_roadmap(path_id: int, request: Request, db: AsyncSession = Depe
 
 # --- Phase 3 Routes ---
 
-from data.questions_phase3 import CATEGORY_SCENARIOS_MAP
+from .data.questions_phase3 import CATEGORY_SCENARIOS_MAP
 
 @app.get("/assessment/phase3", response_class=HTMLResponse)
 async def assessment_phase3(request: Request, db: AsyncSession = Depends(get_db)):
@@ -4045,9 +4060,9 @@ async def share_simulation_result(result_id: int, request: Request, db: AsyncSes
 
 # --- Phase 4 Routes (Final Stream Assessment) ---
 
-from data.questions_final import all_questions, section_a_questions, section_b_questions, section_c_questions, section_d_questions
-from data.questions_12th import questions_12th
-from data.questions_above_12th import questions_above_12th
+from .data.questions_final import all_questions, section_a_questions, section_b_questions, section_c_questions, section_d_questions
+from .data.questions_12th import questions_12th
+from .data.questions_above_12th import questions_above_12th
 
 @app.get("/assessment/final", response_class=HTMLResponse)
 async def assessment_final(request: Request, db: AsyncSession = Depends(get_db)):
@@ -6325,6 +6340,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=int(os.getenv("PORT", "8080")),
         reload=dev_reload,
     )
