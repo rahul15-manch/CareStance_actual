@@ -199,9 +199,9 @@ async def check_content_moderation(text_content: str):
         print(f"Moderation Error: {e}")
         return False, "None"
 
-from data.questions_data import questions
-from data.questions_12th import questions_12th
-from data.questions_above_12th import questions_above_12th
+from .data.questions_data import questions
+from .data.questions_12th import questions_12th
+from .data.questions_above_12th import questions_above_12th
 
 # Auto-migrate: add missing columns to existing tables
 async def run_migrations():
@@ -3335,7 +3335,7 @@ async def delete_roadmap(path_id: int, request: Request, db: AsyncSession = Depe
 
 # --- Phase 3 Routes ---
 
-from data.questions_phase3 import CATEGORY_SCENARIOS_MAP
+from .data.questions_phase3 import CATEGORY_SCENARIOS_MAP
 
 @app.get("/assessment/phase3", response_class=HTMLResponse)
 async def assessment_phase3(request: Request, db: AsyncSession = Depends(get_db)):
@@ -4054,9 +4054,9 @@ async def share_simulation_result(result_id: int, request: Request, db: AsyncSes
 
 # --- Phase 4 Routes (Final Stream Assessment) ---
 
-from data.questions_final import all_questions, section_a_questions, section_b_questions, section_c_questions, section_d_questions
-from data.questions_12th import questions_12th
-from data.questions_above_12th import questions_above_12th
+from .data.questions_final import all_questions, section_a_questions, section_b_questions, section_c_questions, section_d_questions
+from .data.questions_12th import questions_12th
+from .data.questions_above_12th import questions_above_12th
 
 @app.get("/assessment/final", response_class=HTMLResponse)
 async def assessment_final(request: Request, db: AsyncSession = Depends(get_db)):
