@@ -1,7 +1,7 @@
 [
   {
     "id": "C101",
-    "content": "Fixing a critical system crash alone at 3 AM, knowing no one will ever find out it was your initial error.",
+    "content": "Fixing a major computer system crash alone late at night, especially when it was your mistake.",
     "multipliers": {
       "IT_Artistic": -0.6,
       "IT_Conventional": 0.4,
@@ -45,7 +45,7 @@
   },
   {
     "id": "C102",
-    "content": "Dropping a prestigious law track to launch an unproven community art center in an underfunded, chaotic urban neighborhood.",
+    "content": "Leaving law school to open an art center in a poor neighborhood.",
     "multipliers": {
       "IT_Artistic": 0.9,
       "IT_Conventional": -0.8,
@@ -89,7 +89,7 @@
   },
   {
     "id": "C103",
-    "content": "Deleting a verified, high-growth social media account because maintaining that specific curated public persona feels entirely exhausting.",
+    "content": "Deleting a popular social media account because keeping up with it is too tiring.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": -0.4,
@@ -133,7 +133,7 @@
   },
   {
     "id": "C104",
-    "content": "Accepting an elite corporate job your family constantly brags about, despite secretly dreading the highly rigid executive chain of command.",
+    "content": "Taking a prestigious office job to please your family, even though you dislike strict workplace rules.",
     "multipliers": {
       "IT_Artistic": -0.5,
       "IT_Conventional": 0.8,
@@ -177,7 +177,7 @@
   },
   {
     "id": "C105",
-    "content": "Designing a highly addictive app mechanic that maximizes company profit while knowingly decreasing teenage users' daily psychological well-being.",
+    "content": "Making an app more addictive to increase profits, even if it is bad for young users.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": 0.4,
@@ -221,7 +221,7 @@
   },
   {
     "id": "C106",
-    "content": "Spending a long weekend manually clean-sorting 5,000 rows of messy code data to validate an abstract scientific hypothesis.",
+    "content": "Spending days organizing thousands of rows of messy data for a science experiment.",
     "multipliers": {
       "IT_Artistic": -0.6,
       "IT_Conventional": 0.8,
@@ -265,7 +265,7 @@
   },
   {
     "id": "C107",
-    "content": "Pitching an experimental, avant-garde fashion concept to an elite, highly critical panel of international judges under bright stage lights.",
+    "content": "Presenting an unusual fashion design to a panel of strict judges.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": -0.7,
@@ -309,7 +309,7 @@
   },
   {
     "id": "C108",
-    "content": "Stepping down as the visible captain of a champion robotics team to quietly map out backend predictive code from the sidelines.",
+    "content": "Leaving your role as a robotics team leader to focus on writing code behind the scenes.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.4,
@@ -353,7 +353,7 @@
   },
   {
     "id": "C109",
-    "content": "Moving to an unfamiliar country alone with just one backpack and a highly uncertain, completely unmapped freelance job offer.",
+    "content": "Moving to another country alone with just one bag and an unstable freelance job.",
     "multipliers": {
       "IT_Artistic": 0.4,
       "IT_Conventional": -0.9,
@@ -397,7 +397,7 @@
   },
   {
     "id": "C110",
-    "content": "Meticulously redrafting a single paragraph of text for nine hours until its emotional cadence matches your exact internal vision.",
+    "content": "Rewriting a single paragraph for hours until it sounds exactly right.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": 0.2,
@@ -441,7 +441,7 @@
   },
   {
     "id": "C111",
-    "content": "Taking an unpaid internship at an exclusive investment firm purely to have their prestigious luxury brand printed on your resume.",
+    "content": "Taking an unpaid job at a famous company just to put their name on your resume.",
     "multipliers": {
       "IT_Artistic": -0.5,
       "IT_Conventional": 0.6,
@@ -485,7 +485,7 @@
   },
   {
     "id": "C112",
-    "content": "Handling chaotic incoming phone lines at a high-volume emergency crisis center, resolving intense human dilemmas every ten minutes without breaks.",
+    "content": "Answering urgent phone calls at a crisis center to help people in trouble.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.3,
@@ -529,7 +529,7 @@
   },
   {
     "id": "C113",
-    "content": "Declining a guaranteed $120,000 corporate entry package to build a highly unpredictable tech startup inside an unheated garage.",
+    "content": "Turning down a high-paying corporate job to start a risky tech company in a garage.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": -0.9,
@@ -573,7 +573,7 @@
   },
   {
     "id": "C114",
-    "content": "Strictly executing a 100-step laboratory protocol where a single unauthorized creative alteration immediately ruins a multi-million dollar chemical batch.",
+    "content": "Following laboratory instructions exactly to avoid ruining an expensive chemical mixture.",
     "multipliers": {
       "IT_Artistic": -0.9,
       "IT_Conventional": 1.0,
@@ -617,7 +617,7 @@
   },
   {
     "id": "C115",
-    "content": "Spending your summer break dirtying your hands under grease, manually rebuilding complex, heavy diesel engines at a local auto yard.",
+    "content": "Spending your summer vacation repairing large engines at an auto shop.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.5,
@@ -661,7 +661,7 @@
   },
   {
     "id": "C116",
-    "content": "Organizing a high-visibility environmental protest despite knowing you face immediate suspension and intense fury from your traditional family.",
+    "content": "Planning a public environmental protest, even if your family gets angry at you.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": -0.8,
@@ -705,7 +705,7 @@
   },
   {
     "id": "C117",
-    "content": "Splitting all equity equally among five teammates, even though you performed nearly all the deep engineering work alone.",
+    "content": "Sharing company shares equally with your team, even though you did most of the work.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.2,
@@ -749,7 +749,7 @@
   },
   {
     "id": "C118",
-    "content": "Deploying a fully automated quantitative algorithm that trades high-stakes financial capital rapidly without any real-time human supervision.",
+    "content": "Setting up a computer program to trade stocks automatically without human help.",
     "multipliers": {
       "IT_Artistic": -0.7,
       "IT_Conventional": 0.7,
@@ -793,7 +793,7 @@
   },
   {
     "id": "C119",
-    "content": "Intentionally keeping your academic major undeclared because you thrive on the creative chaos of exploring multiple unrelated fields simultaneously.",
+    "content": "Delaying choosing a college major so you can study many different subjects.",
     "multipliers": {
       "IT_Artistic": 0.7,
       "IT_Conventional": -0.9,
@@ -837,7 +837,7 @@
   },
   {
     "id": "C120",
-    "content": "Living completely off the grid in a remote cabin for months, focusing entirely on hand-binding an elaborate fantasy graphic novel.",
+    "content": "Living alone in a remote cabin for months to write and draw a graphic novel.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": -0.5,
@@ -881,7 +881,7 @@
   },
   {
     "id": "C121",
-    "content": "Consciously changing your voice, wardrobe, and natural personality traits to blend into an elite, hyper-wealthy student network.",
+    "content": "Changing the way you speak, dress, and act to fit in with wealthy students.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": 0.5,
@@ -925,7 +925,7 @@
   },
   {
     "id": "C122",
-    "content": "Spending weeks painting an intricate, beautiful public mural on a wall officially scheduled for complete demolition next month.",
+    "content": "Spending weeks painting a mural on a wall that will soon be torn down.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": -0.4,
@@ -969,7 +969,7 @@
   },
   {
     "id": "C123",
-    "content": "Running a highly profitable, secret essay-writing ring that pays well but guarantees instant expulsion if academic administrators catch you.",
+    "content": "Running a secret business writing school papers for others, despite the risk of getting expelled.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": 0.5,
@@ -1013,7 +1013,7 @@
   },
   {
     "id": "C124",
-    "content": "Spending six grueling months in a physics lab repeatedly failing an abstract experiment, with zero guarantee of ultimate success.",
+    "content": "Spending months in a physics lab trying an experiment that keeps failing.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.6,
@@ -1057,7 +1057,7 @@
   },
   {
     "id": "C125",
-    "content": "Allowing your parents to pick your exact college courses to maintain peace, despite completely despising the chosen technical field.",
+    "content": "Letting your parents choose your college classes to avoid arguments, even if you hate the subject.",
     "multipliers": {
       "IT_Artistic": -0.5,
       "IT_Conventional": 0.8,
@@ -1101,7 +1101,7 @@
   },
   {
     "id": "C126",
-    "content": "Standing on a freezing urban street corner pitching an experimental product to aggressive, entirely uninterested pedestrians all day.",
+    "content": "Standing on a cold street corner trying to sell a new product to passersby.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": -0.4,
@@ -1145,7 +1145,7 @@
   },
   {
     "id": "C127",
-    "content": "Managing a massive, high-speed fulfillment hub where every worker's movements are precisely timed by an automated master software grid.",
+    "content": "Managing a large warehouse where a computer system times and tracks the workers.",
     "multipliers": {
       "IT_Artistic": -0.8,
       "IT_Conventional": 0.9,
@@ -1189,7 +1189,7 @@
   },
   {
     "id": "C128",
-    "content": "Walking away from a massive family inheritance because the trust fund requires you to work at their firm for decades.",
+    "content": "Giving up a large family inheritance because it requires you to work at the family business for years.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": -0.8,
@@ -1233,7 +1233,7 @@
   },
   {
     "id": "C129",
-    "content": "Spending your entire weekend meticulously configuring the precise electrical wiring and automated nutrient sensors of a prototype indoor greenhouse.",
+    "content": "Spending your weekend setting up the wiring and sensors for an indoor greenhouse.",
     "multipliers": {
       "IT_Artistic": -0.1,
       "IT_Conventional": 0.6,
@@ -1277,7 +1277,7 @@
   },
   {
     "id": "C130",
-    "content": "Quietly orchestrating a major corporate turnaround behind the scenes while letting a charismatic teammate take all the public credit.",
+    "content": "Helping a company succeed behind the scenes while letting a coworker take the credit.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.5,
@@ -1319,10 +1319,9 @@
       "AB_Written Expression": 0.6
     }
   },
-  
   {
     "id": "C131",
-    "content": "Leading a search-and-rescue team into an unstable, collapsed cave system during a heavy storm to locate missing hikers.",
+    "content": "Leading a rescue team into a collapsed cave during a storm to find lost hikers.",
     "multipliers": {
       "IT_Artistic": -0.7,
       "IT_Conventional": 0.3,
@@ -1366,7 +1365,7 @@
   },
   {
     "id": "C132",
-    "content": "Spending months alone in a climate-controlled archive deciphering and translating extremely fragile, partially decayed medieval manuscripts.",
+    "content": "Spending months alone reading and translating very old, damaged papers.",
     "multipliers": {
       "IT_Artistic": 0.6,
       "IT_Conventional": 0.7,
@@ -1410,7 +1409,7 @@
   },
   {
     "id": "C133",
-    "content": "Mediating a bitter, emotional property lines dispute between hostile neighbors who are on the verge of physical confrontation.",
+    "content": "Helping angry neighbors settle an argument over their property boundary.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": 0.5,
@@ -1454,7 +1453,7 @@
   },
   {
     "id": "C134",
-    "content": "Drafting an extremely complex, 500-page corporate restructuring proposal under a rigid legal framework and tight regulatory oversight.",
+    "content": "Writing a long and complicated business plan that must follow strict legal rules.",
     "multipliers": {
       "IT_Artistic": -0.8,
       "IT_Conventional": 1.0,
@@ -1498,7 +1497,7 @@
   },
   {
     "id": "C135",
-    "content": "Designing a complex, highly controversial loop inside a prominent financial software that allows wealthy clients to legally minimize tax contributions.",
+    "content": "Designing financial software that helps wealthy clients pay less in taxes legally.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.6,
@@ -1542,7 +1541,7 @@
   },
   {
     "id": "C136",
-    "content": "Manually reviewing and cross-referencing 10,000 physical billing receipts against a ledger to identify an anomalous $15 banking error.",
+    "content": "Checking thousands of paper receipts to find a small banking mistake.",
     "multipliers": {
       "IT_Artistic": -0.8,
       "IT_Conventional": 1.0,
@@ -1586,7 +1585,7 @@
   },
   {
     "id": "C137",
-    "content": "Performing an unscripted, highly expressive interpretive dance routine in front of a critical panel of theater directors.",
+    "content": "Dancing freely without a script in front of a panel of theater directors.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": -0.9,
@@ -1630,7 +1629,7 @@
   },
   {
     "id": "C138",
-    "content": "Voluntarily stepping down as director of a high-status research department to spend your days writing raw code and analyzing raw datasets.",
+    "content": "Leaving a high-level manager job to focus on writing code and analyzing data.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": 0.5,
@@ -1674,7 +1673,7 @@
   },
   {
     "id": "C139",
-    "content": "Embarking on a solo, transcontinental hitchhiking journey with no planned itinerary, relying entirely on the goodwill of strangers.",
+    "content": "Hitchhiking alone across a continent without any plans or maps.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": -1.0,
@@ -1718,7 +1717,7 @@
   },
   {
     "id": "C140",
-    "content": "Spending weeks individually tuning and hand-carving the structural braces of an acoustic guitar to match an exact tonal signature.",
+    "content": "Spending weeks carving and tuning the wood parts inside an acoustic guitar.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": 0.3,
@@ -1762,7 +1761,7 @@
   },
   {
     "id": "C141",
-    "content": "Working as an entry-level clerk at a luxury fashion house, performing repetitive data entry just to drop the brand name at social events.",
+    "content": "Doing boring office work at a famous fashion company just to impress people at parties.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": 0.7,
@@ -1806,7 +1805,7 @@
   },
   {
     "id": "C142",
-    "content": "Working in a high-intensity trauma ward, stabilizing multiple critical patients in rapid succession under chaotic conditions.",
+    "content": "Treating severely injured patients quickly in a busy hospital emergency room.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.4,
@@ -1850,7 +1849,7 @@
   },
   {
     "id": "C143",
-    "content": "Developing an unproven, risky clean-energy startup in a rented commercial warehouse, turning down a high-paying oil consultancy offer.",
+    "content": "Starting a risky green energy company instead of taking a high-paying job in oil.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": -0.8,
@@ -1894,7 +1893,7 @@
   },
   {
     "id": "C144",
-    "content": "Operating a precision CNC milling machine, keeping dimensions strictly within a tolerance of 0.001 millimeters over a 12-hour shift.",
+    "content": "Operating a machine to cut metal parts with perfect accuracy during a long shift.",
     "multipliers": {
       "IT_Artistic": -0.9,
       "IT_Conventional": 0.9,
@@ -1938,7 +1937,7 @@
   },
   {
     "id": "C145",
-    "content": "Manually digging irrigation trenches and laying heavy concrete pipes for a community farm irrigation system in the scorching heat.",
+    "content": "Digging trenches and laying heavy pipes for a farm watering system in the heat.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.4,
@@ -1982,7 +1981,7 @@
   },
   {
     "id": "C146",
-    "content": "Organizing and leading a wildcat labor strike at a massive regional distribution warehouse, risking blacklisting in the industry.",
+    "content": "Leading an unofficial workers' strike at a large warehouse, despite the risk of being fired.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": -0.7,
@@ -2026,7 +2025,7 @@
   },
   {
     "id": "C147",
-    "content": "Anonymously donating your patented medical software algorithms to the public, foregoing millions in royalty agreements to ensure free distribution.",
+    "content": "Giving away your medical software for free to the public instead of selling it for millions.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": 0.3,
@@ -2070,7 +2069,7 @@
   },
   {
     "id": "C148",
-    "content": "Designing and deploying a high-speed server load balancer that routes gigabytes of user traffic per second under strict milliseconds latency budgets.",
+    "content": "Building a system to route heavy internet traffic quickly and smoothly.",
     "multipliers": {
       "IT_Artistic": -0.7,
       "IT_Conventional": 0.7,
@@ -2114,7 +2113,7 @@
   },
   {
     "id": "C149",
-    "content": "Choosing to study random electives in physics, classic literature, and woodworking rather than declaring a streamlined business major.",
+    "content": "Taking a mix of science, literature, and hands-on classes instead of a business degree.",
     "multipliers": {
       "IT_Artistic": 0.7,
       "IT_Conventional": -0.9,
@@ -2158,7 +2157,7 @@
   },
   {
     "id": "C150",
-    "content": "Spending months alone in a deep woodland area hand-building a highly geometric timber frame cabin using only traditional hand tools.",
+    "content": "Spending months in the woods building a wooden cabin by hand using basic tools.",
     "multipliers": {
       "IT_Artistic": 0.8,
       "IT_Conventional": -0.4,
@@ -2202,7 +2201,7 @@
   },
   {
     "id": "C151",
-    "content": "Systematically altering your conversation topics, political opinions, and laughter style to win the favor of a powerful country club membership.",
+    "content": "Changing your opinions and behavior just to fit in with an exclusive club.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": 0.6,
@@ -2246,7 +2245,7 @@
   },
   {
     "id": "C152",
-    "content": "Designing a complex series of kinetic, water-driven scrap metal sculptures that will rust, degrade, and eventually collapse over a 12-month period.",
+    "content": "Building metal water sculptures that are designed to rust and fall apart over a year.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": -0.4,
@@ -2290,7 +2289,7 @@
   },
   {
     "id": "C153",
-    "content": "Selling unauthorized, highly functional counterfeit design blueprints to overseas firms, accepting large crypto payments under constant threat of federal indictment.",
+    "content": "Selling copied blueprints illegally to foreign companies for cryptocurrency, despite the risk of arrest.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": 0.4,
@@ -2334,7 +2333,7 @@
   },
   {
     "id": "C154",
-    "content": "Spending two years in a computational biology lab testing 800 variable permutations of a drug molecule with constant negative results.",
+    "content": "Spending two years in a lab testing many different versions of a medicine that keep failing.",
     "multipliers": {
       "IT_Artistic": -0.5,
       "IT_Conventional": 0.7,
@@ -2378,7 +2377,7 @@
   },
   {
     "id": "C155",
-    "content": "Completing a highly dry, grueling business administration degree selected by your parents to prevent family estrangement, while ignoring your own passion.",
+    "content": "Finishing a boring business degree to please your parents, while ignoring what you actually want to do.",
     "multipliers": {
       "IT_Artistic": -0.6,
       "IT_Conventional": 0.9,
@@ -2422,7 +2421,7 @@
   },
   {
     "id": "C156",
-    "content": "Pitching a radical, high-cost clean city transit model to a highly skeptical city council under strict public commentary time limits.",
+    "content": "Presenting a bold, expensive plan for clean city buses or trains to a skeptical local government.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": -0.3,
@@ -2466,7 +2465,7 @@
   },
   {
     "id": "C157",
-    "content": "Managing a massive, high-speed regional recycling center where automated optical sorting arms process tons of waste daily under strict hazard guidelines.",
+    "content": "Managing a large recycling center that uses automated systems to sort waste.",
     "multipliers": {
       "IT_Artistic": -0.8,
       "IT_Conventional": 0.8,
@@ -2510,7 +2509,7 @@
   },
   {
     "id": "C158",
-    "content": "Disinheriting yourself from a corporate shipping empire to work as a freelance deep-sea commercial diver on manual hull repairs.",
+    "content": "Giving up your family's shipping business to work as an underwater diver repairing boats.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": -0.8,
@@ -2554,7 +2553,7 @@
   },
   {
     "id": "C159",
-    "content": "Designing, building, and manual calibration of a custom astronomical tracker mount that compensates for the Earth's precise rotation for deep-sky photography.",
+    "content": "Building and adjusting a custom device to help take clear photos of stars.",
     "multipliers": {
       "IT_Artistic": 0.4,
       "IT_Conventional": 0.5,
@@ -2598,7 +2597,7 @@
   },
   {
     "id": "C160",
-    "content": "Drafting the operational parameters and coordinating a quiet, behind-the-scenes restructuring of a non-profit while letting a charismatic speaker receive the public credit.",
+    "content": "Reorganizing a charity behind the scenes while letting someone else take the public credit.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": 0.6,
@@ -2640,5 +2639,4 @@
       "AB_Written Expression": 0.7
     }
   }
-
 ]

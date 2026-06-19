@@ -1,7 +1,7 @@
 [
   {
     "id": "A001",
-    "content": "Spending 6 hours deep-diving into a complex spreadsheet to find a $1 discrepancy. Found it. Satisfaction 100.",
+    "content": "Finding a small mistake in a large spreadsheet after searching for hours.",
     "multipliers": {
       "IT_Artistic": -0.6,
       "IT_Conventional": 0.9,
@@ -45,7 +45,7 @@
   },
   {
     "id": "A002",
-    "content": "Pitching a radical, high-stakes idea to a room full of skeptical executives. All eyes on me.",
+    "content": "Presenting a bold new idea to a group of skeptical bosses.",
     "multipliers": {
       "IT_Artistic": 0.4,
       "IT_Conventional": -0.7,
@@ -89,7 +89,7 @@
   },
   {
     "id": "A003",
-    "content": "Volunteering at a chaotic local shelter. Seeing the direct impact of a warm meal on someone’s day.",
+    "content": "Serving food to people in need at a busy local shelter.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": -0.2,
@@ -133,7 +133,7 @@
   },
   {
     "id": "A004",
-    "content": "A silent morning in the woodshop, hand-sanding a table until the grain feels like silk.",
+    "content": "Sanding a wooden table by hand until it is completely smooth.",
     "multipliers": {
       "IT_Artistic": 0.8,
       "IT_Conventional": 0.3,
@@ -177,7 +177,7 @@
   },
   {
     "id": "A005",
-    "content": "Building a custom PC from scratch. Cable management is an art form.",
+    "content": "Building a custom computer from separate parts.",
     "multipliers": {
       "IT_Artistic": 0.4,
       "IT_Conventional": 0.6,
@@ -221,7 +221,7 @@
   },
   {
     "id": "A006",
-    "content": "Organizing a protest for a cause I believe in. Someone has to speak up.",
+    "content": "Organizing a protest to stand up for a cause.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": -0.7,
@@ -265,7 +265,7 @@
   },
   {
     "id": "A007",
-    "content": "Analyzing market trends to predict the next big crypto breakout. The adrenaline of the trade.",
+    "content": "Studying market trends to predict cryptocurrency changes.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.5,
@@ -309,7 +309,7 @@
   },
   {
     "id": "A008",
-    "content": "Coding a script that automates a boring task. Work smarter, not harder.",
+    "content": "Writing a script to automate a boring, repetitive task.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": 0.7,
@@ -353,7 +353,7 @@
   },
   {
     "id": "A009",
-    "content": "Spending the weekend hiking a difficult trail just to see the sunrise from the peak.",
+    "content": "Hiking a difficult mountain trail to watch the sunrise.",
     "multipliers": {
       "IT_Artistic": 0.6,
       "IT_Conventional": -0.5,
@@ -397,7 +397,7 @@
   },
   {
     "id": "A010",
-    "content": "Mentoring a junior teammate. Seeing them finally 'get it' is better than any bonus.",
+    "content": "Teaching a new coworker and helping them learn the job.",
     "multipliers": {
       "IT_Artistic": -0.1,
       "IT_Conventional": 0.3,
@@ -441,7 +441,7 @@
   },
   {
     "id": "A011",
-    "content": "Redesigning a website layout because the spacing was off by 2 pixels. Perfection matters.",
+    "content": "Adjusting the layout of a website to make it look perfect.",
     "multipliers": {
       "IT_Artistic": 0.8,
       "IT_Conventional": 0.7,
@@ -485,7 +485,7 @@
   },
   {
     "id": "A012",
-    "content": "Negotiating a multi-million dollar contract. I don't leave money on the table.",
+    "content": "Negotiating a major contract to get the best price.",
     "multipliers": {
       "IT_Artistic": -0.5,
       "IT_Conventional": 0.5,
@@ -529,7 +529,7 @@
   },
   {
     "id": "A013",
-    "content": "Performing a solo on stage. The spotlight is where I feel most alive.",
+    "content": "Performing a solo musical act on stage.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": -0.8,
@@ -573,7 +573,7 @@
   },
   {
     "id": "A014",
-    "content": "Solving a logic puzzle that everyone else gave up on hours ago.",
+    "content": "Solving a difficult puzzle that others gave up on.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.5,
@@ -617,7 +617,7 @@
   },
   {
     "id": "A015",
-    "content": "Coaching a kids' sports team. Teaching them teamwork over winning.",
+    "content": "Coaching a children's sports team to play together.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.1,
@@ -661,7 +661,7 @@
   },
   {
     "id": "A016",
-    "content": "Designing a sustainable irrigation system for a remote village.",
+    "content": "Designing a watering system to help a dry village.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": 0.4,
@@ -705,7 +705,7 @@
   },
   {
     "id": "A017",
-    "content": "Working in a high-speed emergency room. No two minutes are the same.",
+    "content": "Working quickly in a busy hospital emergency room.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.4,
@@ -749,7 +749,7 @@
   },
   {
     "id": "A018",
-    "content": "Curating a gallery show. Every piece must tell a part of the larger story.",
+    "content": "Selecting and arranging art pieces for an exhibition.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": 0.3,
@@ -793,7 +793,7 @@
   },
   {
     "id": "A019",
-    "content": "Taking a spontaneous road trip with no map and no destination. Just driving.",
+    "content": "Going on a spontaneous road trip without a planned destination.",
     "multipliers": {
       "IT_Artistic": 0.5,
       "IT_Conventional": -1.0,
@@ -837,7 +837,7 @@
   },
   {
     "id": "A020",
-    "content": "Reading the fine print of a contract to find the hidden loophole.",
+    "content": "Reading a contract carefully to find hidden details.",
     "multipliers": {
       "IT_Artistic": -0.6,
       "IT_Conventional": 0.8,
@@ -881,7 +881,7 @@
   },
   {
     "id": "A021",
-    "content": "Testing a new VR game and finding a way to clip through the map.",
+    "content": "Finding glitches and bugs while testing a new virtual reality game.",
     "multipliers": {
       "IT_Artistic": 0.4,
       "IT_Conventional": 0.4,
@@ -925,7 +925,7 @@
   },
   {
     "id": "A022",
-    "content": "Fixing a leaky faucet yourself because you want it done 'the right way'.",
+    "content": "Repairing a leaky sink faucet on your own.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.5,
@@ -969,7 +969,7 @@
   },
   {
     "id": "A023",
-    "content": "Managing a high-pressure political campaign. Winning is everything.",
+    "content": "Running a high-pressure campaign to help a politician win.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.4,
@@ -1013,7 +1013,7 @@
   },
   {
     "id": "A024",
-    "content": "Combing through ancient archives to find one missing piece of history.",
+    "content": "Searching through ancient archives to find missing historical details.",
     "multipliers": {
       "IT_Artistic": 0.4,
       "IT_Conventional": 0.7,
@@ -1057,7 +1057,7 @@
   },
   {
     "id": "A025",
-    "content": "Running a marathon. The pain is just a signal that I'm still in the game.",
+    "content": "Running a full marathon.",
     "multipliers": {
       "IT_Artistic": -0.5,
       "IT_Conventional": 0.2,
@@ -1101,7 +1101,7 @@
   },
   {
     "id": "A026",
-    "content": "Creating a viral TikTok that explains a complex topic in 60 seconds.",
+    "content": "Making a short online video that explains a hard topic simply.",
     "multipliers": {
       "IT_Artistic": 0.8,
       "IT_Conventional": -0.4,
@@ -1145,7 +1145,7 @@
   },
   {
     "id": "A027",
-    "content": "Designing a jewelry piece with intricate patterns you can only see up close.",
+    "content": "Designing highly detailed, intricate jewelry.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": 0.4,
@@ -1189,7 +1189,7 @@
   },
   {
     "id": "A028",
-    "content": "Being the person everyone goes to when they need help with their emotions.",
+    "content": "Listening to others and helping them with their feelings.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": -0.2,
@@ -1233,7 +1233,7 @@
   },
   {
     "id": "A029",
-    "content": "Calculating the precise angle of a skyscraper to withstand 200mph winds.",
+    "content": "Doing math to make sure a tall building can survive strong winds.",
     "multipliers": {
       "IT_Artistic": -0.1,
       "IT_Conventional": 0.7,
@@ -1277,7 +1277,7 @@
   },
   {
     "id": "A030",
-    "content": "Starting a side hustle with $50 and seeing if I can double it by Friday.",
+    "content": "Starting a small business with very little money to see if it grows.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": -0.5,
@@ -1321,7 +1321,7 @@
   },
   {
     "id": "A031",
-    "content": "Drafting the blueprints for a city's new underground subway system.",
+    "content": "Drawing the plans for a new subway system.",
     "multipliers": {
       "IT_Artistic": 0.3,
       "IT_Conventional": 0.6,
@@ -1365,7 +1365,7 @@
   },
   {
     "id": "A032",
-    "content": "Training a service dog to help someone regain their independence.",
+    "content": "Training a service dog to help a person with a disability.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": 0.4,
@@ -1409,7 +1409,7 @@
   },
   {
     "id": "A033",
-    "content": "Hosting a dinner party for 15 people and making sure everyone is happy.",
+    "content": "Hosting a large dinner party and making sure guests are happy.",
     "multipliers": {
       "IT_Artistic": 0.5,
       "IT_Conventional": 0.2,
@@ -1453,7 +1453,7 @@
   },
   {
     "id": "A034",
-    "content": "Reversing the code of a malware strain to build a better firewall.",
+    "content": "Analyzing a computer virus to build a better security system.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.5,
@@ -1497,7 +1497,7 @@
   },
   {
     "id": "A035",
-    "content": "Writing a manifesto on how to change the education system.",
+    "content": "Writing an essay about how to improve the school system.",
     "multipliers": {
       "IT_Artistic": 0.6,
       "IT_Conventional": -0.7,
@@ -1541,7 +1541,7 @@
   },
   {
     "id": "A036",
-    "content": "Spending all night in a laboratory watching a chemical reaction unfold.",
+    "content": "Staying up late in a lab to watch a science experiment.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.6,
@@ -1585,7 +1585,7 @@
   },
   {
     "id": "A037",
-    "content": "Negotiating with a landlord to get a lower rent for a local non-profit.",
+    "content": "Asking a landlord to lower the rent for a local charity.",
     "multipliers": {
       "IT_Artistic": -0.2,
       "IT_Conventional": 0.4,
@@ -1629,7 +1629,7 @@
   },
   {
     "id": "A038",
-    "content": "Designing a logo that will be seen by millions of people every day.",
+    "content": "Designing a logo that will be seen by millions of people.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": 0.3,
@@ -1673,7 +1673,7 @@
   },
   {
     "id": "A039",
-    "content": "Fixing a multi-million dollar jet engine while on a tight deadline.",
+    "content": "Repairing an airplane engine quickly under pressure.",
     "multipliers": {
       "IT_Artistic": -0.6,
       "IT_Conventional": 0.6,
@@ -1717,7 +1717,7 @@
   },
   {
     "id": "A040",
-    "content": "Investing in a startup that everyone else thinks is a crazy idea.",
+    "content": "Putting money into a new company that others think is too risky.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": -0.7,
@@ -1761,7 +1761,7 @@
   },
   {
     "id": "A041",
-    "content": "Organizing a massive music festival in the middle of a desert.",
+    "content": "Planning a large outdoor music festival.",
     "multipliers": {
       "IT_Artistic": 0.8,
       "IT_Conventional": -0.6,
@@ -1805,7 +1805,7 @@
   },
   {
     "id": "A042",
-    "content": "Spending hours perfecting a 10-step skincare routine for maximum glow.",
+    "content": "Following a long routine to take care of your skin.",
     "multipliers": {
       "IT_Artistic": 0.6,
       "IT_Conventional": 0.6,
@@ -1849,7 +1849,7 @@
   },
   {
     "id": "A043",
-    "content": "Developing a vaccine that could save millions but might take years of failure.",
+    "content": "Working to make a medicine that saves lives, despite many failures.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.5,
@@ -1893,7 +1893,7 @@
   },
   {
     "id": "A044",
-    "content": "Being a chef in a 3-Michelin-star kitchen where speed is as vital as taste.",
+    "content": "Cooking quickly in a highly rated, busy kitchen.",
     "multipliers": {
       "IT_Artistic": 0.9,
       "IT_Conventional": 0.4,
@@ -1937,7 +1937,7 @@
   },
   {
     "id": "A045",
-    "content": "Creating a spreadsheet to track every calorie I eat for a whole year.",
+    "content": "Keeping a daily list of all the food and calories you eat.",
     "multipliers": {
       "IT_Artistic": -0.6,
       "IT_Conventional": 0.9,
@@ -1981,7 +1981,7 @@
   },
   {
     "id": "A046",
-    "content": "Leading a deep-sea exploration team to find a sunken shipwreck.",
+    "content": "Leading a team underwater to search for a sunken ship.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": 0.4,
@@ -2025,7 +2025,7 @@
   },
   {
     "id": "A047",
-    "content": "Decorating a room so it looks exactly like a Pinterest board.",
+    "content": "Decorating a room to make it look beautiful and neat.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": 0.5,
@@ -2069,7 +2069,7 @@
   },
   {
     "id": "A048",
-    "content": "Designing a robot that can perform surgery with 0.1mm precision.",
+    "content": "Building a robot that can help doctors perform precise medical operations.",
     "multipliers": {
       "IT_Artistic": 0.1,
       "IT_Conventional": 0.6,
@@ -2113,7 +2113,7 @@
   },
   {
     "id": "A049",
-    "content": "Winning a competitive debate on a topic I personally disagree with.",
+    "content": "Winning a debate even when arguing a side you disagree with.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": 0.5,
@@ -2157,7 +2157,7 @@
   },
   {
     "id": "A050",
-    "content": "Teaching someone how to read for the first time.",
+    "content": "Helping someone learn how to read.",
     "multipliers": {
       "IT_Artistic": 0.2,
       "IT_Conventional": 0.3,
@@ -2201,7 +2201,7 @@
   },
   {
     "id": "A051",
-    "content": "Building a custom motorcycyle and taking it on a cross-country trip.",
+    "content": "Building a motorcycle and riding it across the country.",
     "multipliers": {
       "IT_Artistic": 0.5,
       "IT_Conventional": -0.4,
@@ -2245,7 +2245,7 @@
   },
   {
     "id": "A052",
-    "content": "Coding an AI that can write its own poetry.",
+    "content": "Programming a computer to write its own poetry.",
     "multipliers": {
       "IT_Artistic": 0.8,
       "IT_Conventional": 0.4,
@@ -2289,7 +2289,7 @@
   },
   {
     "id": "A053",
-    "content": "Creating a massive outdoor mural that brightens up a grey city block.",
+    "content": "Painting a large colorful picture on a city wall.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": -0.4,
@@ -2333,7 +2333,7 @@
   },
   {
     "id": "A054",
-    "content": "Directing a film where every frame is meticulously composed.",
+    "content": "Directing a movie and carefully planning how each scene looks.",
     "multipliers": {
       "IT_Artistic": 1.0,
       "IT_Conventional": 0.4,
@@ -2377,7 +2377,7 @@
   },
   {
     "id": "A055",
-    "content": "Analyzing satellite data to track illegal logging in the Amazon.",
+    "content": "Using space photos to see where trees are cut down illegally.",
     "multipliers": {
       "IT_Artistic": -0.1,
       "IT_Conventional": 0.6,
@@ -2421,7 +2421,7 @@
   },
   {
     "id": "A056",
-    "content": "Managing the logistics for a disaster relief mission.",
+    "content": "Organizing supplies and transport to help after a natural disaster.",
     "multipliers": {
       "IT_Artistic": -0.4,
       "IT_Conventional": 0.7,
@@ -2465,7 +2465,7 @@
   },
   {
     "id": "A057",
-    "content": "Learning a dead language just so I can read original texts.",
+    "content": "Learning an ancient, unused language to read old books.",
     "multipliers": {
       "IT_Artistic": 0.5,
       "IT_Conventional": 0.6,
@@ -2509,7 +2509,7 @@
   },
   {
     "id": "A058",
-    "content": "Designing a high-performance athletic shoe for Olympic sprinters.",
+    "content": "Designing running shoes for professional athletes.",
     "multipliers": {
       "IT_Artistic": 0.8,
       "IT_Conventional": 0.4,
@@ -2553,7 +2553,7 @@
   },
   {
     "id": "A059",
-    "content": "Organizing a neighborhood watch program to make my street safer.",
+    "content": "Working with neighbors to keep your street safe.",
     "multipliers": {
       "IT_Artistic": -0.3,
       "IT_Conventional": 0.5,
@@ -2597,7 +2597,7 @@
   },
   {
     "id": "A060",
-    "content": "Living off the grid in a cabin I built myself for a month.",
+    "content": "Living alone in a hand-built cabin in the woods for a month.",
     "multipliers": {
       "IT_Artistic": 0.5,
       "IT_Conventional": -0.5,
