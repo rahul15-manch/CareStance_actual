@@ -177,7 +177,7 @@
         box-shadow: 0 4px 12px rgba(13, 148, 136, 0.1);
     }
 
-    /* Fira Code Style for Console logs */
+    /* Fira Code Style for Console logs (Phase 0) */
     .console-bubble {
         font-family: 'Fira Code', 'Courier New', monospace;
         font-size: 0.85rem;
@@ -429,9 +429,7 @@
     let swipeLogs = [];
     let swipeCards = [];
     let activeSwipeIndex = 0;
-    let activeScenarioIdx = 0;
-    const total = (activePhaseData.scenarios || []).length;
-    const sc = activePhaseData.scenarios[activeScenarioIdx];
+    
     // Voice synthesizers
     let speechSynth = window.speechSynthesis;
     let activeUtterance = null;
@@ -475,8 +473,9 @@
 
     function updateHeader() {
         const isG12 = assessmentState.student_type === "12th";
-        const totalPhases = assessmentState.total_phases || 5;
-        const currentLabelVal = assessmentState.display_phase || 1;
+        // G12 has 6 phases (0 to 5), G10 has 5 phases (1 to 5)
+        const totalPhases = isG12 ? 6 : 5;
+        const currentLabelVal = isG12 ? (assessmentState.current_phase + 1) : assessmentState.current_phase;
         
         const gradeTitle = document.getElementById("grade-title");
         if (gradeTitle) {
@@ -511,7 +510,7 @@
             } else if (phase === 1) {
                 renderSwipePhase();
             } else if (phase === 2) {
-                await refreshState();
+                renderArchetypePhase();
             } else if (phase === 3) {
                 renderProxyPhase();
             } else if (phase === 4) {
@@ -535,9 +534,15 @@
         let text = "";
         const phase = assessmentState.current_phase;
         
-        if (phase === 1) {
+        if (phase === 0) {
+            const lastAI = document.querySelector(".chat-bubble.ai:last-child");
+            if (lastAI) text = lastAI.innerText;
+        } else if (phase === 1) {
             const activeCard = swipeCards[activeSwipeIndex];
             if (activeCard) text = activeCard.content || activeCard.text || "";
+        } else if (phase === 2) {
+            const lastAI = document.querySelector(".chat-bubble.ai:last-child");
+            if (lastAI) text = lastAI.innerText;
         } else {
             const pText = document.querySelector("#phase-body h2, #phase-body p");
             if (pText) text = pText.innerText;
@@ -554,7 +559,7 @@
         }
     }
 
-    // --- PHASE 1: STUDENT INTAKE ---
+    // --- PHASE 0: CLINICAL CONVERSATIONAL INTAKE (G12 ONLY) ---
     function renderIntakePhase() {
         const body = document.getElementById("phase-body");
         body.innerHTML = `
@@ -775,7 +780,7 @@
         }
     }
 
-    // --- PHASE 2: REFLEX PREFERENCE CARD SWIPES (BOTH) ---
+    // --- PHASE 1: REFLEX PREFERENCE CARD SWIPES (BOTH) ---
     function renderSwipePhase() {
         swipeCards = activePhaseData.cards || [];
         activeSwipeIndex = 0;
@@ -1069,16 +1074,11 @@
         }
     }
 
-    // --- PHASE 4: SEQUENCE PLANNER TASK (BOTH) ---
-    let phase4Items = [];
-    let phase4Connections = [];
-    let phase4NextId = 1;
-    let phase4DraggedTool = null;
+    // --- PHASE 4: ENHANCED SEQUENCE PLANNER (NEW) ---
+    let plannerWorkspaceItems = [];
+    let nextPlannerId = 1;
 
-    function renderScenariosPhase() {
-        const task = activePhaseData.phase4_task || {};
-        const phase4Json = activePhaseData.phase4_json || {};
-        const tools = task.tools_required || (phase4Json.nodes || []).map(n => n.label) || [];
+    function renderSequencePlannerPhase() {
         const body = document.getElementById("phase-body");
         const taskData = activePhaseData.task || {};
         // The JSON uses 'task' as the scenario name field
@@ -1164,168 +1164,182 @@
             allowed.length === 0 || allowed.some(a => tr.label.toLowerCase().includes(a) || tr.type.toLowerCase().includes(a))
         );
 
-        palette.innerHTML = filtered.map(item => `
-            <div class="planner-palette-item group flex items-center gap-2 p-2 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-grab transition-all" 
-                 draggable="true" 
-                 ondragstart="event.dataTransfer.setData('tool', '${JSON.stringify(item).replace(/'/g, "&apos;")}')">
-                <span class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-lg group-hover:bg-teal-100 group-hover:text-teal-600 transition-colors">${item.icon}</span>
-                <span class="text-[10px] font-bold text-slate-700">${item.label}</span>
-            </div>
+        // Show all tools if none matched
+        const toShow = filtered.length > 0 ? filtered : TOOL_RESOURCES;
+
+        palette.innerHTML = toShow.map(item => `
+            <button onclick="addToolToCanvas('${item.type}')"
+                style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;width:100%;text-align:left;transition:all 0.15s;"
+                onmouseover="this.style.borderColor='#0d9488';this.style.background='#f0fdfa'"
+                onmouseout="this.style.borderColor='#e2e8f0';this.style.background='white'">
+                <span style="font-size:16px;">${item.icon}</span>
+                <span style="font-size:10px;font-weight:700;color:#334155;">${item.label}</span>
+            </button>
+        `).join('');
+
+        const container = document.getElementById('planner-canvas-container');
+        container.addEventListener('pointermove', handlePointerMove);
+        container.addEventListener('pointerup', handlePointerUp);
+        container.addEventListener('pointerleave', handlePointerUp);
+    }
+
+    function addToolToCanvas(type) {
+        const tool = TOOL_RESOURCES.find(t => t.type === type);
+        if (!tool) return;
+        const id = nextPlannerId++;
+        // Auto-arrange in a grid pattern
+        const col = plannerWorkspaceItems.length % 3;
+        const row = Math.floor(plannerWorkspaceItems.length / 3);
+        const x = 20 + col * 210;
+        const y = 20 + row * 140;
+        plannerWorkspaceItems.push({ ...tool, id, x, y, description: "" });
+        renderPlannerWorkspace();
+    }
+
+    function handlePointerMove(e) {
+        if (draggingNodeId !== null) {
+            const container = document.getElementById('planner-canvas-container');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left - dragOffset.x;
+            const y = e.clientY - rect.top - dragOffset.y;
+            
+            const item = plannerWorkspaceItems.find(it => it.id === draggingNodeId);
+            if (item) {
+                item.x = x;
+                item.y = y;
+                renderPlannerWorkspace();
+            }
+        }
+    }
+
+    function handlePointerUp() {
+        draggingNodeId = null;
+    }
+
+    function startDragging(e, id) {
+        e.stopPropagation();
+        const nodeRect = e.currentTarget.getBoundingClientRect();
+        dragOffset.x = e.clientX - nodeRect.left;
+        dragOffset.y = e.clientY - nodeRect.top;
+        draggingNodeId = id;
+    }
+
+    function toggleLink(e, id) {
+        e.stopPropagation();
+        if (!linkingMode) {
+            linkingMode = true;
+            selectedSourceId = id;
+            document.getElementById('linking-mode-indicator').classList.remove('hidden');
+        } else {
+            if (selectedSourceId !== id) {
+                const exists = plannerConnections.some(c => c.from === selectedSourceId && c.to === id);
+                if (!exists) {
+                    plannerConnections.push({ from: selectedSourceId, to: id });
+                }
+            }
+            linkingMode = false;
+            selectedSourceId = null;
+            document.getElementById('linking-mode-indicator').classList.add('hidden');
+        }
+        renderPlannerWorkspace();
+    }
+
+    function renderPlannerWorkspace() {
+        const canvas = document.getElementById('planner-canvas');
+        const empty = document.getElementById('planner-empty-state');
+        const svg = document.getElementById('planner-connections-svg');
+        
+        empty.style.display = plannerWorkspaceItems.length > 0 ? 'none' : 'flex';
+
+        svg.innerHTML = `
+            <defs>
+                <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488" />
+                </marker>
+            </defs>
         `;
-
-        wirePhase4Planner();
-        seedPhase4Nodes(phase4Json.nodes || []);
-        renderPhase4Canvas();
-    }
-
-    function wirePhase4Planner() {
-        document.querySelectorAll(".phase4-tool").forEach(el => {
-            el.addEventListener("dragstart", e => {
-                phase4DraggedTool = decodeURIComponent(el.dataset.tool || "");
-                e.dataTransfer.effectAllowed = "copy";
-            });
+        
+        plannerConnections.forEach(conn => {
+            const from = plannerWorkspaceItems.find(it => it.id === conn.from);
+            const to = plannerWorkspaceItems.find(it => it.id === conn.to);
+            if (from && to) {
+                const x1 = from.x + 90;
+                const y1 = from.y + 40;
+                const x2 = to.x + 10;
+                const y2 = to.y + 20;
+                
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const d = `M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`;
+                path.setAttribute("d", d);
+                path.setAttribute("class", "connection-path");
+                path.setAttribute("marker-end", "url(#arrowhead)");
+                svg.appendChild(path);
+            }
         });
 
-        const canvas = document.getElementById("phase4-canvas");
-        canvas.addEventListener("dragover", e => e.preventDefault());
-        canvas.addEventListener("drop", e => {
-            e.preventDefault();
-            if (!phase4DraggedTool) return;
-            const rect = canvas.getBoundingClientRect();
-            addPhase4Node(phase4DraggedTool, e.clientX - rect.left, e.clientY - rect.top);
-            phase4DraggedTool = null;
-        });
-    }
-
-    function seedPhase4Nodes(nodes) {
-        phase4Items = [];
-        phase4Connections = [];
-        phase4NextId = 1;
-        nodes.slice(0, 3).forEach((node, idx) => {
-            addPhase4Node(node.label, 40 + idx * 210, 45 + idx * 70, node.description || "");
-        });
-    }
-
-    function addPhase4Node(label, x, y, description = "") {
-        phase4Items.push({
-            id: phase4NextId++,
-            label,
-            description,
-            x: Math.max(12, Math.round(x || 24)),
-            y: Math.max(12, Math.round(y || 24))
-        });
-        renderPhase4Canvas();
-    }
-
-    function renderPhase4Canvas() {
-        const canvas = document.getElementById("phase4-canvas");
-        if (!canvas) return;
-        canvas.querySelectorAll(".phase4-node, .phase4-connection").forEach(el => el.remove());
-        document.getElementById("phase4-empty").style.display = phase4Items.length ? "none" : "flex";
-
-        phase4Connections.forEach(conn => {
-            const from = phase4Items.find(i => i.id === conn.from);
-            const to = phase4Items.find(i => i.id === conn.to);
-            if (!from || !to) return;
-            const line = document.createElement("div");
-            const x1 = from.x + 80;
-            const y1 = from.y + 32;
-            const x2 = to.x + 80;
-            const y2 = to.y + 32;
-            const length = Math.hypot(x2 - x1, y2 - y1);
-            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-            line.className = "phase4-connection absolute h-[2px] bg-cyan-300/70 origin-left";
-            line.style.left = x1 + "px";
-            line.style.top = y1 + "px";
-            line.style.width = length + "px";
-            line.style.transform = `rotate(${angle}deg)`;
-            canvas.appendChild(line);
-        });
-
-        phase4Items.forEach(item => {
-            const node = document.createElement("div");
-            node.className = "phase4-node absolute w-44 rounded-xl border border-cyan-400/30 bg-slate-950/90 p-3 shadow-xl cursor-move";
-            node.style.left = item.x + "px";
-            node.style.top = item.y + "px";
+        const existingNodes = Array.from(canvas.querySelectorAll('.planner-node'));
+        const nodeMap = new Map();
+        
+        plannerWorkspaceItems.forEach(item => {
+            let node = canvas.querySelector(`[data-id="${item.id}"]`);
+            if (!node) {
+                node = document.createElement('div');
+                node.className = `planner-node absolute p-2 cursor-grab group transition-shadow`;
+                node.setAttribute('data-id', item.id);
+                canvas.appendChild(node);
+            }
+            node.style.left = `${item.x}px`;
+            node.style.top = `${item.y}px`;
+            node.style.width = `180px`;
+            node.style.zIndex = item.id === draggingNodeId ? 200 : 100;
+            
+            const isSelected = selectedSourceId === item.id;
             node.innerHTML = `
-                <div class="text-sm font-bold text-white leading-snug">${item.label}</div>
-                <textarea class="mt-2 w-full h-14 rounded-lg bg-black/40 border border-white/10 text-xs text-slate-200 p-2 resize-none" placeholder="Describe this step...">${item.description || ""}</textarea>
-                <button class="mt-2 text-[10px] font-bold uppercase tracking-widest text-red-300 hover:text-red-200">Remove</button>
+                <div class="flex items-center justify-between mb-1" onpointerdown="startDragging(event, ${item.id})">
+                    <div class="flex items-center gap-1.5 overflow-hidden">
+                        <span class="text-xs">${item.icon}</span>
+                        <span class="text-[9px] font-extrabold text-slate-800 uppercase truncate">${item.label}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="toggleLink(event, ${item.id})" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-teal-100 text-[10px] ${isSelected ? 'bg-teal-500 text-white animate-pulse' : 'text-slate-500'}">🔗</button>
+                        <button onclick="deleteNode(event, ${item.id})" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-red-100 text-[10px] text-slate-500">✕</button>
+                    </div>
+                </div>
+                <textarea onchange="updateNodeDesc(${item.id}, this.value)" 
+                          class="w-full text-[9px] bg-slate-50 border-slate-100 focus:bg-white focus:ring-1 focus:ring-teal-500 rounded p-1.5 h-14 resize-none leading-tight" 
+                          placeholder="What purpose does this serve?">${item.description}</textarea>
+                ${isSelected ? '<div class="absolute inset-0 border-2 border-teal-400 rounded-16 pointer-events-none"></div>' : ''}
             `;
-            node.querySelector("textarea").addEventListener("input", e => item.description = e.target.value);
-            node.querySelector("button").addEventListener("click", () => {
-                phase4Items = phase4Items.filter(i => i.id !== item.id);
-                phase4Connections = phase4Connections.filter(c => c.from !== item.id && c.to !== item.id);
-                renderPhase4Canvas();
-            });
-            node.addEventListener("mousedown", e => startPhase4NodeDrag(e, item));
-            canvas.appendChild(node);
+            nodeMap.set(item.id, true);
         });
 
-        refreshPhase4Selects();
+        existingNodes.forEach(rn => {
+            const id = parseInt(rn.getAttribute('data-id'));
+            if (!nodeMap.has(id)) rn.remove();
+        });
     }
 
-    function startPhase4NodeDrag(e, item) {
-        if (e.target.tagName === "TEXTAREA" || e.target.tagName === "BUTTON") return;
-        const canvas = document.getElementById("phase4-canvas");
-        const rect = canvas.getBoundingClientRect();
-        const offsetX = e.clientX - rect.left - item.x;
-        const offsetY = e.clientY - rect.top - item.y;
+    function updateNodeDesc(id, val) {
+        const item = plannerWorkspaceItems.find(it => it.id === id);
+        if (item) item.description = val;
+    };
 
-        function move(ev) {
-            item.x = Math.max(8, Math.round(ev.clientX - rect.left - offsetX));
-            item.y = Math.max(8, Math.round(ev.clientY - rect.top - offsetY));
-            renderPhase4Canvas();
-        }
-        function stop() {
-            document.removeEventListener("mousemove", move);
-            document.removeEventListener("mouseup", stop);
-        }
-        document.addEventListener("mousemove", move);
-        document.addEventListener("mouseup", stop);
-    }
+    window.deletePlannerNode = (id) => {
+        plannerWorkspaceItems = plannerWorkspaceItems.filter(i => i.id !== id);
+        renderPlannerWorkspace();
+    };
 
-    function refreshPhase4Selects() {
-        const from = document.getElementById("phase4-from");
-        const to = document.getElementById("phase4-to");
-        if (!from || !to) return;
-        const options = phase4Items.map(item => `<option value="${item.id}">${item.label}</option>`).join("");
-        from.innerHTML = options;
-        to.innerHTML = options;
-    }
-
-    function addPhase4Connection() {
-        const from = parseInt(document.getElementById("phase4-from").value, 10);
-        const to = parseInt(document.getElementById("phase4-to").value, 10);
-        if (!from || !to || from === to) return;
-        if (!phase4Connections.some(c => c.from === from && c.to === to)) {
-            phase4Connections.push({ from, to });
-            renderPhase4Canvas();
-        }
-    }
-
-    function clearPhase4Canvas() {
-        phase4Items = [];
-        phase4Connections = [];
-        renderPhase4Canvas();
-    }
-
-    async function submitScenarioAnswers() {
-        if (phase4Items.length === 0) {
-            alert("Add at least one resource to the workspace before exporting.");
-            return;
-        }
-        showLoader("Exporting sequence JSON...");
+    async function submitPlannerProject() {
+        if (plannerWorkspaceItems.length === 0) return alert("Please map at least one tool.");
+        
+        showLoader("Synchronizing vector multipliers...");
         try {
             const res = await fetch("/assessment/api/phase4_complete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    answers: {
-                        task: activePhaseData.phase4_task || {},
-                        nodes: phase4Items,
-                        connections: phase4Connections
-                    }
+                body: JSON.stringify({ 
+                    workflow: plannerWorkspaceItems,
+                    connections: plannerConnections
                 })
             });
             const data = await res.json();
@@ -1343,7 +1357,6 @@
         const body = document.getElementById("phase-body");
         body.innerHTML = `
             <div class="text-center py-10 flex flex-col items-center justify-center stagger-in">
-                <span class="cyber-badge mb-4">Phase 5: Career Matching</span>
                 <div class="relative flex items-center justify-center mb-8">
                     <div class="animate-ping absolute inline-flex h-20 w-20 rounded-full bg-teal-500 opacity-20"></div>
                     <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-teal-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-teal-600/10">
