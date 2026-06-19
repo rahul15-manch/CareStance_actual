@@ -449,11 +449,11 @@
             } else if (phase === 1) {
                 renderSwipePhase();
             } else if (phase === 2) {
-                renderChatPhase();
+                renderArchetypePhase();
             } else if (phase === 3) {
                 renderProxyPhase();
             } else if (phase === 4) {
-                renderScenariosPhase();
+                renderSequencePlannerPhase();
             } else if (phase === 5) {
                 renderCompilePhase();
             }
@@ -893,107 +893,54 @@
         }
     }
 
-    // --- PHASE 2: ALEX OBSTACLE RIASEC CHAT (BOTH) ---
-    async function renderChatPhase() {
+    // --- PHASE 2: ARCHETYPE DISCOVERY (BOTH) ---
+    async function renderArchetypePhase() {
         const body = document.getElementById("phase-body");
+        const arch = activePhaseData.archetype || "The Seeker";
+        const msg = activePhaseData.message || "Your biometric signatures have resolved into a unique cognitive archetype.";
+        
         body.innerHTML = `
-            <div class="text-center mb-6 stagger-in">
-                <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '3' : '2'}: Mentorship Verification</span>
-                <h2 class="text-2xl font-bold mt-2 text-slate-900">Alex RIASEC Chat</h2>
-                <p class="text-slate-500 text-sm mt-1">Answer short prompts as Alex drills into your intrinsic task orientations.</p>
+            <div class="text-center mb-8 stagger-in">
+                <span class="cyber-badge mb-2">Phase 3: Cognitive Profile</span>
+                <h2 class="text-3xl font-extrabold mt-2 text-slate-900 font-outfit">Your Archetype: ${arch}</h2>
+                <p class="text-slate-500 text-sm mt-2 max-w-md mx-auto">${msg}</p>
             </div>
 
-            <div class="border border-slate-200 bg-slate-50/50 rounded-2xl p-4 flex flex-col justify-between h-[360px] stagger-in">
-                <div class="chat-container flex flex-col" id="chat-messages-box">
-                    <!-- Conversations -->
-                </div>
-                
-                <div class="flex gap-2 pt-3 border-t border-slate-200 mt-2">
-                    <input type="text" id="chat-input" placeholder="Speak your mind to Alex..." class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-teal-500 focus:outline-none text-sm font-medium bg-white text-slate-900 placeholder-slate-400" onkeydown="if(event.key === 'Enter') sendChatMessage()">
-                    <button onclick="sendChatMessage()" id="chat-send-btn" class="px-6 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-extrabold transition-all text-sm">Send</button>
+            <div class="max-w-2xl mx-auto stagger-in" style="animation-delay: 0.2s;">
+                <div class="bg-gradient-to-br from-teal-50 to-white border border-teal-100 rounded-3xl p-8 shadow-xl shadow-teal-900/5 relative overflow-hidden">
+                    <div class="relative z-10">
+                        <div class="w-20 h-20 bg-teal-600 rounded-2xl flex items-center justify-center text-white text-4xl mb-6 shadow-lg shadow-teal-500/30">
+                            ${arch.includes("Founder") ? '🚀' : arch.includes("Architect") ? '🏢' : '🔬'}
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">Core Trait: Dominant Reflex</h3>
+                        <p class="text-slate-600 leading-relaxed text-sm mb-8">
+                            Based on your reaction times and dwell periods, your mind prioritizes structural integrity and creative leaps over standard conventional routes. You are naturally inclined towards problem-solving in high-autonomy environments.
+                        </p>
+                        
+                        <button onclick="confirmArchetype()" id="arch-confirm-btn" class="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-extrabold transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2">
+                            <span>Lock Metadata & Continue</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
-
-        const hist = activePhaseData.chat_messages || [];
-        if (hist.length === 0) {
-            await sendChatMessage(true);
-        } else {
-            renderChatHistory(hist);
-        }
     }
 
-    function renderChatHistory(hist) {
-        const box = document.getElementById("chat-messages-box");
-        if (!box) return;
-        box.innerHTML = "";
-        hist.forEach(m => {
-            const bubble = document.createElement("div");
-            bubble.className = `chat-bubble ${m.role === 'ai' ? 'mentor' : 'user'}`;
-            bubble.innerText = m.content;
-            box.appendChild(bubble);
-        });
-        box.scrollTop = box.scrollHeight;
-    }
-
-    async function sendChatMessage(isInit = false) {
-        const input = document.getElementById("chat-input");
-        const btn = document.getElementById("chat-send-btn");
-        const msg = isInit ? "" : input.value.trim();
-        if (!isInit && !msg) return;
-
-        if (input) input.value = "";
+    async function confirmArchetype() {
+        const btn = document.getElementById("arch-confirm-btn");
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fas fa-spinner animate-spin"></i> Finalizing Profile...`;
         
-        if (!isInit) {
-            const box = document.getElementById("chat-messages-box");
-            const bubble = document.createElement("div");
-            bubble.className = "chat-bubble user";
-            bubble.innerText = msg;
-            box.appendChild(bubble);
-            box.scrollTop = box.scrollHeight;
-
-            if (input) input.disabled = true;
-            if (btn) btn.disabled = true;
-        }
-
-        document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-teal-500 animate-ping"></span> Alex is writing...`;
-
         try {
-            const res = await fetch("/assessment/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: msg })
-            });
+            const res = await fetch("/assessment/api/archetype_confirm", { method: "POST" });
             const data = await res.json();
-            document.getElementById("bottom-status").innerHTML = `<span class="h-2 w-2 rounded-full bg-cyan-400 animate-ping"></span> Sync Ready`;
-            
             if (data.status === "success") {
-                if (data.phase_complete) {
-                    await refreshState();
-                } else {
-                    const box = document.getElementById("chat-messages-box");
-                    const aiBubble = document.createElement("div");
-                    aiBubble.className = "chat-bubble mentor";
-                    aiBubble.innerText = data.message;
-                    box.appendChild(aiBubble);
-                    box.scrollTop = box.scrollHeight;
-                    
-                    const speech = new SpeechSynthesisUtterance(data.message);
-                    const voices = speechSynth.getVoices();
-                    const preferredVoice = voices.find(v => v.lang.startsWith("en-IN")) || voices.find(v => v.lang.startsWith("en"));
-                    if (preferredVoice) speech.voice = preferredVoice;
-                    speechSynth.speak(speech);
-
-                    if (input) input.disabled = false;
-                    if (btn) btn.disabled = false;
-                    if (input) input.focus();
-                }
+                await refreshState();
             }
         } catch (e) {
             console.error(e);
-            document.getElementById("bottom-status").innerHTML = `Connection Error`;
-            if (input) input.disabled = false;
-            if (btn) btn.disabled = false;
+            btn.disabled = false;
         }
     }
 
@@ -1066,63 +1013,135 @@
         }
     }
 
-    // --- PHASE 4: IDENTITY DILEMMA SCENARIOS (BOTH) ---
-    let scenarioAnswersLog = [];
-    let activeScenarioIdx = 0;
+    // --- PHASE 4: ENHANCED SEQUENCE PLANNER (NEW) ---
+    let plannerWorkspaceItems = [];
+    let nextPlannerId = 1;
 
-    function renderScenariosPhase() {
-        scenarioAnswersLog = [];
-        activeScenarioIdx = 0;
-        showScenarioQuestion();
-    }
-
-    function showScenarioQuestion() {
-        const total = activePhaseData.scenarios.length;
-        if (activeScenarioIdx >= total) {
-            submitScenarioAnswers();
-            return;
-        }
-
-        const sc = activePhaseData.scenarios[activeScenarioIdx];
+    function renderSequencePlannerPhase() {
         const body = document.getElementById("phase-body");
+        const task = activePhaseData.task || { task: "Design a solution", tools_required: [] };
+        
         body.innerHTML = `
             <div class="text-center mb-6 stagger-in">
-                <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '5' : '4'}: Strategic Alignment</span>
-                <h2 class="text-xl font-bold mt-2 text-slate-900 leading-relaxed font-outfit">${sc.scenario}</h2>
-                <p class="text-slate-500 text-sm mt-1">Pick the response coordinate that aligns with your real values and behavior.</p>
+                <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '5' : '4'}: Strategic Architecture</span>
+                <h2 class="text-2xl font-bold mt-2 text-slate-900 leading-relaxed font-outfit">Project: ${task.task}</h2>
+                <p class="text-slate-500 text-sm mt-1">Design the sequence of operation. Drag required tools onto the canvas and link them.</p>
             </div>
 
-            <div class="grid grid-cols-1 gap-3 max-w-md mx-auto stagger-in" style="animation-delay: 0.15s;">
-                ${(sc.options || sc.choices || []).map(choice => `
-                    <button onclick="handleScenarioSelection('${sc.id}', '${choice.label || choice.tag}')" class="premium-option-btn w-full flex items-center justify-between group">
-                        <span class="font-medium text-slate-700 group-hover:text-teal-600">${choice.text || choice.value || ''}</span>
-                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                `).join('')}
-            </div>
+            <div class="flex flex-col lg:flex-row gap-4 h-[600px] border border-slate-200 rounded-3xl overflow-hidden bg-slate-50 stagger-in">
+                <!-- Palette -->
+                <aside class="w-full lg:w-64 bg-white border-r border-slate-200 overflow-y-auto p-4">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Available Tools</h3>
+                    <div id="planner-palette" class="space-y-2">
+                        <!-- Tools injected here -->
+                    </div>
+                </aside>
 
-            <div class="text-center mt-6 stagger-in">
-                <span class="text-xs font-semibold text-slate-500">${activeScenarioIdx} / ${total} Dilemmas Resolved</span>
+                <!-- Canvas -->
+                <main class="flex-1 relative bg-white overflow-hidden" id="planner-canvas-container">
+                    <div id="planner-canvas" class="absolute inset-0 z-10 w-full h-full">
+                        <div id="planner-empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none">
+                            <p class="text-sm">Drag tools here to start mapping</p>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute bottom-4 right-4 z-20">
+                        <button onclick="submitPlannerProject()" id="planner-submit-btn" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold shadow-xl hover:bg-black transition-all">Complete Architecture →</button>
+                    </div>
+                </main>
             </div>
         `;
+
+        initPlanner(task.tools_required || []);
     }
 
-    function handleScenarioSelection(scId, tag) {
-        scenarioAnswersLog.push({
-            scenario_id: scId,
-            selected_tag: tag
+    const TOOL_RESOURCES = [
+        { type: 'database', label: 'Cloud Database', icon: '🗄️' },
+        { type: 'ai_model', label: 'AI / ML Model', icon: '🧠' },
+        { type: 'frontend', label: 'Frontend UI', icon: '💻' },
+        { type: 'api', label: 'API Gateway', icon: '🔌' },
+        { type: 'strategy', label: 'GTM Strategy', icon: '🎯' },
+        { type: 'team', label: 'Core Team', icon: '👥' },
+        { type: 'security', label: 'Security Protocols', icon: '🔒' },
+        { type: 'budget', label: 'Budget & Funding', icon: '💰' },
+        { type: 'marketing', label: 'Marketing Campaign', icon: '📢' },
+        { type: 'timeline', label: 'Timeline', icon: '📅' }
+    ];
+
+    function initPlanner(requiredTools) {
+        const palette = document.getElementById("planner-palette");
+        const allowed = requiredTools.map(t => t.toLowerCase());
+        
+        const filtered = TOOL_RESOURCES.filter(tr => 
+            allowed.length === 0 || allowed.some(a => tr.label.toLowerCase().includes(a) || tr.type.toLowerCase().includes(a))
+        );
+
+        palette.innerHTML = filtered.map(item => `
+            <div class="planner-palette-item group flex items-center gap-2 p-2 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-grab transition-all" 
+                 draggable="true" 
+                 onpointerdown="event.dataTransfer.setData('tool', '${JSON.stringify(item).replace(/'/g, "&apos;")}')"
+                 ondragstart="event.dataTransfer.setData('tool', '${JSON.stringify(item).replace(/'/g, "&apos;")}')">
+                <span class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-lg group-hover:bg-teal-100 group-hover:text-teal-600 transition-colors">${item.icon}</span>
+                <span class="text-xs font-semibold text-slate-700">${item.label}</span>
+            </div>
+        `).join('');
+
+        const container = document.getElementById('planner-canvas-container');
+        container.addEventListener('dragover', (e) => e.preventDefault());
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const raw = e.dataTransfer.getData('tool');
+            if (!raw) return;
+            const toolData = JSON.parse(raw);
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left - 70;
+            const y = e.clientY - rect.top - 40;
+
+            const id = nextPlannerId++;
+            plannerWorkspaceItems.push({ ...toolData, id, x, y, description: "" });
+            renderPlannerWorkspace();
         });
-        activeScenarioIdx++;
-        showScenarioQuestion();
     }
 
-    async function submitScenarioAnswers() {
-        showLoader("Synthesizing ego metrics...");
+    function renderPlannerWorkspace() {
+        const canvas = document.getElementById('planner-canvas');
+        const empty = document.getElementById('planner-empty-state');
+        empty.style.display = plannerWorkspaceItems.length > 0 ? 'none' : 'flex';
+
+        canvas.innerHTML = plannerWorkspaceItems.map(item => `
+            <div class="planner-node absolute bg-white border border-slate-200 rounded-xl p-3 shadow-md cursor-pointer group hover:border-teal-500 transition-all font-outfit" 
+                 style="left: ${item.x}px; top: ${item.y}px; width: 140px; z-index: 100;">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-lg">${item.icon}</span>
+                    <span class="text-[10px] font-bold text-slate-800 uppercase tracking-tighter">${item.label}</span>
+                </div>
+                <textarea class="w-full text-[10px] bg-slate-50 border-none focus:ring-0 rounded p-1 h-12" 
+                          placeholder="Note..." 
+                          onchange="updateNodeDesc(${item.id}, this.value)">${item.description}</textarea>
+                <button onclick="deletePlannerNode(${item.id})" class="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white rounded-full text-[10px] hidden group-hover:flex items-center justify-center shadow-lg">✕</button>
+            </div>
+        `).join('');
+    }
+
+    window.updateNodeDesc = (id, val) => {
+        const item = plannerWorkspaceItems.find(i => i.id === id);
+        if (item) item.description = val;
+    };
+
+    window.deletePlannerNode = (id) => {
+        plannerWorkspaceItems = plannerWorkspaceItems.filter(i => i.id !== id);
+        renderPlannerWorkspace();
+    };
+
+    async function submitPlannerProject() {
+        if (plannerWorkspaceItems.length === 0) return alert("Please map at least one tool.");
+        
+        showLoader("Synchronizing vector multipliers...");
         try {
-            const res = await fetch("/assessment/api/scenarios", {
+            const res = await fetch("/assessment/api/phase4_complete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ answers: scenarioAnswersLog })
+                body: JSON.stringify({ workflow: plannerWorkspaceItems })
             });
             const data = await res.json();
             if (data.status === "success") {

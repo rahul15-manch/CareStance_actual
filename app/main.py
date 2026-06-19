@@ -43,6 +43,13 @@ from .data.career_keywords import career_keywords
 from .utils.resource_aggregator import ResourceAggregator
 from .services import simulation_service
 from .services import assessment_engine
+
+try:
+    from app.pipeline.feature_extractor import FeatureExtractor
+    extractor_tool = FeatureExtractor()
+except Exception as e:
+    print(f"FeatureExtractor Load Error: {e}")
+    extractor_tool = None
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
@@ -1415,6 +1422,54 @@ async def assessment_api_intake(request: Request, payload: dict, db: AsyncSessio
     sync_assessment_to_appwrite(user.id, result)
     return {"status": "success", "content": response_text, "is_complete": is_complete, "payload": validation_payload}
 
+@app.post("/assessment/api/archetype_confirm")
+async def assessment_api_archetype_confirm(request: Request, db: AsyncSession = Depends(get_db)):
+    user = await get_current_user(request, db)
+    if not user: raise HTTPException(status_code=401)
+    result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
+    if not result: raise HTTPException(status_code=404)
+    
+    result.current_phase = 3
+    await db.commit()
+    return {"status": "success", "next_phase": 3}
+
+@app.post("/assessment/api/phase4_complete")
+async def assessment_api_phase4_complete(request: Request, payload: dict, db: AsyncSession = Depends(get_db)):
+    user = await get_current_user(request, db)
+    if not user: raise HTTPException(status_code=401)
+    result = (await db.execute(select(models.AssessmentResult).where(models.AssessmentResult.user_id == user.id))).scalars().first()
+    if not result: raise HTTPException(status_code=404)
+    
+    # Payload contains text/workflow from sequence planner
+    result.raw_answers["phase4_planner"] = payload
+    
+    # Process text for vector multipliers
+    if extractor_tool and "workflow" in payload:
+        descriptions = [item.get("description", "") for item in payload.get("workflow", [])]
+        combined_text = " ".join(descriptions)
+        
+        if combined_text.strip():
+            extracted_scores = extractor_tool.extract(combined_text)
+            
+            # Blend with existing vector
+            current_vector = {}
+            if result.personality:
+                try:
+                    current_vector = json.loads(result.personality)
+                except:
+                    current_vector = {}
+            
+            # Update vector (Blending 70-30 for new text insights)
+            for feature, score in extracted_scores.items():
+                old_val = current_vector.get(feature, 0.5)
+                current_vector[feature] = round((old_val * 0.7) + (score * 0.3), 4)
+            
+            result.personality = json.dumps(current_vector)
+
+    result.current_phase = 5 # Compile Phase
+    await db.commit()
+    return {"status": "success", "next_phase": 5}
+
 @app.get("/assessment/api/questions")
 async def assessment_api_questions(request: Request, db: AsyncSession = Depends(get_db)):
     user = await get_current_user(request, db)
@@ -1427,36 +1482,49 @@ async def assessment_api_questions(request: Request, db: AsyncSession = Depends(
         
     student_type = result.student_type or "10th"
     phase = result.current_phase or 0
+    vector = {}
+    if result.personality:
+        try:
+            vector = json.loads(result.personality)
+        except:
+            vector = {}
     
     if phase == 0 and student_type == "12th":
         return {"message": "Hello! I'm Alex, your career mentor. Let's start with your name. What's your name?"}
 
     elif phase == 1:
-        # ── NAYA: Founder ke real cards (cards_10th.json / cards_12th.json) ──
-        import random
-        from app.pipeline.vector_utils import load_cards
-        cards = load_cards(student_type)  # returns A001-A060 / C101-C160 with multipliers
+        # Phase 2 (User Term): Swipe Cards
+        from .pipeline.vector_utils import load_cards
+        cards = load_cards(student_type)
         shuffled = list(cards)
+        import random
         random.seed(result.id or 42)
         random.shuffle(shuffled)
-        return {"cards": shuffled[:10]}
+        return {"cards": shuffled[:12]} # Increased to 12
 
     elif phase == 2:
-        return {"chat_messages": result.chat_messages or [], "chat_turn": result.chat_turn or 0}
+        # Archetype Display State
+        from .pipeline.vector_utils import classify_archetype
+        archetype = classify_archetype(vector)
+        return {
+            "archetype": archetype,
+            "vector": vector,
+            "message": "Based on your reflexes, we've identified your primary cognitive archetype."
+        }
 
     elif phase == 3:
-        # ── NAYA: Founder ke real proxy MCQs (phase3_mcqs.json, P011-P048) ──
-        import random
-        from app.pipeline.vector_utils import load_json
-        proxy_questions = load_json("phase3_mcqs.json")
-        shuffled_q = list(proxy_questions) if isinstance(proxy_questions, list) else []
-        random.seed((result.id or 42) + 1)
-        random.shuffle(shuffled_q)
-        return {"proxy_questions": shuffled_q[:8]}
+        # Phase 3 (User Term): Personalized MCQs
+        from .pipeline.vector_utils import load_json, select_top_questions
+        all_mcqs = load_json("phase3_mcqs.json")
+        top_qs = select_top_questions(vector, all_mcqs, limit=8)
+        return {"proxy_questions": top_qs}
 
     elif phase == 4:
-        data = assessment_engine.load_grade_data(student_type)
-        return {"scenarios": data.get("scenarios", [])}
+        # Phase 4 (User Term): Enhanced Sequence Planner
+        from .pipeline.vector_utils import classify_archetype, select_phase4_task
+        archetype = classify_archetype(vector)
+        task_data = select_phase4_task(student_type, archetype)
+        return {"task": task_data}
     else:
         return {"status": "phase_not_applicable"}
       
@@ -1481,9 +1549,12 @@ async def assessment_api_swipe(request: Request, payload: dict, db: AsyncSession
     
     result.current_phase = 2
     await db.commit()
-    sync_assessment_to_appwrite(user.id, result)
+    # Archetype calculate for logs
+    from .pipeline.vector_utils import classify_archetype
+    arch = classify_archetype(metrics.get("latent_profile", {}))
     
-    return {"status": "success", "next_phase": 2}
+    sync_assessment_to_appwrite(user.id, result)
+    return {"status": "success", "next_phase": 2, "archetype": arch}
 
 @app.post("/assessment/api/chat")
 async def assessment_api_chat(request: Request, payload: dict, db: AsyncSession = Depends(get_db)):
@@ -1679,6 +1750,7 @@ async def assessment_api_compile(request: Request, db: AsyncSession = Depends(ge
                     "skills": ["Empathetic Communication", "Critical Theory", "Creative Expression"],
                 },
             }
+
 
             stream_rec = {"recommended_stream": winner, "stream_details": stream_details[winner]}
 

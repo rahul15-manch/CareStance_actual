@@ -28,33 +28,20 @@ IT_COLS = [
 ]
 
 WS_COLS = [
-    "WS_Achievement Orientation", "WS_Adaptability", "WS_Attention to Detail",
-    "WS_Cautiousness", "WS_Cooperation", "WS_Dependability", "WS_Empathy",
-    "WS_Humility", "WS_Initiative", "WS_Innovation", "WS_Integrity",
-    "WS_Intellectual Curiosity", "WS_Leadership Orientation", "WS_Optimism",
-    "WS_Perseverance", "WS_Self-Confidence", "WS_Self-Control", "WS_Sincerity",
-    "WS_Social Orientation", "WS_Stress Tolerance", "WS_Tolerance for Ambiguity",
+    "WS_Intellectual Curiosity", "WS_Initiative", "WS_Leadership Orientation",
+    "WS_Perseverance", "WS_Attention to Detail", "WS_Adaptability",
+    "WS_Innovation", "WS_Achievement Orientation", "WS_Cooperation",
+    "WS_Social Orientation", "WS_Stress Tolerance", "WS_Self-Control",
+    "WS_Self-Confidence", "WS_Cautiousness", "WS_Tolerance for Ambiguity"
 ]
 
 AB_COLS = [
-    "AB_Arm-Hand Steadiness", "AB_Auditory Attention", "AB_Category Flexibility",
-    "AB_Control Precision", "AB_Deductive Reasoning", "AB_Depth Perception",
-    "AB_Dynamic Flexibility", "AB_Dynamic Strength", "AB_Explosive Strength",
-    "AB_Extent Flexibility", "AB_Far Vision", "AB_Finger Dexterity",
-    "AB_Flexibility of Closure", "AB_Fluency of Ideas", "AB_Glare Sensitivity",
-    "AB_Gross Body Coordination", "AB_Gross Body Equilibrium", "AB_Hearing Sensitivity",
-    "AB_Inductive Reasoning", "AB_Information Ordering", "AB_Manual Dexterity",
-    "AB_Mathematical Reasoning", "AB_Memorization", "AB_Multilimb Coordination",
-    "AB_Near Vision", "AB_Night Vision", "AB_Number Facility",
-    "AB_Oral Comprehension", "AB_Oral Expression", "AB_Originality",
-    "AB_Perceptual Speed", "AB_Peripheral Vision", "AB_Problem Sensitivity",
-    "AB_Rate Control", "AB_Reaction Time", "AB_Response Orientation",
-    "AB_Selective Attention", "AB_Sound Localization", "AB_Spatial Orientation",
-    "AB_Speech Clarity", "AB_Speech Recognition", "AB_Speed of Closure",
-    "AB_Speed of Limb Movement", "AB_Stamina", "AB_Static Strength",
-    "AB_Time Sharing", "AB_Trunk Strength", "AB_Visual Color Discrimination",
-    "AB_Visualization", "AB_Wrist-Finger Speed", "AB_Written Comprehension",
-    "AB_Written Expression",
+    "AB_Deductive Reasoning", "AB_Mathematical Reasoning", "AB_Problem Sensitivity",
+    "AB_Information Ordering", "AB_Category Flexibility", "AB_Originality",
+    "AB_Visualization", "AB_Memorization", "AB_Written Comprehension",
+    "AB_Perceptual Speed", "AB_Selective Attention", "AB_Fluency of Ideas",
+    "AB_Oral Expression", "AB_Inductive Reasoning", "AB_Number Facility",
+    "AB_Oral Comprehension", "AB_Written Expression"
 ]
 
 ALL_FEATURES = IT_COLS + WS_COLS + AB_COLS
@@ -180,8 +167,29 @@ def get_weak_features(vector: Dict, top_n: int = 6) -> List[str]:
     uncertainties = {f: abs(v - 0.5) for f, v in vector.items()
                      if f in IT_COLS + WS_COLS}
     # Sabse low certainty wale = most uncertain
-    sorted_features = sorted(uncertainties.items(), key=lambda x: x[0])
+    sorted_features = sorted(uncertainties.items(), key=lambda x: x[1])
     return [f for f, _ in sorted_features[:top_n]]
+
+
+def select_top_questions(vector: Dict, all_questions: List[dict], limit: int = 8) -> List[dict]:
+    """
+    Selects questions where the proxy_target matches one of the student's weak features.
+    """
+    weak_features = get_weak_features(vector, top_n=15) # Get a broader pool
+    
+    # Priority: Questions matching weak features
+    priority_qs = [q for q in all_questions if q.get("proxy_target") in weak_features]
+    
+    # If not enough, fill with random others
+    if len(priority_qs) < limit:
+        remaining = [q for q in all_questions if q not in priority_qs]
+        import random
+        random.shuffle(remaining)
+        priority_qs.extend(remaining[:(limit - len(priority_qs))])
+        
+    import random
+    random.shuffle(priority_qs)
+    return priority_qs[:limit]
 
 
 def update_vector_from_mcq(vector: Dict, mcq_answers: List[dict]) -> Dict:
@@ -329,6 +337,27 @@ def build_phase4_json(task: dict, vector: Dict) -> dict:
         "nodes": nodes,
         "connections": connections
     }
+
+
+def select_phase4_task(student_type: str, archetype: str) -> dict:
+    """
+    Selects a task from phase4_tasks.json matching student type and archetype.
+    """
+    tasks = load_json("phase4_tasks.json")
+    if not tasks: return {}
+    
+    # Filter by class (10th or 12th)
+    class_tasks = [t for t in tasks if t.get("class") == student_type]
+    if not class_tasks: class_tasks = tasks
+    
+    # Try to match nature/archetype
+    # Archetype might be "The Founder", task nature might be "Founder"
+    match_tasks = [t for t in class_tasks if t.get("nature", "").lower() in archetype.lower()]
+    
+    import random
+    if match_tasks:
+        return random.choice(match_tasks)
+    return random.choice(class_tasks)
 
 
 # ─── Cosine Similarity (KNN approach) ────────────────────────────────────────
