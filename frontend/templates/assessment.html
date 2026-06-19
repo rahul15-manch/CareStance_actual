@@ -1080,57 +1080,67 @@
         const phase4Json = activePhaseData.phase4_json || {};
         const tools = task.tools_required || (phase4Json.nodes || []).map(n => n.label) || [];
         const body = document.getElementById("phase-body");
-        const task = activePhaseData.task || { task: "Design a solution", tools_required: [] };
+        const taskData = activePhaseData.task || {};
+        // The JSON uses 'task' as the scenario name field
+        const scenarioTitle = taskData.task || "Design your strategic plan";
+        const scenarioDesc = `Use the tools below to map how you would approach: "${scenarioTitle}". Connect them to show how they work together.`;
+        const toolsRequired = taskData.tools_required || [];
         
+        // Reset state
+        plannerWorkspaceItems = [];
+        plannerConnections = [];
+        nextPlannerId = 1;
+        linkingMode = false;
+        selectedSourceId = null;
+        draggingNodeId = null;
         body.innerHTML = `
-            <div class="text-center mb-6 stagger-in">
-                <header class="flex flex-col gap-2 p-4 border-b border-slate-100 bg-slate-50/30">
+            <div class="stagger-in">
+                <header class="flex flex-col gap-2 p-4 border-b border-slate-100 bg-slate-50/30 rounded-t-2xl">
                     <div class="flex items-center gap-2">
                         <span class="w-8 h-8 flex items-center justify-center bg-teal-100 text-teal-600 rounded-lg text-sm font-bold">4</span>
-                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Phase 4: Sequence Planner</h2>
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Phase 4: Strategy Planner</h2>
                     </div>
                     <div class="p-3 bg-white border border-teal-100 rounded-xl">
-                        <p class="text-xs font-bold text-teal-700 mb-1">Scenario: ${task.title}</p>
-                        <p class="text-[11px] text-slate-600 leading-relaxed">${task.description}</p>
+                        <p class="text-xs font-bold text-teal-700 mb-1">📌 Scenario: ${scenarioTitle}</p>
+                        <p class="text-[11px] text-slate-500 leading-relaxed">${scenarioDesc}</p>
                     </div>
                 </header>
 
-                <div class="flex flex-1 overflow-hidden h-[450px]">
-                    <aside class="w-48 border-r border-slate-100 p-3 overflow-y-auto bg-slate-50/50">
-                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Tool Palette</h3>
+                <div class="flex overflow-hidden rounded-b-2xl border border-slate-100" style="height: 460px;">
+                    <!-- Palette -->
+                    <aside id="planner-sidebar" class="w-44 border-r border-slate-100 p-3 overflow-y-auto bg-slate-50/50 flex-shrink-0">
+                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">🛠 Tool Palette</h3>
+                        <p class="text-[9px] text-slate-400 mb-3">Click a tool to add it to the canvas</p>
                         <div id="planner-palette" class="flex flex-col gap-2">
                         </div>
                     </aside>
 
-                    <main class="flex-1 relative bg-white workspace-grid overflow-hidden" id="planner-canvas-container" style="user-select: none;">
-                        <svg id="planner-connections-svg" class="absolute inset-0 pointer-events-none w-full h-full z-0">
-                            <defs>
-                                <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
-                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488" />
-                                </marker>
-                            </defs>
-                        </svg>
+                    <!-- Canvas Container -->
+                    <div class="flex-1 flex flex-col">
+                        <div class="relative workspace-grid" id="planner-canvas-container" style="flex: 1; position: relative; overflow: hidden; cursor: crosshair;">
+                            <!-- SVG for connections -->
+                            <svg id="planner-connections-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></svg>
 
-                        <div id="planner-canvas" class="absolute inset-0 z-10 w-full h-full overflow-hidden">
-                            <div id="planner-empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300 pointer-events-none">
-                                <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl mb-2">📥</div>
-                                <p class="text-[11px] font-bold">Drag tools here to create your pathway</p>
-                                <p class="text-[9px] text-slate-400 mt-1">Connect them to show dependencies</p>
+                            <div id="planner-canvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:2;">
+                                <div id="planner-empty-state" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:#94a3b8;">
+                                    <div style="width:48px;height:48px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:8px;">📥</div>
+                                    <p style="font-size:11px;font-weight:700;">Click a tool to add it here</p>
+                                    <p style="font-size:9px;color:#cbd5e1;margin-top:4px;">Then drag to reposition, 🔗 to connect</p>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="absolute bottom-4 right-4 z-30 flex items-center gap-3">
-                            <span id="linking-mode-indicator" class="hidden text-[10px] font-bold bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full border border-teal-200 animate-pulse">
-                                🔗 Linking Mode Active
-                            </span>
-                            <button onclick="submitPlannerProject()" id="planner-submit-btn" class="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold shadow-lg hover:bg-teal-700 transition-all">Submit Strategy →</button>
+
+                        <!-- Bottom action bar -->
+                        <div style="padding: 10px 12px; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: space-between;">
+                            <span id="linking-mode-indicator" class="hidden" style="font-size:10px;font-weight:700;background:#ccfbf1;color:#0f766e;padding:4px 12px;border-radius:99px;border:1px solid #99f6e4;">🔗 Linking Mode — click another node to connect</span>
+                            <button onclick="submitPlannerProject()" id="planner-submit-btn" style="padding: 8px 20px; background: #0d9488; color: white; border-radius: 12px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; margin-left: auto;">Submit Strategy →</button>
                         </div>
-                    </main>
+                    </div>
                 </div>
             </div>
         `;
 
-        initPlanner(task.tools_required || []);
+        initPlanner(toolsRequired);
     }
 
     const TOOL_RESOURCES = [
