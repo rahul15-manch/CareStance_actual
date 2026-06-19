@@ -1529,9 +1529,18 @@ async def assessment_api_questions(request: Request, db: AsyncSession = Depends(
         return {"proxy_questions": questions[:8]}
 
     elif phase == 4:
-        from app.pipeline import run_phase4
-        profile = _profile_until_phase3(user, result)
-        profile = run_phase4(profile)
+        import asyncio
+        from app.pipeline import run_phase4 as _run_phase4
+        loop = asyncio.get_event_loop()
+        # Run the CPU-bound pipeline in a thread pool so the event loop isn't blocked
+        profile = await loop.run_in_executor(
+            None,
+            lambda: _profile_until_phase3(user, result)
+        )
+        profile = await loop.run_in_executor(
+            None,
+            lambda: _run_phase4(profile)
+        )
         return {
             "phase4_task": profile.get("phase4_task", {}),
             "phase4_json": profile.get("phase4_json", {}),
@@ -1556,17 +1565,16 @@ async def assessment_api_swipe(request: Request, payload: dict, db: AsyncSession
     
     profile = _profile_until_phase2(user, result)
     vector = profile.get("vector", {})
-    result.personality = profile.get("personality_archetype", "")
-    result.phase_2_category = profile.get("personality_archetype", "")
+    archetype = profile.get("personality_archetype", "")
+    # Store BOTH the vector (as JSON) and archetype name
+    result.personality = json.dumps(vector)
+    result.phase_2_category = archetype
     result.confidence = round(sum(vector.values()) / max(len(vector), 1), 4)
     
     result.current_phase = 3
     await db.commit()
-    # Archetype calculate for logs
-    from .pipeline.vector_utils import classify_archetype
-    arch = classify_archetype(metrics.get("latent_profile", {}))
-    
-    return {"status": "success", "next_phase": 3}
+    sync_assessment_to_appwrite(user.id, result)
+    return {"status": "success", "next_phase": 3, "archetype": archetype}
 
 @app.post("/assessment/api/chat")
 async def assessment_api_chat(request: Request, payload: dict, db: AsyncSession = Depends(get_db)):

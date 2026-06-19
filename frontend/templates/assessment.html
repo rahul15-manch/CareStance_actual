@@ -430,8 +430,6 @@
     let swipeCards = [];
     let activeSwipeIndex = 0;
     let activeScenarioIdx = 0;
-    const total = (activePhaseData.scenarios || []).length;
-    const sc = activePhaseData.scenarios[activeScenarioIdx];
     // Voice synthesizers
     let speechSynth = window.speechSynthesis;
     let activeUtterance = null;
@@ -515,7 +513,7 @@
             } else if (phase === 3) {
                 renderProxyPhase();
             } else if (phase === 4) {
-                renderSequencePlannerPhase();
+                renderScenariosPhase();
             } else if (phase === 5) {
                 renderCompilePhase();
             }
@@ -1075,24 +1073,40 @@
     let phase4NextId = 1;
     let phase4DraggedTool = null;
 
+    const TOOL_RESOURCES = [
+        { type: 'database',  label: 'Cloud Database',  icon: '🗄️', category: 'Tech' },
+        { type: 'ai_model',  label: 'AI Engine',       icon: '🧠', category: 'Tech' },
+        { type: 'frontend',  label: 'Dashboard UI',    icon: '💻', category: 'Tech' },
+        { type: 'api',       label: 'Backend API',     icon: '🔌', category: 'Tech' },
+        { type: 'strategy',  label: 'Market Strategy', icon: '🎯', category: 'Business' },
+        { type: 'team',      label: 'Core Team',       icon: '👥', category: 'People' },
+        { type: 'security',  label: 'Cyber Security',  icon: '🔒', category: 'Ops' },
+        { type: 'budget',    label: 'Funding',         icon: '💰', category: 'Business' },
+        { type: 'marketing', label: 'Growth Plan',     icon: '📢', category: 'Business' },
+        { type: 'timeline',  label: 'Milestones',      icon: '📅', category: 'Ops' },
+        { type: 'research',  label: 'Research Hub',    icon: '🔬', category: 'Tech' },
+        { type: 'content',   label: 'Content Studio',  icon: '🎨', category: 'Business' },
+        { type: 'partners',  label: 'Partners',        icon: '🤝', category: 'People' },
+        { type: 'workspace', label: 'Personal Dev',    icon: '📒', category: 'Personal' },
+        { type: 'comms',     label: 'Networking',      icon: '🌐', category: 'People' },
+        { type: 'logo',      label: 'Brand & Logo',    icon: '🏷️', category: 'Business' }
+    ];
+
     function renderScenariosPhase() {
-        const task = activePhaseData.phase4_task || {};
+        // Read task from the NEW API fields (phase4_task, phase4_json)
+        const task = activePhaseData.phase4_task || activePhaseData.task || {};
         const phase4Json = activePhaseData.phase4_json || {};
-        const tools = task.tools_required || (phase4Json.nodes || []).map(n => n.label) || [];
-        const body = document.getElementById("phase-body");
-        const taskData = activePhaseData.task || {};
-        // The JSON uses 'task' as the scenario name field
-        const scenarioTitle = taskData.task || "Design your strategic plan";
-        const scenarioDesc = `Use the tools below to map how you would approach: "${scenarioTitle}". Connect them to show how they work together.`;
-        const toolsRequired = taskData.tools_required || [];
-        
+        const scenarioTitle = task.task || "Design your strategic plan";
+        const scenarioDesc = `Map how you would approach: "${scenarioTitle}". Click tools to add them, drag to reposition, then describe what each does.`;
+        const toolsRequired = task.tools_required || [];
+
         // Reset state
-        plannerWorkspaceItems = [];
-        plannerConnections = [];
-        nextPlannerId = 1;
-        linkingMode = false;
-        selectedSourceId = null;
-        draggingNodeId = null;
+        phase4Items = [];
+        phase4Connections = [];
+        phase4NextId = 1;
+        phase4DraggedTool = null;
+
+        const body = document.getElementById("phase-body");
         body.innerHTML = `
             <div class="stagger-in">
                 <header class="flex flex-col gap-2 p-4 border-b border-slate-100 bg-slate-50/30 rounded-t-2xl">
@@ -1101,79 +1115,50 @@
                         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Phase 4: Strategy Planner</h2>
                     </div>
                     <div class="p-3 bg-white border border-teal-100 rounded-xl">
-                        <p class="text-xs font-bold text-teal-700 mb-1">📌 Scenario: ${scenarioTitle}</p>
+                        <p class="text-xs font-bold text-teal-700 mb-1">\uD83D\uDCCC Scenario: ${scenarioTitle}</p>
                         <p class="text-[11px] text-slate-500 leading-relaxed">${scenarioDesc}</p>
                     </div>
                 </header>
-
                 <div class="flex overflow-hidden rounded-b-2xl border border-slate-100" style="height: 460px;">
-                    <!-- Palette -->
-                    <aside id="planner-sidebar" class="w-44 border-r border-slate-100 p-3 overflow-y-auto bg-slate-50/50 flex-shrink-0">
-                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">🛠 Tool Palette</h3>
-                        <p class="text-[9px] text-slate-400 mb-3">Click a tool to add it to the canvas</p>
-                        <div id="planner-palette" class="flex flex-col gap-2">
-                        </div>
+                    <aside class="w-44 border-r border-slate-100 p-3 overflow-y-auto bg-slate-50/50 flex-shrink-0">
+                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">\uD83D\uDEE0 Tool Palette</h3>
+                        <p class="text-[9px] text-slate-400 mb-3">Click to add to canvas</p>
+                        <div id="planner-palette" class="flex flex-col gap-2"></div>
                     </aside>
-
-                    <!-- Canvas Container -->
                     <div class="flex-1 flex flex-col">
-                        <div class="relative workspace-grid" id="planner-canvas-container" style="flex: 1; position: relative; overflow: hidden; cursor: crosshair;">
-                            <!-- SVG for connections -->
-                            <svg id="planner-connections-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></svg>
-
-                            <div id="planner-canvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:2;">
-                                <div id="planner-empty-state" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:#94a3b8;">
-                                    <div style="width:48px;height:48px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:8px;">📥</div>
-                                    <p style="font-size:11px;font-weight:700;">Click a tool to add it here</p>
-                                    <p style="font-size:9px;color:#cbd5e1;margin-top:4px;">Then drag to reposition, 🔗 to connect</p>
-                                </div>
+                        <div class="relative workspace-grid" id="phase4-canvas" style="flex:1;position:relative;overflow:hidden;">
+                            <div id="phase4-empty" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;pointer-events:none;">
+                                <div style="width:48px;height:48px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:8px;">\uD83D\uDCE5</div>
+                                <p style="font-size:11px;font-weight:700;">Click a tool from the palette to add it</p>
+                                <p style="font-size:9px;color:#cbd5e1;margin-top:4px;">Drag to reposition &amp; describe its role</p>
                             </div>
                         </div>
-
-                        <!-- Bottom action bar -->
-                        <div style="padding: 10px 12px; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: space-between;">
-                            <span id="linking-mode-indicator" class="hidden" style="font-size:10px;font-weight:700;background:#ccfbf1;color:#0f766e;padding:4px 12px;border-radius:99px;border:1px solid #99f6e4;">🔗 Linking Mode — click another node to connect</span>
-                            <button onclick="submitPlannerProject()" id="planner-submit-btn" style="padding: 8px 20px; background: #0d9488; color: white; border-radius: 12px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; margin-left: auto;">Submit Strategy →</button>
+                        <div style="padding:10px 12px;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;align-items:center;justify-content:flex-end;">
+                            <button onclick="submitScenarioAnswers()" id="planner-submit-btn" style="padding:8px 20px;background:#0d9488;color:white;border-radius:12px;font-size:12px;font-weight:700;border:none;cursor:pointer;">Submit Strategy \u2192</button>
                         </div>
                     </div>
                 </div>
             </div>
         `;
 
-        initPlanner(toolsRequired);
-    }
-
-    const TOOL_RESOURCES = [
-        { type: 'database', label: 'Cloud Database', icon: '🗄️', category: 'Tech' },
-        { type: 'ai_model', label: 'AI Engine', icon: '🧠', category: 'Tech' },
-        { type: 'frontend', label: 'Dashboard UI', icon: '💻', category: 'Tech' },
-        { type: 'api', label: 'Backend API', icon: '🔌', category: 'Tech' },
-        { type: 'strategy', label: 'Market Strategy', icon: '🎯', category: 'Business' },
-        { type: 'team', label: 'Core Team', icon: '👥', category: 'People' },
-        { type: 'security', label: 'Cyber Security', icon: '🔒', category: 'Ops' },
-        { type: 'budget', label: 'Funding', icon: '💰', category: 'Business' },
-        { type: 'marketing', label: 'Growth Plan', icon: '📢', category: 'Business' },
-        { type: 'timeline', label: 'Milestones', icon: '📅', category: 'Ops' }
-    ];
-
-    function initPlanner(requiredTools) {
+        // Build palette from required tools (click-based - no HTML5 drag)
         const palette = document.getElementById("planner-palette");
-        const allowed = (requiredTools || []).map(t => t.toLowerCase());
-        
-        const filtered = TOOL_RESOURCES.filter(tr => 
+        const allowed = toolsRequired.map(t => t.toLowerCase());
+        const filtered = TOOL_RESOURCES.filter(tr =>
             allowed.length === 0 || allowed.some(a => tr.label.toLowerCase().includes(a) || tr.type.toLowerCase().includes(a))
         );
+        const toShow = filtered.length > 0 ? filtered : TOOL_RESOURCES;
+        palette.innerHTML = toShow.map(item => `
+            <button onclick="addPhase4Node('${item.label}', 0, 0)"
+                style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;width:100%;text-align:left;transition:all 0.15s;"
+                onmouseover="this.style.borderColor='#0d9488';this.style.background='#f0fdfa'"
+                onmouseout="this.style.borderColor='#e2e8f0';this.style.background='white'">
+                <span style="font-size:16px;">${item.icon}</span>
+                <span style="font-size:10px;font-weight:700;color:#334155;">${item.label}</span>
+            </button>
+        `).join('');
 
-        palette.innerHTML = filtered.map(item => `
-            <div class="planner-palette-item group flex items-center gap-2 p-2 border border-slate-100 rounded-xl hover:bg-slate-50 cursor-grab transition-all" 
-                 draggable="true" 
-                 ondragstart="event.dataTransfer.setData('tool', '${JSON.stringify(item).replace(/'/g, "&apos;")}')">
-                <span class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-lg group-hover:bg-teal-100 group-hover:text-teal-600 transition-colors">${item.icon}</span>
-                <span class="text-[10px] font-bold text-slate-700">${item.label}</span>
-            </div>
-        `;
-
-        wirePhase4Planner();
+        // Pre-seed nodes from backend phase4_json suggestions
         seedPhase4Nodes(phase4Json.nodes || []);
         renderPhase4Canvas();
     }
