@@ -1,7 +1,10 @@
 fastapi
+uvicorn[standard]
+gunicorn
 jinja2
-sqlalchemy
+sqlalchemy[asyncio]
 asyncpg
+greenlet
 bcrypt
 python-multipart
 python-jose[cryptography]
@@ -17,3 +20,4 @@ redis
 appwrite==15.3.0
 aiosqlite
 hypercorn
+json-repair
