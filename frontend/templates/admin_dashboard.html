@@ -45,25 +45,18 @@
                         </div>
                     </div>
 
-                    <div class="space-y-3 mb-6">
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Professional
-                                Experience</p>
-                            <p class="text-sm text-slate-700 leading-relaxed">{{ prof.experience }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Certificates</p>
-                            <div class="flex flex-wrap gap-2 mt-1">
-                                {% for cert in prof.certificates or [] %}
-                                <a href="{{ cert }}" target="_blank" title="View document {{ loop.index }}"
-                                    class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-600 transition-colors flex items-center gap-1">
-                                    <i
-                                        class="fas {% if cert.endswith('.pdf') %}fa-file-pdf text-red-500{% else %}fa-image text-blue-500{% endif %}"></i>
-                                    View Doc {{ loop.index }}
-                                </a>
-                                {% endfor %}
+                    <div class="space-y-4 mb-6">
+                        <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                            <div class="flex items-center gap-2 mb-2 text-amber-700">
+                                <i class="fas fa-paper-plane text-xs"></i>
+                                <p class="text-[10px] font-black uppercase tracking-widest">Verification Status</p>
                             </div>
+                            <p class="text-sm text-amber-800 font-medium leading-relaxed">
+                                Documents and experience text have been **directly mailed** to <span class="font-bold underline">contact@carestance.me</span>.
+                            </p>
+                            <p class="text-xs text-amber-600 mt-2 italic">
+                                Note: Documents are not stored on the server for privacy. Please verify from the email before approving.
+                            </p>
                         </div>
                     </div>
 

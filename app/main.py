@@ -9,7 +9,7 @@ import warnings
 from functools import lru_cache
 from types import SimpleNamespace
 from . import email_utils
-from .appwrite_client import databases, account, storage, DB_ID, COLLECTIONS
+from .appwrite_client import databases, tables_db, account, storage, DB_ID, COLLECTIONS
 from .appwrite_helper import get_user_by_id, get_user_by_email, update_assessment_simulation, sync_assessment_to_appwrite
 from dotenv import load_dotenv
 from starlette.middleware.sessions import SessionMiddleware
@@ -807,10 +807,10 @@ async def signup(
         
         # 4. Create User Metadata in Appwrite DB
         try:
-            databases.create_document(
+            tables_db.create_row(
                 database_id=DB_ID,
-                collection_id=COLLECTIONS["users"],
-                document_id=user_id,
+                table_id=COLLECTIONS["users"],
+                row_id=user_id,
                 data={
                     "email": email,
                     "full_name": full_name,
@@ -2049,19 +2049,24 @@ async def admin_dashboard(
         if user_search:
             # Search across the entire database by name or email
             search_filter = models.User.full_name.ilike(f"%{user_search}%") | models.User.email.ilike(f"%{user_search}%")
-            all_users = (await db.execute(select(models.User).where(search_filter).order_by(models.User.id.desc()))).scalars().all()
+            all_users = (await db.execute(select(models.User).options(selectinload(models.User.assessment)).where(search_filter).order_by(models.User.id.desc()))).scalars().all()
             total_users = len(all_users)
         else:
-            all_users = (await db.execute(select(models.User).order_by(models.User.id.desc()).offset((user_page - 1) * page_size).limit(page_size))).scalars().all()
+            all_users = (await db.execute(select(models.User).options(selectinload(models.User.assessment)).order_by(models.User.id.desc()).offset((user_page - 1) * page_size).limit(page_size))).scalars().all()
             total_users = (await db.execute(select(func.count()).select_from(models.User))).scalar()
 
-        all_feedback = (await db.execute(select(models.Feedback).order_by(models.Feedback.timestamp.desc()).offset((feedback_page - 1) * page_size).limit(page_size))).scalars().all()
+        all_feedback = (await db.execute(select(models.Feedback).options(selectinload(models.Feedback.user)).order_by(models.Feedback.timestamp.desc()).offset((feedback_page - 1) * page_size).limit(page_size))).scalars().all()
         total_feedback = (await db.execute(select(func.count()).select_from(models.Feedback))).scalar()
 
-        all_tickets = (await db.execute(select(models.Ticket).order_by(models.Ticket.timestamp.desc()).offset((ticket_page - 1) * page_size).limit(page_size))).scalars().all()
+        all_tickets = (await db.execute(select(models.Ticket).options(selectinload(models.Ticket.user)).order_by(models.Ticket.timestamp.desc()).offset((ticket_page - 1) * page_size).limit(page_size))).scalars().all()
         total_tickets = (await db.execute(select(func.count()).select_from(models.Ticket))).scalar()
 
-        pending_counsellors = (await db.execute(select(models.CounsellorProfile).where(models.CounsellorProfile.verification_status == "pending"))).scalars().all()
+        pending_counsellors = (await db.execute(
+            select(models.CounsellorProfile)
+            .options(selectinload(models.CounsellorProfile.user))
+            .where(models.CounsellorProfile.verification_status == "pending")
+        )).scalars().all()
+        print(f"DEBUG: Admin Dashboard - Found {len(pending_counsellors)} pending verification requests.", flush=True)
         
         # ─── Optimized Counsellor Stats (Single Query) ───────────────────
 
@@ -2086,17 +2091,32 @@ async def admin_dashboard(
             # Search across all counsellors by name or email
             search_filter = models.User.full_name.ilike(f"%{counsellor_search}%") | models.User.email.ilike(f"%{counsellor_search}%")
             all_counsellors = (await db.execute(
-                select(models.CounsellorProfile).join(models.User).where(search_filter)
+                select(models.CounsellorProfile)
+                .join(models.User)
+                .options(selectinload(models.CounsellorProfile.user))
+                .where(search_filter)
             )).scalars().all()
         else:
-            all_counsellors = (await db.execute(select(models.CounsellorProfile))).scalars().all()
+            all_counsellors = (await db.execute(
+                select(models.CounsellorProfile)
+                .options(selectinload(models.CounsellorProfile.user))
+            )).scalars().all()
         for cp in all_counsellors:
             cp.session_count = completed_map.get(cp.user_id, 0)
             cp.total_sessions = total_map.get(cp.user_id, 0)
 
         # ─── Payment Split Analytics ──────────────────────────────────────
         try:
-            all_payments = (await db.execute(select(models.Payment).order_by(models.Payment.created_at.desc()).limit(20))).scalars().all()
+            all_payments = (await db.execute(
+                select(models.Payment)
+                .options(
+                    selectinload(models.Payment.session).selectinload(models.Appointment.student),
+                    selectinload(models.Payment.session).selectinload(models.Appointment.counsellor),
+                    selectinload(models.Payment.transfers).selectinload(models.Transfer.counsellor)
+                )
+                .order_by(models.Payment.created_at.desc())
+                .limit(20)
+            )).scalars().all()
             
             # Using scalars directly for performance
             session_revenue = (await db.execute(
@@ -2126,7 +2146,7 @@ async def admin_dashboard(
             pending_transfers, failed_transfers, captured_payments_count = 0, 0, 0
         
         # Fetch Moderation Flags (Limited for performance)
-        moderation_flags = (await db.execute(select(models.ModerationFlag).order_by(models.ModerationFlag.timestamp.desc()).limit(50))).scalars().all()
+        moderation_flags = (await db.execute(select(models.ModerationFlag).options(selectinload(models.ModerationFlag.user)).order_by(models.ModerationFlag.timestamp.desc()).limit(50))).scalars().all()
 
         # Fetch all appointments for admin Session Management table
         all_appointments = (await db.execute(
@@ -2139,7 +2159,7 @@ async def admin_dashboard(
         # Fetch simulation payments
         simulation_payments = (await db.execute(
             select(models.SimulationPayment).options(
-                joinedload(models.SimulationPayment.user)
+                joinedload(models.SimulationPayment.user).selectinload(models.User.assessment)
             ).order_by(models.SimulationPayment.id.desc()).limit(50)
         )).scalars().all()
 
@@ -2427,37 +2447,51 @@ async def upload_certificates(
             db.add(profile)
             await db.flush()
         
-        existing_certs = profile.certificates if profile.certificates else []
-        new_certs = list(existing_certs)
-        
-        # Ensure directory exists
-        upload_dir = os.path.join(STATIC_DIR, "uploads", "certificates")
-        os.makedirs(upload_dir, exist_ok=True)
-
+        email_attachments = []
         if files:
             for file in files:
                 if file.filename and file.filename.strip() != "":
-                    file_extension = os.path.splitext(file.filename)[1]
-                    filename = f"cert_{user.id}_{uuid.uuid4().hex}{file_extension}"
-                    file_path = os.path.join(upload_dir, filename)
-                    
-                    contents = await file.read()
-                    with open(file_path, "wb") as buffer:
-                        buffer.write(contents)
-                    
-                    new_certs.append(f"/static/uploads/certificates/{filename}")
+                    content = await file.read()
+                    email_attachments.append((file.filename, content, file.content_type))
         
-        profile.certificates = new_certs
-        if experience:
-            profile.experience = experience
-        profile.verification_status = "pending"
-        await db.commit()
+        # Prepare Email to admin
+        admin_email = "contact@carestance.me"
+        subject = f"Verification Documents: {user.full_name} (ID: {user.id})"
+        
+        body_html = f"""
+        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #4f46e5;">New Counsellor Verification Request</h2>
+            <p><strong>Counsellor Name:</strong> {user.full_name}</p>
+            <p><strong>Counsellor Email:</strong> {user.email}</p>
+            <p><strong>Counsellor ID:</strong> {user.id}</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <p><strong>Professional Experience/Expertise:</strong></p>
+            <div style="background: #f9fafb; padding: 15px; border-radius: 8px; border-left: 4px solid #4f46e5;">
+                {experience if experience else 'No experience text provided.'}
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: #666;">
+                The documents are attached to this email. No documents have been stored on the server.
+            </p>
+        </div>
+        """
+        
+        # Send email (directly, not in background to ensure counselor knows it's being sent)
+        email_sent = send_email(admin_email, subject, body_html, attachments=email_attachments)
+        
+        if email_sent:
+            profile.verification_status = "pending"
+            # We explicitly do NOT store experience or certificate paths as per request
+            await db.commit()
+            return RedirectResponse(url="/dashboard?msg=Verification documents sent successfully to Admin.", status_code=status.HTTP_302_FOUND)
+        else:
+            raise Exception("Failed to send verification email.")
+
     except Exception as e:
-        print(f"CERTIFICATE UPLOAD ERROR: {e}")
+        print(f"VERIFICATION SUBMISSION ERROR: {e}")
+        import traceback
+        traceback.print_exc()
         await db.rollback()
-        return RedirectResponse(url="/dashboard?error=Upload failed. Please try again.", status_code=status.HTTP_302_FOUND)
-    
-    return RedirectResponse(url="/dashboard?msg=Certificates uploaded successfully", status_code=status.HTTP_302_FOUND)
+        return RedirectResponse(url="/dashboard?error=Submission failed. Please try again or contact support.", status_code=status.HTTP_302_FOUND)
 
 @app.post("/admin/verify-counsellor/{counsellor_id}")
 async def verify_counsellor(
