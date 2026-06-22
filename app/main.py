@@ -446,6 +446,9 @@ async def shutdown_event():
 from .routes.payments import router as payments_router
 app.include_router(payments_router)
 
+from .routes import admin
+app.include_router(admin.router)
+
 # Global Exception Handler for better debugging
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -1773,7 +1776,15 @@ async def share_report(result_id: int, request: Request, mode: str = "full", db:
         raise HTTPException(status_code=404, detail="Report not found")
     
     owner = (await db.execute(select(models.User).where(models.User.id == result.user_id))).scalars().first()
-    current_user = await get_current_user(request, db)
+    # current_user = await get_current_user(request, db)
+    user_id_cookie = request.cookies.get("user_id")
+    uid = int(user_id_cookie)
+    result_cu = await db.execute(
+        select(models.User)
+        .options(selectinload(models.User.assessment))
+        .where(models.User.id == uid)
+    )
+    current_user = result_cu.scalars().first()
     
     # Ensure a stable high confidence (82-98%) is saved and displayed
     if not result.confidence or result.confidence < 0.81:
