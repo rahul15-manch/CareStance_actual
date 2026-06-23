@@ -230,131 +230,131 @@ async def run_migrations():
 
             # 1. Users table
             u_cols = get_columns('users')
-        if u_cols:
-            if 'profile_photo' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN profile_photo VARCHAR")
-            if 'bio' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN bio TEXT")
-            if 'is_suspended' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN is_suspended BOOLEAN DEFAULT FALSE")
-            if 'contact_number' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN contact_number VARCHAR")
-            if 'full_name' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN full_name VARCHAR")
-            if 'role' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN role VARCHAR")
-            if 'onboarded' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN onboarded BOOLEAN DEFAULT FALSE")
-            if 'simulations_completed' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN simulations_completed INTEGER DEFAULT 0")
-            if 'simulation_paid' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN simulation_paid BOOLEAN DEFAULT FALSE")
-            if 'simulation_credits' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN simulation_credits INTEGER DEFAULT 0")
-            if 'created_at' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN created_at TIMESTAMP")
-            if 'last_login' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN last_login TIMESTAMP")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_users_full_name ON users (full_name)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_users_onboarded ON users (onboarded)")
+            if u_cols:
+                if 'profile_photo' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN profile_photo VARCHAR")
+                if 'bio' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN bio TEXT")
+                if 'is_suspended' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN is_suspended BOOLEAN DEFAULT FALSE")
+                if 'contact_number' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN contact_number VARCHAR")
+                if 'full_name' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN full_name VARCHAR")
+                if 'role' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN role VARCHAR")
+                if 'onboarded' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN onboarded BOOLEAN DEFAULT FALSE")
+                if 'simulations_completed' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN simulations_completed INTEGER DEFAULT 0")
+                if 'simulation_paid' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN simulation_paid BOOLEAN DEFAULT FALSE")
+                if 'simulation_credits' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN simulation_credits INTEGER DEFAULT 0")
+                if 'created_at' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN created_at TIMESTAMP")
+                if 'last_login' not in u_cols: migrations.append("ALTER TABLE users ADD COLUMN last_login TIMESTAMP")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_users_full_name ON users (full_name)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_users_onboarded ON users (onboarded)")
 
-        # 2. Counsellor Profiles
-        cp_cols = get_columns('counsellor_profiles')
-        if cp_cols:
-            checklist = [
-                ('tnc_accepted', "BOOLEAN DEFAULT FALSE"), ('tnc_accepted_at', "TIMESTAMP"),
-                ('is_blocked', "BOOLEAN DEFAULT FALSE"), ('block_reason', "VARCHAR"),
-                ('certificates', "TEXT"), ('experience', "TEXT"),
-                ('is_verified', "BOOLEAN DEFAULT FALSE"), ('verification_status', "VARCHAR DEFAULT 'pending'"),
-                ('fee_locked', "BOOLEAN DEFAULT FALSE"), ('razorpay_account_id', "VARCHAR"),
-                ('onboarding_status', "VARCHAR DEFAULT 'not_started'"), ('razorpay_contact_id', "VARCHAR"),
-                ('razorpay_fund_account_id', "VARCHAR"), ('average_rating', "FLOAT DEFAULT 5.0"),
-                ('rating_count', "INTEGER DEFAULT 0"), ('is_founding_counsellor', "BOOLEAN DEFAULT FALSE"),
-                ('founding_badge_awarded_at', "TIMESTAMP"), ('commission_free_until', "TIMESTAMP")
-            ]
-            for col, ty in checklist:
-                if col not in cp_cols: migrations.append(f"ALTER TABLE counsellor_profiles ADD COLUMN {col} {ty}")
+            # 2. Counsellor Profiles
+            cp_cols = get_columns('counsellor_profiles')
+            if cp_cols:
+                checklist = [
+                    ('tnc_accepted', "BOOLEAN DEFAULT FALSE"), ('tnc_accepted_at', "TIMESTAMP"),
+                    ('is_blocked', "BOOLEAN DEFAULT FALSE"), ('block_reason', "VARCHAR"),
+                    ('certificates', "TEXT"), ('experience', "TEXT"),
+                    ('is_verified', "BOOLEAN DEFAULT FALSE"), ('verification_status', "VARCHAR DEFAULT 'pending'"),
+                    ('fee_locked', "BOOLEAN DEFAULT FALSE"), ('razorpay_account_id', "VARCHAR"),
+                    ('onboarding_status', "VARCHAR DEFAULT 'not_started'"), ('razorpay_contact_id', "VARCHAR"),
+                    ('razorpay_fund_account_id', "VARCHAR"), ('average_rating', "FLOAT DEFAULT 5.0"),
+                    ('rating_count', "INTEGER DEFAULT 0"), ('is_founding_counsellor', "BOOLEAN DEFAULT FALSE"),
+                    ('founding_badge_awarded_at', "TIMESTAMP"), ('commission_free_until', "TIMESTAMP")
+                ]
+                for col, ty in checklist:
+                    if col not in cp_cols: migrations.append(f"ALTER TABLE counsellor_profiles ADD COLUMN {col} {ty}")
 
-        # 3. Appointments
-        ap_cols = get_columns('appointments')
-        if ap_cols:
-            for col, ty in [('counsellor_joined', 'BOOLEAN DEFAULT FALSE'), ('joined_at', 'TIMESTAMP'), 
-                           ('student_joined', 'BOOLEAN DEFAULT FALSE'), ('student_joined_at', 'TIMESTAMP'),
-                           ('actual_overlap_minutes', 'INTEGER DEFAULT 0'),
-                           ('cancelled_by', 'VARCHAR'), ('cancelled_by_role', 'VARCHAR')]:
-                if col not in ap_cols: migrations.append(f"ALTER TABLE appointments ADD COLUMN {col} {ty}")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_appointment_time ON appointments (appointment_time)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_payment_status ON appointments (payment_status)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_cancelled_by ON appointments (cancelled_by)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_cancelled_by_role ON appointments (cancelled_by_role)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_chat_messages_timestamp ON chat_messages (timestamp)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_chat_messages_sender ON chat_messages (sender)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_feedbacks_user_id ON feedbacks (user_id)")
+            # 3. Appointments
+            ap_cols = get_columns('appointments')
+            if ap_cols:
+                for col, ty in [('counsellor_joined', 'BOOLEAN DEFAULT FALSE'), ('joined_at', 'TIMESTAMP'), 
+                               ('student_joined', 'BOOLEAN DEFAULT FALSE'), ('student_joined_at', 'TIMESTAMP'),
+                               ('actual_overlap_minutes', 'INTEGER DEFAULT 0'),
+                               ('cancelled_by', 'VARCHAR'), ('cancelled_by_role', 'VARCHAR')]:
+                    if col not in ap_cols: migrations.append(f"ALTER TABLE appointments ADD COLUMN {col} {ty}")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_appointment_time ON appointments (appointment_time)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_payment_status ON appointments (payment_status)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_cancelled_by ON appointments (cancelled_by)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_appointments_cancelled_by_role ON appointments (cancelled_by_role)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_chat_messages_timestamp ON chat_messages (timestamp)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_chat_messages_sender ON chat_messages (sender)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_feedbacks_user_id ON feedbacks (user_id)")
 
-        # 4. Student Messages
-        sm_cols = get_columns('student_messages')
-        if sm_cols:
-            if 'attachment_path' not in sm_cols: migrations.append("ALTER TABLE student_messages ADD COLUMN attachment_path VARCHAR")
-            if 'attachment_type' not in sm_cols: migrations.append("ALTER TABLE student_messages ADD COLUMN attachment_type VARCHAR")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_student_messages_timestamp ON student_messages (timestamp)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_student_messages_is_read ON student_messages (is_read)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_career_paths_career_title ON career_paths (career_title)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_college_recommendations_career_title ON college_recommendations (career_title)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_counsellor_ratings_rating ON counsellor_ratings (rating)")
+            # 4. Student Messages
+            sm_cols = get_columns('student_messages')
+            if sm_cols:
+                if 'attachment_path' not in sm_cols: migrations.append("ALTER TABLE student_messages ADD COLUMN attachment_path VARCHAR")
+                if 'attachment_type' not in sm_cols: migrations.append("ALTER TABLE student_messages ADD COLUMN attachment_type VARCHAR")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_student_messages_timestamp ON student_messages (timestamp)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_student_messages_is_read ON student_messages (is_read)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_career_paths_career_title ON career_paths (career_title)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_college_recommendations_career_title ON college_recommendations (career_title)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_counsellor_ratings_rating ON counsellor_ratings (rating)")
 
-        # 5. Assessment Results
-        ar_cols = get_columns('assessment_results')
-        if ar_cols:
-            for col, ty in [('selected_class', 'VARCHAR'), ('phase3_result', 'VARCHAR'), 
-                           ('phase3_answers', 'JSON'), ('phase3_analysis', 'TEXT'),
-                           ('final_answers', 'JSON'), ('stream_scores', 'JSON'),
-                           ('recommended_stream', 'VARCHAR'), ('final_analysis', 'TEXT'),
-                           ('stream_pros', 'JSON'), ('stream_cons', 'JSON'),
-                           ('simulation_career', 'VARCHAR'), ('simulation_questions', 'JSON'),
-                           ('simulation_answers', 'JSON'), ('simulation_evaluation', 'JSON'),
-                           ('simulations_completed', 'INTEGER DEFAULT 0'), ('simulation_paid', 'BOOLEAN DEFAULT FALSE'),
-                           ('simulation_credits', 'INTEGER DEFAULT 0'),
-                           ('student_type', "VARCHAR DEFAULT '10th'"), ('current_phase', 'INTEGER DEFAULT 1'),
-                           ('intake_turn', 'INTEGER DEFAULT 1'), ('intake_name', 'VARCHAR'),
-                           ('intake_grade', 'INTEGER'), ('intake_stream', 'VARCHAR'),
-                           ('telemetry_logs', 'JSON'),
-                           ('chat_messages', 'JSON'), ('chat_turn', 'INTEGER DEFAULT 0'),
-                           ('proxy_answers', 'JSON'), ('scenario_answers', 'JSON'),
-                           ('assessment_report', 'JSON')]:
-                if col not in ar_cols: migrations.append(f"ALTER TABLE assessment_results ADD COLUMN {col} {ty}")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_recommended_stream ON assessment_results (recommended_stream)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_phase_2_category ON assessment_results (phase_2_category)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_personality ON assessment_results (personality)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_selected_class ON assessment_results (selected_class)")
-            
-        # 6. Notifications
-        n_cols = get_columns('notifications')
-        if n_cols:
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_notifications_created_at ON notifications (created_at)")
-            migrations.append("CREATE INDEX IF NOT EXISTS ix_notifications_is_read ON notifications (is_read)")
+            # 5. Assessment Results
+            ar_cols = get_columns('assessment_results')
+            if ar_cols:
+                for col, ty in [('selected_class', 'VARCHAR'), ('phase3_result', 'VARCHAR'), 
+                               ('phase3_answers', 'JSON'), ('phase3_analysis', 'TEXT'),
+                               ('final_answers', 'JSON'), ('stream_scores', 'JSON'),
+                               ('recommended_stream', 'VARCHAR'), ('final_analysis', 'TEXT'),
+                               ('stream_pros', 'JSON'), ('stream_cons', 'JSON'),
+                               ('simulation_career', 'VARCHAR'), ('simulation_questions', 'JSON'),
+                               ('simulation_answers', 'JSON'), ('simulation_evaluation', 'JSON'),
+                               ('simulations_completed', 'INTEGER DEFAULT 0'), ('simulation_paid', 'BOOLEAN DEFAULT FALSE'),
+                               ('simulation_credits', 'INTEGER DEFAULT 0'),
+                               ('student_type', "VARCHAR DEFAULT '10th'"), ('current_phase', 'INTEGER DEFAULT 1'),
+                               ('intake_turn', 'INTEGER DEFAULT 1'), ('intake_name', 'VARCHAR'),
+                               ('intake_grade', 'INTEGER'), ('intake_stream', 'VARCHAR'),
+                               ('telemetry_logs', 'JSON'),
+                               ('chat_messages', 'JSON'), ('chat_turn', 'INTEGER DEFAULT 0'),
+                               ('proxy_answers', 'JSON'), ('scenario_answers', 'JSON'),
+                               ('assessment_report', 'JSON')]:
+                    if col not in ar_cols: migrations.append(f"ALTER TABLE assessment_results ADD COLUMN {col} {ty}")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_recommended_stream ON assessment_results (recommended_stream)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_phase_2_category ON assessment_results (phase_2_category)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_personality ON assessment_results (personality)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_assessment_results_selected_class ON assessment_results (selected_class)")
+                
+            # 6. Notifications
+            n_cols = get_columns('notifications')
+            if n_cols:
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_notifications_created_at ON notifications (created_at)")
+                migrations.append("CREATE INDEX IF NOT EXISTS ix_notifications_is_read ON notifications (is_read)")
 
-        # 7. Simulation Payments
-        sp_cols = get_columns('simulation_payments')
-        if sp_cols is None:
-            migrations.append("""
-            CREATE TABLE simulation_payments (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER REFERENCES users(id),
-                razorpay_order_id VARCHAR,
-                razorpay_payment_id VARCHAR,
-                amount FLOAT,
-                career VARCHAR,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-            """)
+            # 7. Simulation Payments
+            sp_cols = get_columns('simulation_payments')
+            if sp_cols is None:
+                migrations.append("""
+                CREATE TABLE simulation_payments (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER REFERENCES users(id),
+                    razorpay_order_id VARCHAR,
+                    razorpay_payment_id VARCHAR,
+                    amount FLOAT,
+                    career VARCHAR,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """)
 
-        # 8. Moderation Flags
-        mf_cols = get_columns('moderation_flags')
-        if mf_cols:
-            for col, ty in [('flag_type', 'VARCHAR'), ('severity', 'VARCHAR'), ('admin_note', 'TEXT')]:
-                if col not in mf_cols: migrations.append(f"ALTER TABLE moderation_flags ADD COLUMN {col} {ty}")
+            # 8. Moderation Flags
+            mf_cols = get_columns('moderation_flags')
+            if mf_cols:
+                for col, ty in [('flag_type', 'VARCHAR'), ('severity', 'VARCHAR'), ('admin_note', 'TEXT')]:
+                    if col not in mf_cols: migrations.append(f"ALTER TABLE moderation_flags ADD COLUMN {col} {ty}")
 
-        # 9. Tickets
-        t_cols = get_columns('tickets')
-        if t_cols:
-            if 'updated_at' not in t_cols: migrations.append("ALTER TABLE tickets ADD COLUMN updated_at TIMESTAMP")
+            # 9. Tickets
+            t_cols = get_columns('tickets')
+            if t_cols:
+                if 'updated_at' not in t_cols: migrations.append("ALTER TABLE tickets ADD COLUMN updated_at TIMESTAMP")
 
-        # 10. Simulation Payments
-        sp_cols2 = get_columns('simulation_payments')
-        if sp_cols2:
-            if 'status' not in sp_cols2: migrations.append("ALTER TABLE simulation_payments ADD COLUMN status VARCHAR DEFAULT 'success'")
+            # 10. Simulation Payments
+            sp_cols2 = get_columns('simulation_payments')
+            if sp_cols2:
+                if 'status' not in sp_cols2: migrations.append("ALTER TABLE simulation_payments ADD COLUMN status VARCHAR DEFAULT 'success'")
 
-        # 11. Counsellor Profiles
-        if cp_cols:
-            if 'verification_remarks' not in cp_cols: migrations.append("ALTER TABLE counsellor_profiles ADD COLUMN verification_remarks TEXT")
+            # 11. Counsellor Profiles
+            if cp_cols:
+                if 'verification_remarks' not in cp_cols: migrations.append("ALTER TABLE counsellor_profiles ADD COLUMN verification_remarks TEXT")
 
         if migrations:
             print(f"DEBUG: Found {len(migrations)} pending migrations.", flush=True)
@@ -373,6 +373,7 @@ async def run_migrations():
         print(f"DATABASE FATAL ERROR during migration check: {e}", flush=True)
         import traceback
         traceback.print_exc()
+
 
 app = FastAPI(title="CareStance")
 
