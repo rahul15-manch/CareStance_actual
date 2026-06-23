@@ -73,52 +73,65 @@ async def admin_dashboard(
         appointments = await get_recent_appointments(db)
         payment_analytics = await get_payment_analytics(db)
         payment_logs = await get_recent_payment_logs(db)
-        mod_flags = await get_moderation_flags(db)
-
+        mod_flags = await get_moderation_flags(db)        
+      
         return templates.TemplateResponse(
-            "admin_dashboard.html",
-            {
-                "request": request,
-                "admin": admin,
-
-                # Users
-                "users": users_data["users"],
-                "users_pagination": {
-                    "page": users_data["page"],
-                    "page_size": users_data["page_size"],
-                    "total": users_data["total"],
-                    "total_pages": users_data["total_pages"],
-                },
-
-                # Feedback & Tickets
-                "feedback_logs": feedback_data["feedback_logs"],
-                "support_tickets": tickets_data["support_tickets"],
-
-                # Counsellors
-                "pending_counsellors": pending_counsellors,
-                "counsellors": counsellors_data["counsellors"],
-                "counsellor_session_analytics": counsellor_analytics,
-
-                # Appointments
-                "appointments": appointments,
-
-                # Payments
-                "payment_logs": payment_logs,
-                "session_revenue": payment_analytics["session_revenue"],
-                "simulation_revenue": payment_analytics["simulation_revenue"],
-                "total_revenue": payment_analytics["total_revenue"],
-                "counsellor_payouts": payment_analytics["counsellor_payouts"],
-                "platform_commission": payment_analytics["platform_commission"],
-                "pending_payouts": payment_analytics["pending_payouts"],
-                "failed_payouts": payment_analytics["failed_payouts"],
-
-                # Moderation
-                "moderation_flags": mod_flags,
+        request=request,
+        name="admin_dashboard.html",
+        context={
+            "request": request,
+            "admin": admin,
+            "users": users_data["users"],
+            "users_pagination": {
+                "page": users_data["page"],
+                "page_size": users_data["page_size"],
+                "total": users_data["total"],
+                "total_pages": users_data["total_pages"],
             },
-        )
+            "feedback_logs": feedback_data["feedback_logs"],
+            "support_tickets": tickets_data["support_tickets"],
+            "pending_counsellors": pending_counsellors,
+            "counsellors": counsellors_data["counsellors"],
+            "counsellor_session_analytics": counsellor_analytics,
+            "appointments": appointments,
+            "payment_logs": payment_logs,
+            "session_revenue": payment_analytics["session_revenue"],
+            "simulation_revenue": payment_analytics["simulation_revenue"],
+            "sim_revenue": payment_analytics["simulation_revenue"],
+            "total_revenue": payment_analytics["total_revenue"],
+            "counsellor_payouts": payment_analytics["counsellor_payouts"],
+            "platform_commission": payment_analytics["platform_commission"],
+            "pending_payouts": payment_analytics["pending_payouts"],
+            "failed_payouts": payment_analytics["failed_payouts"],
+            "moderation_flags": mod_flags,
+            "sim_revenue": payment_analytics["simulation_revenue"],
+            "total_counselor_payouts": payment_analytics["counsellor_payouts"],
+            "platform_commission": payment_analytics["platform_commission"],
+            "pending_transfers": payment_analytics["pending_payouts"],
+            "failed_transfers": payment_analytics["failed_payouts"],
+            "all_payments": payment_logs,
+            "all_appointments": appointments,
+            "all_counsellors": counsellors_data["counsellors"],
+            "user_search": "",
+            "counsellor_search": "",
+            "user_page": 1,
+            "feedback_page": 1,
+            "ticket_page": 1,
+            "page_size": 20,
+            "total_users": users_data["total"],
+            "total_feedback": len(feedback_data["feedback_logs"]),
+            "total_tickets": len(tickets_data["support_tickets"]),
+            "feedbacks": feedback_data["feedback_logs"],
+            "tickets": tickets_data["support_tickets"],
+            "simulation_payments": [],
+            "captured_payments_count": 0,
+            "sim_payments_count": 0,
+        }
+    )
     except Exception as e:
-        logger.error(f"Admin dashboard error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="Admin dashboard failed to load.")
+        import traceback
+        print(f"ADMIN ERROR DETAIL: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ─── User Management APIs ─────────────────────────────────────────────────────
