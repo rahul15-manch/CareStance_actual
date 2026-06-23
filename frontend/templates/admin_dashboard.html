@@ -73,7 +73,7 @@
                             <button type="submit"
                                 class="w-full py-2 bg-white border border-red-200 text-red-500 hover:bg-red-50 font-bold rounded-xl transition-all text-sm uppercase tracking-wider">
                                 Reject
-                            </button>
+                            </button> 
                         </form>
                     </div>
                 </div>
@@ -722,7 +722,7 @@
                                     {{ sim_pay.career }}
                                 </td>
                                 <td class="px-5 py-4 whitespace-nowrap text-center text-sm font-extrabold text-slate-800">
-                                    {{ sim_pay.user.assessment.simulations_completed if sim_pay.user.assessment else '0' }}
+                                    {{ sim_pay.assessment.simulations_completed if sim_pay.assessment else '0' }}
                                 </td>
                                 <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-500">
                                     {{ sim_pay.created_at.strftime('%Y-%m-%d %H:%M') if sim_pay.created_at else '' }}
@@ -1032,10 +1032,10 @@
 
                                     <!-- Phase 1: Class -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {% if user.assessment and user.assessment.selected_class %}
+                                        {% if assessment and assessment.selected_class %}
                                         <span
                                             class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                                            {{ user.assessment.selected_class }}
+                                            {{ assessment.selected_class }}
                                         </span>
                                         {% else %}
                                         <span class="text-slate-300">-</span>
@@ -1044,10 +1044,10 @@
 
                                     <!-- Phase 2 -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {% if user.assessment and user.assessment.phase_2_category %}
+                                        {% if assessment and assessment.phase_2_category %}
                                         <span
                                             class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                            {{ user.assessment.phase_2_category }}
+                                            {{ assessment.phase_2_category }}
                                         </span>
                                         {% else %}
                                         <span class="text-slate-300">-</span>
@@ -1056,10 +1056,10 @@
 
                                     <!-- Phase 3: Remarks -->
                                     <td class="px-6 py-4 text-sm text-slate-500 max-w-xs">
-                                        {% if user.assessment and user.assessment.phase3_analysis %}
+                                        {% if assessment and assessment.phase3_analysis %}
                                         <div
                                             class="max-h-20 overflow-y-auto pr-2 text-xs leading-relaxed custom-scrollbar">
-                                            {{ user.assessment.phase3_analysis }}
+                                            {{ assessment.phase3_analysis }}
                                         </div>
                                         {% else %}
                                         <span class="text-slate-300">-</span>
@@ -1068,10 +1068,10 @@
 
                                     <!-- Phase 4 -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {% if user.assessment and user.assessment.recommended_stream %}
+                                        {% if assessment and assessment.recommended_stream %}
                                         <span
                                             class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                            {{ user.assessment.recommended_stream }}
+                                            {{ assessment.recommended_stream }}
                                         </span>
                                         {% else %}
                                         <span class="text-slate-300">-</span>
