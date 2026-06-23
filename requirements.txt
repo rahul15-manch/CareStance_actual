@@ -21,5 +21,6 @@ appwrite==15.3.0
 aiosqlite
 hypercorn
 json-repair
+passlib
 numpy
 pandas
