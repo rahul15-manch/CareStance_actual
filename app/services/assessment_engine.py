@@ -12,6 +12,7 @@ DATA_DIR = os.path.join(BASE_DIR, "assessment_data")
 
 # --- IN-MEMORY CACHE FOR PERFORMANCE OPTIMIZATION ---
 _JSON_CACHE = {}
+_RIASEC_KEYWORDS_CACHE = None
 
 def get_cached_json(path: str):
     if path not in _JSON_CACHE:
@@ -87,6 +88,23 @@ Return the result in the following JSON Schema:
 }
 ```
 """
+
+PHASE2_ALEX_PROMPT = """
+Identity: You are "Alex," a casual, supportive mentor.
+Secret Objective: You must conduct a 6-turn "RIASEC Drill." 
+Constraint: Do not use career titles. Focus on tasks and environments. 
+Keep responses under 40 words.
+"""
+
+# RIASEC Drill Sequence for Grade 10: Realistic, Investigative, Artistic, Social, Enterprising, Conventional
+RIASEC_DRILL = [
+    "Hey! I'm Alex. To start off, do you prefer working with your hands, maybe fixing a messy workshop, or do you like staying inside?", # R
+    "Interesting. Do you enjoy spending time deep-diving into how things work, like solving a complex puzzle or a math problem?", # I
+    "Got it. How about being creative? Would you rather design a beautiful room or write a story than follow a strict set of rules?", # A
+    "I see. When you're in a group, do you like being the one who helps others feel comfortable and supported?", # S
+    "And how do you feel about leading a team to win a big competition or starting your own small business project?", # E
+    "Lastly, do you find satisfaction in keeping things organized, like a perfectly sorted spreadsheet or a clean schedule?", # C
+]
 
 def calculate_telemetry_metrics_g12(logs: List[Dict], cards_data: List[Dict]) -> Dict:
     """
@@ -233,6 +251,22 @@ def calculate_telemetry_metrics(logs: List[Dict], student_type: str = "10th") ->
         "friction_score": round(friction_score, 2),
         "consistency_index": round(consistency_index, 2)
     }
+
+def get_alex_response(turn: int, user_input: str) -> str:
+    """
+    Generates Alex's response for the Grade 10 RIASEC drill.
+    """
+    if turn < len(RIASEC_DRILL):
+        return RIASEC_DRILL[turn]
+    return "That was great! I've got a much better feel for what you enjoy. Ready to see the results?"
+
+def get_alex_response_g12(turn: int, questions: List[Dict]) -> str:
+    """
+    Phase 3: Identity Anchor conversational state machine.
+    """
+    if turn < len(questions):
+        return questions[turn]["text"]
+    return "That was incredibly insightful. I feel like I've seen behind the curtain a bit. Ready for the next phase?"
 
 def analyze_identity_anchor_g12(transcript: List[Dict]) -> Dict:
     """
@@ -659,6 +693,72 @@ def extract_intake_metadata(turn: int, text: str) -> Dict:
             result["current_stream"] = "Arts"
             
     return result
+
+def extract_riasec_vector(transcript: List[Dict]) -> Dict:
+    """
+    Analyzes the chat transcript to extract the RIASEC hex-vector.
+    Scored 1-10 based on sentiment and keyword density.
+    """
+    vector = {"R": 5, "I": 5, "A": 5, "S": 5, "E": 5, "C": 5}
+    trait_names = {
+        "R": "Realistic", "I": "Investigative", "A": "Artistic",
+        "S": "Social", "E": "Enterprising", "C": "Conventional"
+    }
+    keywords = {
+        "R": ["hands", "fix", "workshop", "outside", "tools", "build"],
+        "I": ["puzzle", "math", "how it works", "science", "analyze", "data"],
+        "A": ["design", "creative", "write", "art", "music", "draw"],
+        "S": ["help", "support", "people", "teach", "mentor", "listen"],
+        "E": ["lead", "team", "business", "start", "project", "win"],
+        "C": ["organize", "spreadsheet", "schedule", "plan", "list"]
+    }
+
+    def load_riasec_keyword_overrides() -> Dict[str, List[str]]:
+        global _RIASEC_KEYWORDS_CACHE
+        if _RIASEC_KEYWORDS_CACHE is not None:
+            return _RIASEC_KEYWORDS_CACHE
+
+        db_path = os.path.join(DATA_DIR, "onet_database.db")
+        if not os.path.exists(db_path):
+            return {}
+
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT element_name, keyword FROM riasec_keywords")
+            rows = cursor.fetchall()
+            db_kws = {}
+            name_to_key = {v: k for k, v in trait_names.items()}
+            for el_name, kw in rows:
+                key = name_to_key.get(el_name)
+                if key and isinstance(kw, str):
+                    db_kws.setdefault(key, []).append(kw.lower())
+            conn.close()
+            _RIASEC_KEYWORDS_CACHE = db_kws
+            return db_kws
+        except Exception:
+            return {}
+
+    db_kws = load_riasec_keyword_overrides()
+    if db_kws:
+        keywords = db_kws
+
+    transcript_text = " ".join([m["content"].lower() for m in transcript if m["role"] == "user"])
+    
+    for dimension, kws in keywords.items():
+        score = 5
+        for kw in kws:
+            if kw in transcript_text:
+                score += 1
+        vector[dimension] = min(10, score)
+
+    dominant = max(vector, key=vector.get)
+
+    return {
+        "riasec_vector": vector,
+        "dominant_trait": trait_names[dominant],
+        "narrative_summary": f"Your profile shows a strong {trait_names[dominant]} orientation. You likely enjoy environments that value {keywords[dominant][0]} and {keywords[dominant][1]}."
+    }
 
 # --- O*NET FEASIBILITY MATCHMAKING ---
 
