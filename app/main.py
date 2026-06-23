@@ -53,7 +53,7 @@ except Exception as e:
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-RUN_MIGRATIONS_ON_STARTUP = os.getenv("RUN_MIGRATIONS_ON_STARTUP", "false").strip().lower() in ("1", "true", "yes")
+RUN_MIGRATIONS_ON_STARTUP = os.getenv("RUN_MIGRATIONS_ON_STARTUP", "true").strip().lower() in ("1", "true", "yes")
 ENABLE_CLEANUP_TASK = os.getenv("ENABLE_CLEANUP_TASK", "false").strip().lower() in ("1", "true", "yes")
 
 @lru_cache(maxsize=4)
@@ -395,6 +395,15 @@ async def _health():
 async def startup_event():
     """Run migrations on startup for local development and when explicitly enabled."""
     try:
+        # EMERGENCY FIX: Force add created_at if it's missing (bypassing the loop logic)
+        async with engine.begin() as conn:
+            try:
+                from sqlalchemy import text
+                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();"))
+                print("DEBUG: Emergency migration for users.created_at executed successfully.", flush=True)
+            except Exception as e:
+                print(f"DEBUG: Emergency migration (users.created_at) skipped or failed: {e}", flush=True)
+
         if RUN_MIGRATIONS_ON_STARTUP or SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
             # Create all tables asynchronously and run any schema migrations
             async with engine.begin() as conn:
