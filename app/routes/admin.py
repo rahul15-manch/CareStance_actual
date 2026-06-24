@@ -3,6 +3,8 @@ Admin Panel Router
 All routes are protected by the get_current_admin dependency.
 """
 import logging
+import csv
+import os
 from fastapi import APIRouter, Depends, HTTPException, Request, Query
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -267,3 +269,123 @@ async def api_resolve_flag(
     if not flag:
         raise HTTPException(status_code=404, detail="Moderation flag not found.")
     return {"message": f"Flag {flag_id} marked as '{status}'.", "flag_id": flag_id}
+
+import csv
+import os
+
+# ─── Career Management APIs ───────────────────────────────────────────────────
+
+CSV_PATH = "app/assessment_data/occupation_feature_matrix_1.csv"
+
+@router.get("/careers")
+async def get_all_careers(
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Fetch all careers from CSV."""
+    careers = []
+    try:
+        with open(CSV_PATH, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                careers.append({
+                    "code": row["O*NET-SOC Code"],
+                    "title": row["Title"],
+                    "description": row["Description"],
+                })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading CSV: {str(e)}")
+    return {"careers": careers, "total": len(careers)}
+
+
+@router.post("/careers/add")
+async def add_career(
+    request: Request,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Add a new career/occupation to the CSV."""
+    data = await request.json()
+    
+    code = data.get("code", "").strip()
+    title = data.get("title", "").strip()
+    description = data.get("description", "").strip()
+    
+    if not code or not title or not description:
+        raise HTTPException(status_code=400, detail="code, title, description required.")
+    
+    # Read existing headers
+    try:
+        with open(CSV_PATH, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            headers = reader.fieldnames
+            existing = list(reader)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading CSV: {str(e)}")
+    
+    # Check duplicate
+    for row in existing:
+        if row["O*NET-SOC Code"] == code or row["Title"].lower() == title.lower():
+            raise HTTPException(status_code=400, detail="Career with this code or title already exists.")
+    
+    # Build new row — all numeric fields default to 0
+    new_row = {h: "0" for h in headers}
+    new_row["O*NET-SOC Code"] = code
+    new_row["Title"] = title
+    new_row["Description"] = description
+    new_row["Job Zone"] = data.get("job_zone", "3")
+    
+    # Optional RIASEC fields
+    riasec_map = {
+        "IT_Artistic": data.get("artistic", "0"),
+        "IT_Conventional": data.get("conventional", "0"),
+        "IT_Enterprising": data.get("enterprising", "0"),
+        "IT_Investigative": data.get("investigative", "0"),
+        "IT_Realistic": data.get("realistic", "0"),
+        "IT_Social": data.get("social", "0"),
+    }
+    new_row.update(riasec_map)
+    
+    # Append to CSV
+    try:
+        with open(CSV_PATH, "a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writerow(new_row)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error writing CSV: {str(e)}")
+    
+    logger.info(f"Admin added new career: {title} ({code})")
+    return {"message": f"Career '{title}' added successfully.", "code": code, "title": title}
+
+
+@router.delete("/careers/{code}")
+async def delete_career(
+    code: str,
+    admin: User = Depends(get_current_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Delete a career from CSV by O*NET code."""
+    try:
+        with open(CSV_PATH, "r", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            headers = reader.fieldnames
+            rows = list(reader)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading CSV: {str(e)}")
+    
+    original_count = len(rows)
+    rows = [r for r in rows if r["O*NET-SOC Code"] != code]
+    
+    if len(rows) == original_count:
+        raise HTTPException(status_code=404, detail="Career not found.")
+    
+    try:
+        with open(CSV_PATH, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(rows)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error writing CSV: {str(e)}")
+    
+    logger.info(f"Admin deleted career: {code}")
+    return {"message": f"Career {code} deleted successfully."}
