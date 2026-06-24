@@ -45,25 +45,18 @@
                         </div>
                     </div>
 
-                    <div class="space-y-3 mb-6">
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Professional
-                                Experience</p>
-                            <p class="text-sm text-slate-700 leading-relaxed">{{ prof.experience }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Certificates</p>
-                            <div class="flex flex-wrap gap-2 mt-1">
-                                {% for cert in prof.certificates or [] %}
-                                <a href="{{ cert }}" target="_blank" title="View document {{ loop.index }}"
-                                    class="px-3 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold text-slate-600 transition-colors flex items-center gap-1">
-                                    <i
-                                        class="fas {% if cert.endswith('.pdf') %}fa-file-pdf text-red-500{% else %}fa-image text-blue-500{% endif %}"></i>
-                                    View Doc {{ loop.index }}
-                                </a>
-                                {% endfor %}
+                    <div class="space-y-4 mb-6">
+                        <div class="bg-amber-50 rounded-2xl p-4 border border-amber-100">
+                            <div class="flex items-center gap-2 mb-2 text-amber-700">
+                                <i class="fas fa-paper-plane text-xs"></i>
+                                <p class="text-[10px] font-black uppercase tracking-widest">Verification Status</p>
                             </div>
+                            <p class="text-sm text-amber-800 font-medium leading-relaxed">
+                                Documents and experience text have been **directly mailed** to <span class="font-bold underline">contact@carestance.me</span>.
+                            </p>
+                            <p class="text-xs text-amber-600 mt-2 italic">
+                                Note: Documents are not stored on the server for privacy. Please verify from the email before approving.
+                            </p>
                         </div>
                     </div>
 
@@ -80,7 +73,7 @@
                             <button type="submit"
                                 class="w-full py-2 bg-white border border-red-200 text-red-500 hover:bg-red-50 font-bold rounded-xl transition-all text-sm uppercase tracking-wider">
                                 Reject
-                            </button>
+                            </button> 
                         </form>
                     </div>
                 </div>
@@ -729,7 +722,7 @@
                                     {{ sim_pay.career }}
                                 </td>
                                 <td class="px-5 py-4 whitespace-nowrap text-center text-sm font-extrabold text-slate-800">
-                                    {{ sim_pay.user.assessment.simulations_completed if sim_pay.user.assessment else '0' }}
+                                    {{ sim_pay.assessment.simulations_completed if sim_pay.assessment else '0' }}
                                 </td>
                                 <td class="px-5 py-4 whitespace-nowrap text-sm text-slate-500">
                                     {{ sim_pay.created_at.strftime('%Y-%m-%d %H:%M') if sim_pay.created_at else '' }}
@@ -1039,10 +1032,10 @@
 
                                     <!-- Phase 1: Class -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {% if user.assessment and user.assessment.selected_class %}
+                                        {% if assessment and assessment.selected_class %}
                                         <span
                                             class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                                            {{ user.assessment.selected_class }}
+                                            {{ assessment.selected_class }}
                                         </span>
                                         {% else %}
                                         <span class="text-slate-300">-</span>
@@ -1051,10 +1044,10 @@
 
                                     <!-- Phase 2 -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {% if user.assessment and user.assessment.phase_2_category %}
+                                        {% if assessment and assessment.phase_2_category %}
                                         <span
                                             class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                            {{ user.assessment.phase_2_category }}
+                                            {{ assessment.phase_2_category }}
                                         </span>
                                         {% else %}
                                         <span class="text-slate-300">-</span>
@@ -1063,10 +1056,10 @@
 
                                     <!-- Phase 3: Remarks -->
                                     <td class="px-6 py-4 text-sm text-slate-500 max-w-xs">
-                                        {% if user.assessment and user.assessment.phase3_analysis %}
+                                        {% if assessment and assessment.phase3_analysis %}
                                         <div
                                             class="max-h-20 overflow-y-auto pr-2 text-xs leading-relaxed custom-scrollbar">
-                                            {{ user.assessment.phase3_analysis }}
+                                            {{ assessment.phase3_analysis }}
                                         </div>
                                         {% else %}
                                         <span class="text-slate-300">-</span>
@@ -1075,10 +1068,10 @@
 
                                     <!-- Phase 4 -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                        {% if user.assessment and user.assessment.recommended_stream %}
+                                        {% if assessment and assessment.recommended_stream %}
                                         <span
                                             class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                            {{ user.assessment.recommended_stream }}
+                                            {{ assessment.recommended_stream }}
                                         </span>
                                         {% else %}
                                         <span class="text-slate-300">-</span>

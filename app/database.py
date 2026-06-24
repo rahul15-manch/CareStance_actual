@@ -25,12 +25,9 @@ else:
 
 engine_args = {}
 
-# Fix for Supabase Transaction Mode/Poolers
-if ":6543" in SQLALCHEMY_DATABASE_URL and "prepare_threshold" not in SQLALCHEMY_DATABASE_URL:
-    if "?" in SQLALCHEMY_DATABASE_URL:
-        SQLALCHEMY_DATABASE_URL += "&prepare_threshold=0"
-    else:
-        SQLALCHEMY_DATABASE_URL += "?prepare_threshold=0"
+# Fix for Supabase Transaction Mode/Poolers (6543 is bouncer)
+if ":6543" in SQLALCHEMY_DATABASE_URL:
+    engine_args.setdefault("connect_args", {})["statement_cache_size"] = 0
 
 if not SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     # Use NullPool for serverless/constrained environments, but add pre-ping for stability

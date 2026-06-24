@@ -177,7 +177,7 @@
         box-shadow: 0 4px 12px rgba(13, 148, 136, 0.1);
     }
 
-    /* Fira Code Style for Console logs */
+    /* Fira Code Style for Console logs (Phase 0) */
     .console-bubble {
         font-family: 'Fira Code', 'Courier New', monospace;
         font-size: 0.85rem;
@@ -371,7 +371,7 @@
         <div class="flex items-center gap-4">
             <div class="w-20 h-20 flex-shrink-0 relative">
                 <div class="absolute inset-0 bg-teal-500/10 rounded-full blur-md animate-pulse"></div>
-                <img src="/static/images/careo.png" alt="Careo Mascot" class="w-full h-full object-contain relative z-10">
+                <img src="/static/images/careo.png?v=101" alt="Careo Mascot" class="w-full h-full object-contain relative z-10">
             </div>
             <div>
                 <h1 class="text-2xl font-extrabold text-slate-900">Careo</h1>
@@ -429,11 +429,6 @@
     let swipeLogs = [];
     let swipeCards = [];
     let activeSwipeIndex = 0;
-    let activeScenarioIdx = 0;
-    const phase1Inputs = {{ phase1_inputs | default({}) | tojson | safe }};
-    const interestOptions = Object.keys(phase1Inputs.interest_selection_mapping || {}).sort();
-    const incomeOptions = Object.keys(phase1Inputs.family_income_mapping || {});
-    const occupationOptions = Object.keys(phase1Inputs.occupation_category_mapping || {}).sort();
     
     // Voice synthesizers
     let speechSynth = window.speechSynthesis;
@@ -478,6 +473,9 @@
 
     function updateHeader() {
         const isG12 = assessmentState.student_type === "12th";
+        // G12 has 6 phases (0 to 5), G10 has 5 phases (1 to 5)
+        const totalPhases = isG12 ? 6 : 5;
+        const currentLabelVal = isG12 ? (assessmentState.current_phase + 1) : assessmentState.current_phase;
         
         const gradeTitle = document.getElementById("grade-title");
         if (gradeTitle) {
@@ -509,29 +507,13 @@
             } else if (phase === 1) {
                 renderPhase2MCQs();
             } else if (phase === 2) {
-                const body = document.getElementById("phase-body");
-                body.innerHTML = `
-                    <div class="text-center p-8 sm:p-12">
-                        <i class="fas fa-check-circle text-6xl text-teal-500 mb-6 drop-shadow-lg"></i>
-                        <h2 class="text-3xl font-black text-slate-900 mb-2">Assessment Completed</h2>
-                        <p class="text-slate-500 mb-8 max-w-md mx-auto">Your responses have been processed. You are now ready for the Deep Dive phase with your AI Career Mentor.</p>
-                        
-                        <div class="space-y-4 max-w-sm mx-auto">
-                            <a href="/assessment/phase3?mode=voice" style="background-color: #0f766e; color: white; border: none;" class="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-95">
-                                <span class="text-2xl">🎙️</span>
-                                Voice Interaction (Recommended)
-                            </a>
-                            
-                            <a href="/assessment/phase3?mode=chat" style="background-color: white; color: #0f766e; border: 2px solid #0f766e;" class="w-full flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-95">
-                                <span class="text-2xl">💬</span>
-                                Text Chat Interaction
-                            </a>
-                        </div>
-                    </div>
-                `;
-                hideLoader();
-            } else {
-                window.location.href = "/dashboard";
+                renderArchetypePhase();
+            } else if (phase === 3) {
+                renderProxyPhase();
+            } else if (phase === 4) {
+                renderSequencePlannerPhase();
+            } else if (phase === 5) {
+                renderCompilePhase();
             }
         } catch (e) {
             console.error("Critical failure during question load state", e);
@@ -548,9 +530,15 @@
         let text = "";
         const phase = assessmentState.current_phase;
         
-        if (phase === 1) {
+        if (phase === 0) {
+            const lastAI = document.querySelector(".chat-bubble.ai:last-child");
+            if (lastAI) text = lastAI.innerText;
+        } else if (phase === 1) {
             const activeCard = swipeCards[activeSwipeIndex];
             if (activeCard) text = activeCard.content || activeCard.text || "";
+        } else if (phase === 2) {
+            const lastAI = document.querySelector(".chat-bubble.ai:last-child");
+            if (lastAI) text = lastAI.innerText;
         } else {
             const pText = document.querySelector("#phase-body h2, #phase-body p");
             if (pText) text = pText.innerText;
@@ -567,7 +555,7 @@
         }
     }
 
-    // --- PHASE 1: STUDENT INTAKE ---
+    // --- PHASE 0: CLINICAL CONVERSATIONAL INTAKE (G12 ONLY) ---
     function renderIntakePhase() {
         const body = document.getElementById("phase-body");
         body.innerHTML = `
@@ -846,9 +834,46 @@
         }
     }
 
-    window.toggleInterest = function(value, btn) {
-        const select = document.getElementById('hidden-interests');
-        const option = Array.from(select.options).find(o => o.value === value);
+    // --- PHASE 1: REFLEX PREFERENCE CARD SWIPES (BOTH) ---
+    function renderSwipePhase() {
+        swipeCards = activePhaseData.cards || [];
+        activeSwipeIndex = 0;
+        swipeLogs = [];
+
+        const body = document.getElementById("phase-body");
+        body.innerHTML = `
+            <div class="text-center mb-6 stagger-in">
+                <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '2' : '1'}: Reflex Mapping</span>
+                <h2 class="text-2xl font-bold mt-2 text-slate-900">Preference Cards</h2>
+                <p class="text-slate-500 text-sm mt-1">Swipe right for yes, left for no. Your response speed and hesitation coordinates are measured.</p>
+            </div>
+            
+            <div class="deck-container stagger-in" id="card-deck">
+                <!-- Glowing telemetry cards loaded dynamically -->
+            </div>
+
+            <div class="flex justify-center gap-6 mt-8 stagger-in">
+                <button onclick="executeUiSwipe('left')" class="w-14 h-14 flex items-center justify-center rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 shadow-md hover:bg-indigo-100/80 hover:border-indigo-200 hover:scale-105 active:scale-95 transition-all duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+                <button onclick="executeUiSwipe('right')" class="w-14 h-14 flex items-center justify-center rounded-full bg-teal-50 border border-teal-100 text-teal-600 shadow-md hover:bg-teal-100/80 hover:border-teal-200 hover:scale-105 active:scale-95 transition-all duration-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </button>
+            </div>
+            <div class="text-center mt-4 stagger-in">
+                <span class="text-xs font-semibold text-slate-500" id="swipe-counter">0 / 0 Completed</span>
+            </div>
+        `;
+        buildSwipeCards();
+    }
+
+    let cardStartTime = Date.now();
+    let isTransitioning = false;
+
+    function buildSwipeCards() {
+        const deck = document.getElementById("card-deck");
+        if (!deck) return;
+        deck.innerHTML = "";
         
         if (option.selected) {
             option.selected = false;
@@ -928,6 +953,70 @@
             submitPhase2Answers();
             return;
         }
+
+        const q = activePhaseData.proxy_questions[activeProxyIdx];
+        const body = document.getElementById("phase-body");
+        body.innerHTML = `
+            <div class="text-center mb-6 stagger-in">
+                <span class="cyber-badge mb-2">Phase ${assessmentState.student_type === "12th" ? '4' : '3'}: Socio-Demo Context</span>
+                <h2 class="text-2xl font-bold mt-2 text-slate-900 leading-relaxed font-outfit">${q.question || q.question_text || q.text || ''}</h2>
+                <p class="text-slate-500 text-sm mt-1">This evaluates external socioeconomic, digital infrastructure, and geographical limits.</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 max-w-md mx-auto stagger-in" style="animation-delay: 0.1s;">
+                ${(q.options || []).map(opt => `
+                    <button onclick="handleProxySelection('${q.question_id || q.id}', '${opt.option_text || opt.text || ''}', ${opt.multiplier})" class="premium-option-btn w-full flex items-center justify-between group">
+                        <span class="font-semibold text-slate-700 group-hover:text-teal-600">${opt.option_text || opt.text || ''}</span>
+                        <svg class="w-5 h-5 text-slate-400 group-hover:text-teal-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                `).join('')}
+            </div>
+
+            <div class="text-center mt-6 stagger-in">
+                <span class="text-xs font-semibold text-slate-500">${activeProxyIdx} / ${total} Environmental Nodes Checked</span>
+            </div>
+        `;
+    }
+
+    function handleProxySelection(qId, val, mult) {
+        proxyAnswersLog.push({
+            question_id: qId,
+            answer: val,
+            multiplier: mult
+        });
+        activeProxyIdx++;
+        showProxyQuestion();
+    }
+
+    async function submitProxyAnswers() {
+        showLoader("Configuring environment arrays...");
+        try {
+            const res = await fetch("/assessment/api/proxy", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ answers: proxyAnswersLog })
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                await refreshState();
+            }
+        } catch (e) {
+            console.error(e);
+            hideLoader();
+        }
+    }
+
+    // --- PHASE 4: ENHANCED SEQUENCE PLANNER (NEW) ---
+    let plannerWorkspaceItems = [];
+    let nextPlannerId = 1;
+
+    function renderSequencePlannerPhase() {
+        const body = document.getElementById("phase-body");
+        const taskData = activePhaseData.task || {};
+        // The JSON uses 'task' as the scenario name field
+        const scenarioTitle = taskData.task || "Design your strategic plan";
+        const scenarioDesc = `Use the tools below to map how you would approach: "${scenarioTitle}". Connect them to show how they work together.`;
+        const toolsRequired = taskData.tools_required || [];
         
         document.getElementById("phase-step-label").innerText = `Behavioral Assessment (${currentQuestionIdx + 1}/${phase2Questions.length})`;
         document.getElementById("global-progress-fill").style.width = `${((currentQuestionIdx) / phase2Questions.length) * 100}%`;
@@ -977,24 +1066,157 @@
         // Prevent double click
         if (btn.disabled) return;
         
-        // Highlight button
-        const buttons = btn.parentElement.querySelectorAll("button");
-        buttons.forEach(b => {
-            b.classList.remove("border-teal-500", "bg-teal-50");
-            b.querySelector(".h-8").classList.remove("border-teal-500");
-            b.querySelector(".h-8 span").classList.remove("opacity-100");
-            b.disabled = true; // Disable all to prevent multi-select
+        const filtered = TOOL_RESOURCES.filter(tr => 
+            allowed.length === 0 || allowed.some(a => tr.label.toLowerCase().includes(a) || tr.type.toLowerCase().includes(a))
+        );
+
+        // Show all tools if none matched
+        const toShow = filtered.length > 0 ? filtered : TOOL_RESOURCES;
+
+        palette.innerHTML = toShow.map(item => `
+            <button onclick="addToolToCanvas('${item.type}')"
+                style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:white;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;width:100%;text-align:left;transition:all 0.15s;"
+                onmouseover="this.style.borderColor='#0d9488';this.style.background='#f0fdfa'"
+                onmouseout="this.style.borderColor='#e2e8f0';this.style.background='white'">
+                <span style="font-size:16px;">${item.icon}</span>
+                <span style="font-size:10px;font-weight:700;color:#334155;">${item.label}</span>
+            </button>
+        `).join('');
+
+        const container = document.getElementById('planner-canvas-container');
+        container.addEventListener('pointermove', handlePointerMove);
+        container.addEventListener('pointerup', handlePointerUp);
+        container.addEventListener('pointerleave', handlePointerUp);
+    }
+
+    function addToolToCanvas(type) {
+        const tool = TOOL_RESOURCES.find(t => t.type === type);
+        if (!tool) return;
+        const id = nextPlannerId++;
+        // Auto-arrange in a grid pattern
+        const col = plannerWorkspaceItems.length % 3;
+        const row = Math.floor(plannerWorkspaceItems.length / 3);
+        const x = 20 + col * 210;
+        const y = 20 + row * 140;
+        plannerWorkspaceItems.push({ ...tool, id, x, y, description: "" });
+        renderPlannerWorkspace();
+    }
+
+    function handlePointerMove(e) {
+        if (draggingNodeId !== null) {
+            const container = document.getElementById('planner-canvas-container');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left - dragOffset.x;
+            const y = e.clientY - rect.top - dragOffset.y;
+            
+            const item = plannerWorkspaceItems.find(it => it.id === draggingNodeId);
+            if (item) {
+                item.x = x;
+                item.y = y;
+                renderPlannerWorkspace();
+            }
+        }
+    }
+
+    function handlePointerUp() {
+        draggingNodeId = null;
+    }
+
+    function startDragging(e, id) {
+        e.stopPropagation();
+        const nodeRect = e.currentTarget.getBoundingClientRect();
+        dragOffset.x = e.clientX - nodeRect.left;
+        dragOffset.y = e.clientY - nodeRect.top;
+        draggingNodeId = id;
+    }
+
+    function toggleLink(e, id) {
+        e.stopPropagation();
+        if (!linkingMode) {
+            linkingMode = true;
+            selectedSourceId = id;
+            document.getElementById('linking-mode-indicator').classList.remove('hidden');
+        } else {
+            if (selectedSourceId !== id) {
+                const exists = plannerConnections.some(c => c.from === selectedSourceId && c.to === id);
+                if (!exists) {
+                    plannerConnections.push({ from: selectedSourceId, to: id });
+                }
+            }
+            linkingMode = false;
+            selectedSourceId = null;
+            document.getElementById('linking-mode-indicator').classList.add('hidden');
+        }
+        renderPlannerWorkspace();
+    }
+
+    function renderPlannerWorkspace() {
+        const canvas = document.getElementById('planner-canvas');
+        const empty = document.getElementById('planner-empty-state');
+        const svg = document.getElementById('planner-connections-svg');
+        
+        empty.style.display = plannerWorkspaceItems.length > 0 ? 'none' : 'flex';
+
+        svg.innerHTML = `
+            <defs>
+                <marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#0d9488" />
+                </marker>
+            </defs>
+        `;
+        
+        plannerConnections.forEach(conn => {
+            const from = plannerWorkspaceItems.find(it => it.id === conn.from);
+            const to = plannerWorkspaceItems.find(it => it.id === conn.to);
+            if (from && to) {
+                const x1 = from.x + 90;
+                const y1 = from.y + 40;
+                const x2 = to.x + 10;
+                const y2 = to.y + 20;
+                
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const d = `M ${x1} ${y1} C ${x1 + 50} ${y1}, ${x2 - 50} ${y2}, ${x2} ${y2}`;
+                path.setAttribute("d", d);
+                path.setAttribute("class", "connection-path");
+                path.setAttribute("marker-end", "url(#arrowhead)");
+                svg.appendChild(path);
+            }
         });
+
+        const existingNodes = Array.from(canvas.querySelectorAll('.planner-node'));
+        const nodeMap = new Map();
         
-        btn.classList.add("border-teal-500", "bg-teal-50");
-        btn.querySelector(".h-8").classList.add("border-teal-500");
-        btn.querySelector(".h-8 span").classList.add("opacity-100");
-        
-        // Save answer
-        const q = phase2Questions[currentQuestionIdx];
-        phase2Answers.push({
-            question_id: q.id,
-            archetype_id: archetypeId
+        plannerWorkspaceItems.forEach(item => {
+            let node = canvas.querySelector(`[data-id="${item.id}"]`);
+            if (!node) {
+                node = document.createElement('div');
+                node.className = `planner-node absolute p-2 cursor-grab group transition-shadow`;
+                node.setAttribute('data-id', item.id);
+                canvas.appendChild(node);
+            }
+            node.style.left = `${item.x}px`;
+            node.style.top = `${item.y}px`;
+            node.style.width = `180px`;
+            node.style.zIndex = item.id === draggingNodeId ? 200 : 100;
+            
+            const isSelected = selectedSourceId === item.id;
+            node.innerHTML = `
+                <div class="flex items-center justify-between mb-1" onpointerdown="startDragging(event, ${item.id})">
+                    <div class="flex items-center gap-1.5 overflow-hidden">
+                        <span class="text-xs">${item.icon}</span>
+                        <span class="text-[9px] font-extrabold text-slate-800 uppercase truncate">${item.label}</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button onclick="toggleLink(event, ${item.id})" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-teal-100 text-[10px] ${isSelected ? 'bg-teal-500 text-white animate-pulse' : 'text-slate-500'}">🔗</button>
+                        <button onclick="deleteNode(event, ${item.id})" class="w-5 h-5 flex items-center justify-center rounded bg-slate-100 hover:bg-red-100 text-[10px] text-slate-500">✕</button>
+                    </div>
+                </div>
+                <textarea onchange="updateNodeDesc(${item.id}, this.value)" 
+                          class="w-full text-[9px] bg-slate-50 border-slate-100 focus:bg-white focus:ring-1 focus:ring-teal-500 rounded p-1.5 h-14 resize-none leading-tight" 
+                          placeholder="What purpose does this serve?">${item.description}</textarea>
+                ${isSelected ? '<div class="absolute inset-0 border-2 border-teal-400 rounded-16 pointer-events-none"></div>' : ''}
+            `;
+            nodeMap.set(item.id, true);
         });
         
         // Next question
@@ -1004,17 +1226,80 @@
         }, 400);
     };
 
-    async function submitPhase2Answers() {
-        showLoader("Analyzing behavioral patterns...");
+        existingNodes.forEach(rn => {
+            const id = parseInt(rn.getAttribute('data-id'));
+            if (!nodeMap.has(id)) rn.remove();
+        });
+    }
+
+    function updateNodeDesc(id, val) {
+        const item = plannerWorkspaceItems.find(it => it.id === id);
+        if (item) item.description = val;
+    };
+
+    window.deletePlannerNode = (id) => {
+        plannerWorkspaceItems = plannerWorkspaceItems.filter(i => i.id !== id);
+        renderPlannerWorkspace();
+    };
+
+    async function submitPlannerProject() {
+        if (plannerWorkspaceItems.length === 0) return alert("Please map at least one tool.");
+        
+        showLoader("Synchronizing vector multipliers...");
         try {
             const res = await fetch("/assessment/api/phase2/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ answers: phase2Answers })
+                body: JSON.stringify({ 
+                    workflow: plannerWorkspaceItems,
+                    connections: plannerConnections
+                })
             });
             const data = await res.json();
             if (data.status === "success") {
                 await refreshState();
+            }
+        } catch (e) {
+            console.error(e);
+            hideLoader();
+        }
+    }
+
+    // --- PHASE 5: COMPILING RESULTS AND REDIRECT (BOTH) ---
+    function renderCompilePhase() {
+        const body = document.getElementById("phase-body");
+        body.innerHTML = `
+            <div class="text-center py-10 flex flex-col items-center justify-center stagger-in">
+                <div class="relative flex items-center justify-center mb-8">
+                    <div class="animate-ping absolute inline-flex h-20 w-20 rounded-full bg-teal-500 opacity-20"></div>
+                    <div class="w-20 h-20 rounded-full bg-gradient-to-tr from-teal-500 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-teal-600/10">
+                        <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900">Shadow Compilation Ready</h2>
+                <p class="text-slate-500 max-w-md mt-3 text-sm leading-relaxed">Your reflex latency indices, RIASEC profiles, geographical variables, and ego coefficients are consolidated.</p>
+                
+                <button onclick="compileFinalResults()" id="compile-btn" class="mt-8 px-12 py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-xl font-extrabold transition-all shadow-md shadow-teal-600/10 hover:scale-105 active:scale-95 tracking-widest uppercase text-xs">Execute Matrix Compilation</button>
+                <p id="compiling-indicator" class="hidden text-teal-600 font-bold mt-5 animate-pulse text-xs tracking-widest uppercase">Formulating career fit projections...</p>
+            </div>
+        `;
+    }
+
+    async function compileFinalResults() {
+        const btn = document.getElementById("compile-btn");
+        const ind = document.getElementById("compiling-indicator");
+        if (btn) btn.disabled = true;
+        if (btn) btn.classList.add("opacity-40", "cursor-not-allowed");
+        if (ind) ind.classList.remove("hidden");
+        
+        try {
+            const res = await fetch("/assessment/api/compile", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+            const data = await res.json();
+            if (data.status === "success") {
+                window.location.href = data.redirect;
             } else {
                 hideLoader();
                 alert("Failed to submit Phase 2 assessment.");
