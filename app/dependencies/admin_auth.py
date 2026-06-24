@@ -1,5 +1,5 @@
 """
-Admin authentication dependency.
+Admin authentication dependency
 Reusable across all admin-only routes and APIs.
 """
 
