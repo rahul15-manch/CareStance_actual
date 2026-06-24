@@ -159,7 +159,7 @@
 
         {# Data Extraction & Normalization #}
         {% set dominant_trait = result.assessment_report.get('riasec_analysis', {}).get('dominant_trait', result.personality) if result.assessment_report else result.personality %}
-        {% set narrative = result.assessment_report.get('riasec_analysis', {}).get('narrative_summary', result.reasoning) if result.assessment_report else result.reasoning %}
+        {% set narrative = result.final_analysis if result.final_analysis else (result.assessment_report.get('riasec_analysis', {}).get('narrative_summary', result.reasoning) if result.assessment_report else result.reasoning) %}
         {% set riasec_vector = result.assessment_report.get('riasec_analysis', {}).get('riasec_vector', {}) if result.assessment_report else {} %}
         {% set final_recs = result.assessment_report.get('final_recommendations', []) if result.assessment_report else [] %}
 
@@ -298,87 +298,7 @@
         </div>
         {% endif %}
 
-        <!-- 3. GRADE 10 STREAM REC & SPECTRUM (G10 Specific) -->
-        {% if result.student_type == '10th' and result.recommended_stream %}
-        <div class="cyber-card p-8 border border-emerald-500/20 shadow-[0_0_40px_rgba(0,255,136,0.05)]">
-            <h2 class="text-2xl font-black text-white mb-6 font-outfit flex items-center gap-3">
-                <i class="fas fa-award text-emerald-400"></i> Stream Selection Detail
-            </h2>
 
-            <div class="grid md:grid-cols-3 gap-8 items-center">
-                <!-- Stream Hero badge -->
-                <div class="text-center p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
-                    <span class="text-xs font-black uppercase tracking-widest" style="color: var(--text-dim);">Recommended Option</span>
-                    <h3 class="text-3xl font-black text-emerald-400 neon-text-glow-emerald mt-2 mb-4 font-outfit">{{ result.recommended_stream }}</h3>
-                    <div class="w-20 h-20 rounded-full border-4 border-emerald-400/30 bg-emerald-400/10 flex items-center justify-center mx-auto text-emerald-400 text-3xl font-black">
-                        10
-                    </div>
-                </div>
-
-                <!-- Thinking Style Spectrum -->
-                <div class="md:col-span-2 space-y-4">
-                    <h4 class="text-sm font-black uppercase tracking-widest text-white mb-2">Academic Thinking Style Spectrum</h4>
-                    {% if result.stream_scores %}
-                        {% for style, score in result.stream_scores.items() %}
-                        {% set bar_color = 'var(--neon-cyan)' %}
-                        {% if style == 'Commerce' %}{% set bar_color = 'var(--neon-emerald)' %}
-                        {% elif style == 'Humanities' or style == 'Arts' %}{% set bar_color = 'var(--neon-purple)' %}{% endif %}
-                        <div>
-                            <div class="flex justify-between items-center text-xs font-bold mb-1">
-                                <span class="text-white">{{ style }} Thinking</span>
-                                <span style="color: {{ bar_color }};">{{ score }}%</span>
-                            </div>
-                            <div class="riasec-bar">
-                                <div class="riasec-bar-fill" style="width: {{ score }}%; background: {{ bar_color }}; box-shadow: 0 0 8px {{ bar_color }}80;"></div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Descriptive assessment report analysis -->
-            {% if result.final_analysis %}
-            <div class="mt-6 p-4 rounded-xl border border-cyan-500/10 bg-cyan-500/5 text-cyan-200 text-sm leading-relaxed">
-                <i class="fas fa-quote-left mr-2 text-cyan-400"></i>
-                {{ result.final_analysis }}
-            </div>
-            {% endif %}
-
-            <!-- Pros and Cons -->
-            <div class="grid md:grid-cols-2 gap-6 mt-8">
-                {% if result.stream_pros %}
-                <div class="p-6 bg-white/3 border border-white/5 rounded-2xl">
-                    <h4 class="font-black text-emerald-400 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
-                        <i class="fas fa-thumbs-up"></i> Cognitive Strengths
-                    </h4>
-                    <ul class="space-y-2">
-                        {% for pro in result.stream_pros %}
-                        <li class="flex items-start text-xs leading-relaxed" style="color: var(--text-bright);">
-                            <i class="fas fa-check text-emerald-400 mt-0.5 mr-2 shrink-0"></i> {{ pro }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-
-                {% if result.stream_cons %}
-                <div class="p-6 bg-white/3 border border-white/5 rounded-2xl">
-                    <h4 class="font-black text-rose-400 mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
-                        <i class="fas fa-exclamation-triangle"></i> Structural Challenges
-                    </h4>
-                    <ul class="space-y-2">
-                        {% for con in result.stream_cons %}
-                        <li class="flex items-start text-xs leading-relaxed" style="color: var(--text-bright);">
-                            <i class="fas fa-minus text-rose-400 mt-0.5 mr-2 shrink-0"></i> {{ con }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
 
         <!-- 4. RECOMMENDED CAREER PATHS (Standard Unified Grid for G10 & G12) -->
         <div class="space-y-6">
@@ -459,6 +379,41 @@
                             <h4 class="text-[10px] font-black uppercase tracking-wider mb-1" style="color: var(--text-dim);">Target Challenge Analysis</h4>
                             <p class="text-xs leading-relaxed" style="color: var(--text-bright);">{{ challenge }}</p>
                         </div>
+
+                        <!-- Detailed Pros & Cons -->
+                        {% if rec.pros or rec.cons %}
+                        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                            {% if rec.pros %}
+                            <div>
+                                <h4 class="font-black text-emerald-400 mb-2 flex items-center gap-1 text-[11px] uppercase tracking-wider">
+                                    <i class="fas fa-thumbs-up"></i> Why It's a Great Fit
+                                </h4>
+                                <ul class="space-y-1.5">
+                                    {% for pro in rec.pros %}
+                                    <li class="flex items-start text-xs leading-relaxed" style="color: var(--text-bright);">
+                                        <i class="fas fa-check text-emerald-400 mt-1 mr-2 shrink-0 text-[10px]"></i> {{ pro }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                            
+                            {% if rec.cons %}
+                            <div>
+                                <h4 class="font-black text-rose-400 mb-2 flex items-center gap-1 text-[11px] uppercase tracking-wider">
+                                    <i class="fas fa-exclamation-triangle"></i> Things to Consider
+                                </h4>
+                                <ul class="space-y-1.5">
+                                    {% for con in rec.cons %}
+                                    <li class="flex items-start text-xs leading-relaxed" style="color: var(--text-bright);">
+                                        <i class="fas fa-minus text-rose-400 mt-1 mr-2 shrink-0 text-[10px]"></i> {{ con }}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 {% else %}
