@@ -2074,11 +2074,11 @@ async def dashboard(request: Request, db: AsyncSession = Depends(get_db)):
 #     db: AsyncSession = Depends(get_db),
 #     user_page: int = 1,
 #     feedback_page: int = 1,@app.post("/admin/users/{user_id}/suspend")
-@app.post("/admin/users/{user_id}/unsuspend")
-@app.post("/admin/flags/{flag_id}/action")
-@app.post("/admin/verify-counsellor/{counsellor_id}")
-@app.post("/admin/block-counsellor/{counsellor_id}")
-@app.post("/admin/unblock-counsellor/{counsellor_id}")
+# @app.post("/admin/users/{user_id}/unsuspend")
+# @app.post("/admin/flags/{flag_id}/action")
+# @app.post("/admin/verify-counsellor/{counsellor_id}")
+# @app.post("/admin/block-counsellor/{counsellor_id}")
+# @app.post("/admin/unblock-counsellor/{counsellor_id}")
 #     ticket_page: int = 1,
 #     page_size: int = 20,
 #     user_search: str = "",
@@ -2290,9 +2290,10 @@ async def send_completion_reminders(request: Request, db: AsyncSession = Depends
 async def delete_user(user_id: int, request: Request, db: AsyncSession = Depends(get_db)):
     # 1. Check admin auth
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    
+
     # 2. Get User
     user_to_delete = (await db.execute(select(models.User).where(models.User.id == user_id))).scalars().first()
     if not user_to_delete:
@@ -2311,7 +2312,8 @@ async def delete_user(user_id: int, request: Request, db: AsyncSession = Depends
 @app.post("/admin/users/{user_id}/suspend")
 async def suspend_user(user_id: int, request: Request, db: AsyncSession = Depends(get_db)):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     
     user = (await db.execute(select(models.User).where(models.User.id == user_id))).scalars().first()
@@ -2324,7 +2326,8 @@ async def suspend_user(user_id: int, request: Request, db: AsyncSession = Depend
 @app.post("/admin/users/{user_id}/unsuspend")
 async def unsuspend_user(user_id: int, request: Request, db: AsyncSession = Depends(get_db)):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     
     user = (await db.execute(select(models.User).where(models.User.id == user_id))).scalars().first()
@@ -2337,7 +2340,8 @@ async def unsuspend_user(user_id: int, request: Request, db: AsyncSession = Depe
 @app.post("/admin/flags/{flag_id}/action")
 async def handle_flag(flag_id: int, request: Request, action: str = Form(...), db: AsyncSession = Depends(get_db)):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     
     flag = (await db.execute(select(models.ModerationFlag).where(models.ModerationFlag.id == flag_id))).scalars().first()
@@ -2531,11 +2535,9 @@ async def verify_counsellor(
     db: AsyncSession = Depends(get_db)
 ):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
-         # Safety Check: Allow access if user email matches ADMIN_EMAIL env var
-        admin_email = os.getenv("ADMIN_EMAIL")
-        if not admin_email or current_user.email != admin_email:
-            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
+        return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
             
     try:
         profile = (await db.execute(select(models.CounsellorProfile).where(models.CounsellorProfile.user_id == counsellor_id))).scalars().first()
@@ -2567,10 +2569,8 @@ async def block_counsellor(
     db: AsyncSession = Depends(get_db)
 ):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
-        admin_email = os.getenv("ADMIN_EMAIL")
-        if not admin_email or current_user.email != admin_email:
-            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
+        return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
     
     profile = (await db.execute(select(models.CounsellorProfile).where(models.CounsellorProfile.user_id == counsellor_id))).scalars().first()
     if profile:
@@ -2588,10 +2588,9 @@ async def unblock_counsellor(
     db: AsyncSession = Depends(get_db)
 ):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
-        admin_email = os.getenv("ADMIN_EMAIL")
-        if not admin_email or current_user.email != admin_email:
-            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     
     profile = (await db.execute(select(models.CounsellorProfile).where(models.CounsellorProfile.user_id == counsellor_id))).scalars().first()
     if profile:
@@ -2608,10 +2607,9 @@ async def give_founding_badge(
     db: AsyncSession = Depends(get_db)
 ):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
-        admin_email = os.getenv("ADMIN_EMAIL")
-        if not admin_email or current_user.email != admin_email:
-            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     
     # Check if limit of 100 is reached
     founding_count = (await db.execute(select(func.count()).select_from(models.CounsellorProfile).where(models.CounsellorProfile.is_founding_counsellor == True))).scalar()
@@ -2643,10 +2641,9 @@ async def take_founding_badge(
     db: AsyncSession = Depends(get_db)
 ):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
-        admin_email = os.getenv("ADMIN_EMAIL")
-        if not admin_email or current_user.email != admin_email:
-            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     
     profile = (await db.execute(select(models.CounsellorProfile).where(models.CounsellorProfile.user_id == counsellor_id))).scalars().first()
     if profile:
@@ -2672,11 +2669,9 @@ async def admin_update_counsellor_fee(
     db: AsyncSession = Depends(get_db)
 ):
     current_user = await get_current_user(request, db)
-    if not current_user or current_user.role != "admin":
-        admin_email = os.getenv("ADMIN_EMAIL")
-        if not admin_email or current_user.email != admin_email:
-            return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
-
+    admin_email = os.getenv("ADMIN_EMAIL")
+    if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     profile = (await db.execute(select(models.CounsellorProfile).where(models.CounsellorProfile.user_id == counsellor_id))).scalars().first()
     if profile:
         old_fee = profile.fee or 0.0
