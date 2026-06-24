@@ -633,6 +633,11 @@ async def add_cache_control_header(request: Request, call_next):
     if request.url.path.startswith("/static"):
         # Reduced cache to 1 hour to ensure updates propagate more reliably
         response.headers["Cache-Control"] = "public, max-age=3600"
+    else:
+        # Prevent caching of dynamic HTML/API content to ensure users always see latest push
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
     return response
 
 
@@ -2605,6 +2610,7 @@ async def block_counsellor(
     db: AsyncSession = Depends(get_db)
 ):
     current_user = await get_current_user(request, db)
+    admin_email = os.getenv("ADMIN_EMAIL")
     if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
         return RedirectResponse(url="/dashboard", status_code=status.HTTP_302_FOUND)
     
