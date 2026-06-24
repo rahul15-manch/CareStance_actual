@@ -395,14 +395,50 @@ async def _health():
 async def startup_event():
     """Run migrations on startup for local development and when explicitly enabled."""
     try:
-        # EMERGENCY FIX: Force add created_at if it's missing (bypassing the loop logic)
+        # EMERGENCY FIX: Force add missing columns to 'users' table in ONE batch
         async with engine.begin() as conn:
+            from sqlalchemy import text
             try:
-                from sqlalchemy import text
-                await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW();"))
-                print("DEBUG: Emergency migration for users.created_at executed successfully.", flush=True)
+                # Grouping into one command is much faster and prevents startup timeouts
+                # Note: IF NOT EXISTS is used for each column for safety
+                sql = """
+                ALTER TABLE users 
+                ADD COLUMN IF NOT EXISTS profile_photo VARCHAR,
+                ADD COLUMN IF NOT EXISTS bio TEXT,
+                ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS contact_number VARCHAR,
+                ADD COLUMN IF NOT EXISTS full_name VARCHAR,
+                ADD COLUMN IF NOT EXISTS role VARCHAR,
+                ADD COLUMN IF NOT EXISTS onboarded BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS simulations_completed INTEGER DEFAULT 0,
+                ADD COLUMN IF NOT EXISTS simulation_paid BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS simulation_credits INTEGER DEFAULT 0,
+                ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW(),
+                ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;
+                """
+                await conn.execute(text(sql))
+                print("DEBUG: Emergency batch migration for 'users' table completed.", flush=True)
+                # 2. Counsellor Profiles table
+                sql_cp = """
+                ALTER TABLE counsellor_profiles 
+                ADD COLUMN IF NOT EXISTS is_blocked BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS block_reason VARCHAR,
+                ADD COLUMN IF NOT EXISTS verification_remarks TEXT,
+                ADD COLUMN IF NOT EXISTS fee_locked BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS razorpay_account_id VARCHAR,
+                ADD COLUMN IF NOT EXISTS onboarding_status VARCHAR DEFAULT 'not_started',
+                ADD COLUMN IF NOT EXISTS razorpay_contact_id VARCHAR,
+                ADD COLUMN IF NOT EXISTS razorpay_fund_account_id VARCHAR,
+                ADD COLUMN IF NOT EXISTS is_founding_counsellor BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS founding_badge_awarded_at TIMESTAMP,
+                ADD COLUMN IF NOT EXISTS commission_free_until TIMESTAMP,
+                ADD COLUMN IF NOT EXISTS tnc_accepted BOOLEAN DEFAULT FALSE,
+                ADD COLUMN IF NOT EXISTS tnc_accepted_at TIMESTAMP;
+                """
+                await conn.execute(text(sql_cp))
+                print("DEBUG: Emergency batch migration for 'counsellor_profiles' table completed.", flush=True)
             except Exception as e:
-                print(f"DEBUG: Emergency migration (users.created_at) skipped or failed: {e}", flush=True)
+                print(f"DEBUG: Emergency batch migration failed (likely already patched): {e}", flush=True)
 
         if RUN_MIGRATIONS_ON_STARTUP or SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
             # Create all tables asynchronously and run any schema migrations
@@ -595,8 +631,8 @@ app.add_middleware(
 async def add_cache_control_header(request: Request, call_next):
     response = await call_next(request)
     if request.url.path.startswith("/static"):
-        # Cache static assets for 1 year (Standard practice for immutable assets)
-        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        # Reduced cache to 1 hour to ensure updates propagate more reliably
+        response.headers["Cache-Control"] = "public, max-age=3600"
     return response
 
 

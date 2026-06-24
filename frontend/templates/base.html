@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CareStance — {% block title %}{% endblock %}</title>
-    <link rel="icon" type="image/webp" href="/static/images/image.webp">
+    <link rel="icon" type="image/webp" href="/static/images/image.webp?v=101">
 
     <!-- DNS Prefetch for third-party resources -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
@@ -41,8 +41,8 @@
     </noscript>
 
     <!-- Main site CSS: preload for faster rendering -->
-    <link rel="preload" href="/static/css/style.css" as="style">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preload" href="/static/css/style.css?v=101" as="style">
+    <link rel="stylesheet" href="/static/css/style.css?v=101">
 
     <!-- Alpine.js: deferred, non-blocking -->
     <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
@@ -746,8 +746,8 @@
         <div class="nav-inner">
             <a href="/" class="nav-logo">
                 <picture>
-                    <source srcset="/static/images/image.webp" type="image/webp">
-                    <img src="/static/images/image.png" alt="CareStance Logo" width="38" height="38">
+                    <source srcset="/static/images/image.webp?v=101" type="image/webp">
+                    <img src="/static/images/image.png?v=101" alt="CareStance Logo" width="38" height="38">
                 </picture>
                 <span class="nav-logo-text">CareStance</span>
             </a>

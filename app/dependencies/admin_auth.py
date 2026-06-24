@@ -32,11 +32,12 @@ async def get_current_admin(
     """
     user_id = request.cookies.get("user_id")
 
-    if not user_id:
-        # Not logged in → redirect to login
+    try:
+        uid = int(user_id)
+    except ValueError:
         return RedirectResponse(url="/login", status_code=302)
 
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(select(User).where(User.id == uid))
     user = result.scalar_one_or_none()
 
     if not user:
