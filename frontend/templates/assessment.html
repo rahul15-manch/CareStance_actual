@@ -481,15 +481,14 @@
         if (gradeTitle) {
             gradeTitle.innerText = isG12 ? "Grade 12 Career Track" : "Grade 10 Stream Planner";
         }
-        document.getElementById("phase-step-label").innerText = `Phase ${currentLabelVal} of ${totalPhases}`;
+        document.getElementById("phase-step-label").innerText = `Student Information Intake`;
         
         // Progress percentage calculation
-        const percent = Math.round((currentLabelVal / totalPhases) * 100);
-        document.getElementById("global-progress-fill").style.width = `${percent}%`;
+        document.getElementById("global-progress-fill").style.width = `100%`;
         
         const subtitleTracker = document.getElementById("subtitle-tracker");
         if (subtitleTracker) {
-            subtitleTracker.innerText = isG12 ? "Advanced Multi-Phase Diagnostic Flow" : "Interactive Stream Strategy Matrix";
+            subtitleTracker.innerText = isG12 ? "Student Information Intake" : "Student Information Intake";
         }
     }
 
@@ -499,16 +498,14 @@
         if (speechSynth.speaking) speechSynth.cancel();
 
         try {
-            const res = await fetch("/assessment/api/questions");
-            activePhaseData = await res.json();
-            
             const body = document.getElementById("phase-body");
             body.innerHTML = "";
 
             if (phase === 0) {
                 renderIntakePhase();
+                hideLoader();
             } else if (phase === 1) {
-                renderSwipePhase();
+                renderPhase2MCQs();
             } else if (phase === 2) {
                 renderArchetypePhase();
             } else if (phase === 3) {
@@ -518,7 +515,6 @@
             } else if (phase === 5) {
                 renderCompilePhase();
             }
-            hideLoader();
         } catch (e) {
             console.error("Critical failure during question load state", e);
             hideLoader();
@@ -622,50 +618,108 @@
                                 <i class="fas fa-star"></i>
                             </div>
                             <div>
-                                <h4 class="text-base font-bold text-slate-900">What are your areas of interest?</h4>
-                                <p class="text-slate-400 text-xs">Select all that interest you.</p>
+                                <h4 class="text-base font-bold text-slate-900">Which areas interest you the most?</h4>
+                                <p class="text-slate-400 text-xs">Choose up to four areas you would enjoy exploring.</p>
                             </div>
                         </div>
                         <div class="w-full md:w-80">
-                            <input type="text" name="interests" required placeholder="Enter interests (e.g. Technology, Art)" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
-                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter your interests.</div>
+                            <select name="interests" multiple required class="hidden" id="hidden-interests">
+                                ${interestOptions.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+                            </select>
+                            <div class="flex flex-wrap gap-2 max-h-52 overflow-y-auto p-1 border-2 border-transparent rounded-xl" id="interests-container">
+                                ${interestOptions.map(opt => `
+                                    <button type="button" 
+                                        onclick="toggleInterest('${opt}', this)"
+                                        class="px-3 py-1.5 rounded-full border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-teal-300 transition-all text-left select-none">
+                                        ${opt}
+                                    </button>
+                                `).join("")}
+                            </div>
+                            <div class="text-xs text-slate-400 mt-2">Select up to 4 areas</div>
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please select 1 to 4 interests.</div>
                         </div>
                     </div>
 
-                    <!-- Row 4: Parent Income -->
+                    <!-- Row 4: Family Income -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">Family Income Range</h4>
+                                <p class="text-slate-400 text-xs">Select your family's annual income bracket.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <select name="family_income" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-teal-500 focus:outline-none text-sm transition-all">
+                                <option value="" disabled selected>Select an option...</option>
+                                ${incomeOptions.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+                            </select>
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please select an income range.</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Father's Occupation -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">Father's Occupation</h4>
+                                <p class="text-slate-400 text-xs">Select primary occupation.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <select name="father_occupation" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-teal-500 focus:outline-none text-sm transition-all">
+                                <option value="" disabled selected>Select an option...</option>
+                                ${occupationOptions.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+                            </select>
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please select an occupation.</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 6: Mother's Occupation -->
+                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
+                                <i class="fas fa-user-nurse"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-bold text-slate-900">Mother's Occupation</h4>
+                                <p class="text-slate-400 text-xs">Select primary occupation.</p>
+                            </div>
+                        </div>
+                        <div class="w-full md:w-80">
+                            <select name="mother_occupation" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-teal-500 focus:outline-none text-sm transition-all">
+                                <option value="" disabled selected>Select an option...</option>
+                                ${occupationOptions.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+                            </select>
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please select an occupation.</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 7: Salary Priority (Career Choice) -->
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
                         <div class="flex items-center gap-4">
                             <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
                                 <i class="fas fa-wallet"></i>
                             </div>
                             <div>
-                                <h4 class="text-base font-bold text-slate-900">What is your parent's approximate annual income?</h4>
-                                <p class="text-slate-400 text-xs">This helps us suggest better career paths.</p>
+                                <h4 class="text-base font-bold text-slate-900">What matters most to you?</h4>
+                                <p class="text-slate-400 text-xs">When choosing a future career.</p>
                             </div>
                         </div>
                         <div class="w-full md:w-80">
-                            <input type="text" name="parent_income" required placeholder="Enter income in numbers (e.g. 800000)" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
-                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter a valid numeric income (number only).</div>
-                        </div>
-                    </div>
-
-                    <!-- Row 5: Parent Occupation -->
-                    <div class="flex flex-col md:flex-row md:items-center justify-between p-5 bg-slate-50/40 border border-slate-100 rounded-2xl gap-4 hover:border-teal-500/10 transition-all duration-300">
-                        <div class="flex items-center gap-4">
-                            <div class="h-12 w-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center text-xl flex-shrink-0">
-                                <i class="fas fa-users"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-base font-bold text-slate-900">What do your parents do?</h4>
-                                <p class="text-slate-400 text-xs">Select their primary occupation.</p>
-                            </div>
-                        </div>
-                        <div class="w-full md:w-80">
-                            <input type="text" name="parent_occupation" required placeholder="Enter parents' occupation (e.g. Service)" 
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none text-sm transition-all">
-                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please enter parent's occupation.</div>
+                            <select name="salary_priority" required class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-900 focus:border-teal-500 focus:outline-none text-sm transition-all">
+                                <option value="" disabled selected>Select an option...</option>
+                                <option value="high_salary">High salary and financial growth</option>
+                                <option value="balanced">A balance of salary, interest, and stability</option>
+                                <option value="meaningful_work">Interest, purpose, and meaningful work</option>
+                                <option value="unsure">I am still exploring</option>
+                            </select>
+                            <div class="error-msg text-red-500 text-xs mt-1 hidden">Please select a priority.</div>
                         </div>
                     </div>
 
@@ -690,55 +744,53 @@
         
         const nameVal = form.name.value.trim();
         const pursuingVal = form.pursuing.value.trim();
-        const interestsVal = form.interests.value.trim();
-        const incomeRaw = form.parent_income.value.trim().replace(/,/g, '');
-        const occupationVal = form.parent_occupation.value.trim();
+        const interestsSelect = Array.from(form.interests.selectedOptions).map(opt => opt.value);
+        const familyIncomeVal = form.family_income.value;
+        const fatherOccupationVal = form.father_occupation.value;
+        const motherOccupationVal = form.mother_occupation.value;
+        const salaryPriorityVal = form.salary_priority.value;
         
         let isValid = true;
         
         function toggleError(inputName, show) {
             const input = form[inputName];
-            const error = input.nextElementSibling;
+            const error = (input.parentElement || document.getElementById('interests-container').parentElement).querySelector('.error-msg');
+            
+            let targetEl = input;
+            if (inputName === 'interests') {
+                targetEl = document.getElementById('interests-container');
+            }
+
             if (show) {
-                input.classList.add("border-red-400");
-                error.classList.remove("hidden");
+                if (targetEl && targetEl.classList) targetEl.classList.add("border-red-400");
+                if (error) error.classList.remove("hidden");
                 isValid = false;
             } else {
-                input.classList.remove("border-red-400");
-                error.classList.add("hidden");
+                if (targetEl && targetEl.classList) targetEl.classList.remove("border-red-400");
+                if (error) error.classList.add("hidden");
             }
         }
         
-        if (nameVal.length < 2) {
-            toggleError("name", true);
-        } else {
-            toggleError("name", false);
-        }
+        if (nameVal.length < 2) toggleError("name", true);
+        else toggleError("name", false);
         
-        if (pursuingVal.length < 2) {
-            toggleError("pursuing", true);
-        } else {
-            toggleError("pursuing", false);
-        }
+        if (pursuingVal.length < 2) toggleError("pursuing", true);
+        else toggleError("pursuing", false);
         
-        if (interestsVal.length < 2) {
-            toggleError("interests", true);
-        } else {
-            toggleError("interests", false);
-        }
+        if (interestsSelect.length === 0) toggleError("interests", true);
+        else toggleError("interests", false);
         
-        const incomeNum = Number(incomeRaw);
-        if (incomeRaw === "" || isNaN(incomeNum) || incomeNum <= 0) {
-            toggleError("parent_income", true);
-        } else {
-            toggleError("parent_income", false);
-        }
+        if (!familyIncomeVal) toggleError("family_income", true);
+        else toggleError("family_income", false);
         
-        if (occupationVal.length < 2) {
-            toggleError("parent_occupation", true);
-        } else {
-            toggleError("parent_occupation", false);
-        }
+        if (!fatherOccupationVal) toggleError("father_occupation", true);
+        else toggleError("father_occupation", false);
+        
+        if (!motherOccupationVal) toggleError("mother_occupation", true);
+        else toggleError("mother_occupation", false);
+        
+        if (!salaryPriorityVal) toggleError("salary_priority", true);
+        else toggleError("salary_priority", false);
         
         if (!isValid) return;
         
@@ -754,9 +806,11 @@
                 body: JSON.stringify({
                     name: nameVal,
                     pursuing: pursuingVal,
-                    interests: interestsVal,
-                    parent_income: incomeNum,
-                    parent_occupation: occupationVal
+                    interests: interestsSelect,
+                    family_income: familyIncomeVal,
+                    father_occupation: fatherOccupationVal,
+                    mother_occupation: motherOccupationVal,
+                    salary_priority: salaryPriorityVal
                 })
             });
             const data = await res.json();
@@ -821,132 +875,71 @@
         if (!deck) return;
         deck.innerHTML = "";
         
-        const total = swipeCards.length;
-        document.getElementById("swipe-counter").innerText = `${activeSwipeIndex} / ${total} Cards Analyzed`;
-
-        if (activeSwipeIndex >= total) {
-            submitSwipeTelemetry();
-            return;
-        }
-
-        const cardsToShow = swipeCards.slice(activeSwipeIndex, activeSwipeIndex + 3);
-        
-        cardsToShow.forEach((c, idx) => {
-            const cardEl = document.createElement("div");
-            cardEl.className = "swipe-card";
-            
-            const scale = 1 - idx * 0.05;
-            const yOffset = idx * 18;
-            cardEl.style.transform = `translateY(${yOffset}px) scale(${scale})`;
-            cardEl.style.zIndex = 100 - idx;
-            
-            cardEl.innerHTML = `
-                <div>
-                    <span class="px-2.5 py-1 bg-teal-50 text-teal-600 border border-teal-100 rounded-full text-[10px] font-bold tracking-widest uppercase">${c.category || 'OBJECTIVE'}</span>
-                    <h3 class="text-xl font-bold mt-6 text-slate-900 leading-relaxed font-outfit">${c.content || c.text || ''}</h3>
-                </div>
-                <div class="flex justify-between items-center text-[10px] text-slate-400 font-bold tracking-wider pt-4 border-t border-slate-100">
-                    <span>← SWIPE LEFT (NO)</span>
-                    <span>SWIPE RIGHT (YES) →</span>
-                </div>
-            `;
-            deck.appendChild(cardEl);
-            if (idx === 0) {
-                setupDragInteraction(cardEl);
+        if (option.selected) {
+            option.selected = false;
+            btn.classList.remove('bg-teal-600', 'text-white', 'border-teal-600', 'shadow-md');
+            btn.classList.add('text-slate-600', 'border-slate-200', 'hover:bg-slate-50', 'hover:border-teal-300');
+        } else {
+            if (select.selectedOptions.length >= 4) {
+                // Flash to indicate max 4
+                btn.classList.add('animate-pulse', 'bg-red-50', 'border-red-300');
+                setTimeout(() => btn.classList.remove('animate-pulse', 'bg-red-50', 'border-red-300'), 400);
+                return;
             }
-        });
-        
-        cardStartTime = Date.now();
-        isTransitioning = false;
-    }
-
-    function setupDragInteraction(el) {
-        let startX = 0;
-        let currentX = 0;
-        
-        el.addEventListener('mousedown', start);
-        el.addEventListener('touchstart', start, {passive: true});
-        
-        function start(e) {
-            startX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
-            document.addEventListener('mousemove', move);
-            document.addEventListener('mouseup', end);
-            document.addEventListener('touchmove', move, {passive: false});
-            document.addEventListener('touchend', end);
+            option.selected = true;
+            btn.classList.add('bg-teal-600', 'text-white', 'border-teal-600', 'shadow-md');
+            btn.classList.remove('text-slate-600', 'border-slate-200', 'hover:bg-slate-50', 'hover:border-teal-300');
         }
         
-        function move(e) {
-            currentX = (e.type === 'touchmove' ? e.touches[0].clientX : e.clientX) - startX;
-            el.style.transform = `translateX(${currentX}px) rotate(${currentX / 16}deg)`;
-            
-            if (currentX > 50) {
-                el.classList.add('swiping-right'); el.classList.remove('swiping-left');
-            } else if (currentX < -50) {
-                el.classList.add('swiping-left'); el.classList.remove('swiping-right');
-            } else {
-                el.classList.remove('swiping-right', 'swiping-left');
-            }
+        // Clear error visually if selected
+        if (select.selectedOptions.length > 0) {
+            const container = document.getElementById('interests-container');
+            container.classList.remove('border-red-400');
+            container.parentElement.querySelector('.error-msg').classList.add('hidden');
         }
+    };
+
+    // --- PHASE 2: BEHAVIORAL MCQs ---
+    let phase2Questions = [];
+    let currentQuestionIdx = 0;
+    let phase2Answers = [];
+    let currentLang = 'en'; // Default language
+
+    window.togglePhase2Lang = function(lang) {
+        currentLang = lang;
+        // Update visibility of text elements
+        document.querySelectorAll('.lang-en').forEach(el => el.classList.toggle('hidden', lang !== 'en'));
+        document.querySelectorAll('.lang-hi').forEach(el => el.classList.toggle('hidden', lang !== 'hi'));
         
-        async function end() {
-            document.removeEventListener('mousemove', move);
-            document.removeEventListener('mouseup', end);
-            document.removeEventListener('touchmove', move);
-            document.removeEventListener('touchend', end);
-            
-            if (Math.abs(currentX) > 120) {
-                const direction = currentX > 0 ? 'right' : 'left';
-                handleSwipeTelemetry(direction);
-            } else {
-                el.style.transform = '';
-                el.classList.remove('swiping-right', 'swiping-left');
-            }
+        // Update toggle button styles
+        const btnEn = document.getElementById('btn-lang-en');
+        const btnHi = document.getElementById('btn-lang-hi');
+        const activeClass = "px-4 py-1.5 text-sm font-bold rounded-full bg-teal-600 text-white shadow-sm transition-all";
+        const inactiveClass = "px-4 py-1.5 text-sm font-medium rounded-full bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 transition-all";
+        
+        if (lang === 'en') {
+            btnEn.className = activeClass;
+            btnHi.className = inactiveClass;
+        } else {
+            btnEn.className = inactiveClass;
+            btnHi.className = activeClass;
         }
-    }
+    };
 
-    function executeUiSwipe(direction) {
-        if (isTransitioning) return;
-        isTransitioning = true;
-
-        const deck = document.getElementById("card-deck");
-        const topCard = deck.querySelector(".swipe-card");
-        if (!topCard) return;
-
-        topCard.classList.add(direction === "right" ? "swiped-right" : "swiped-left");
-        
-        setTimeout(() => {
-            handleSwipeTelemetry(direction);
-        }, 200);
-    }
-
-    function handleSwipeTelemetry(direction) {
-        const endTime = Date.now();
-        const duration = endTime - cardStartTime;
-        const activeCard = swipeCards[activeSwipeIndex];
-
-        swipeLogs.push({
-            card_id: activeCard.id,
-            direction: direction,
-            reaction_ms: Math.round(duration * 0.45),
-            dwell_ms: duration,
-            hesitation_ms: duration > 2000 ? Math.round((duration - 1000) * 0.75) : 0
-        });
-
-        activeSwipeIndex++;
-        buildSwipeCards();
-    }
-
-    async function submitSwipeTelemetry() {
-        showLoader("Syncing biometric preferences...");
+    async function renderPhase2MCQs() {
+        showLoader("Loading behavioral assessment...");
         try {
-            const res = await fetch("/assessment/api/swipe", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ swipes: swipeLogs })
-            });
+            const res = await fetch("/assessment/api/phase2_mcqs");
             const data = await res.json();
             if (data.status === "success") {
-                await refreshState();
+                phase2Questions = data.mcqs;
+                currentQuestionIdx = 0;
+                phase2Answers = [];
+                hideLoader();
+                renderCurrentMCQ();
+            } else {
+                hideLoader();
+                alert("Failed to load questions.");
             }
         } catch (e) {
             console.error(e);
@@ -954,71 +947,10 @@
         }
     }
 
-    // --- PHASE 2: ARCHETYPE DISCOVERY (BOTH) ---
-    async function renderArchetypePhase() {
+    function renderCurrentMCQ() {
         const body = document.getElementById("phase-body");
-        const arch = activePhaseData.archetype || "The Seeker";
-        const msg = activePhaseData.message || "Your biometric signatures have resolved into a unique cognitive archetype.";
-        
-        body.innerHTML = `
-            <div class="text-center mb-8 stagger-in">
-                <span class="cyber-badge mb-2">Phase 3: Cognitive Profile</span>
-                <h2 class="text-3xl font-extrabold mt-2 text-slate-900 font-outfit">Your Archetype: ${arch}</h2>
-                <p class="text-slate-500 text-sm mt-2 max-w-md mx-auto">${msg}</p>
-            </div>
-
-            <div class="max-w-2xl mx-auto stagger-in" style="animation-delay: 0.2s;">
-                <div class="bg-gradient-to-br from-teal-50 to-white border border-teal-100 rounded-3xl p-8 shadow-xl shadow-teal-900/5 relative overflow-hidden">
-                    <div class="relative z-10">
-                        <div class="w-20 h-20 bg-teal-600 rounded-2xl flex items-center justify-center text-white text-4xl mb-6 shadow-lg shadow-teal-500/30">
-                            ${arch.includes("Founder") ? '🚀' : arch.includes("Architect") ? '🏢' : '🔬'}
-                        </div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-4">Core Trait: Dominant Reflex</h3>
-                        <p class="text-slate-600 leading-relaxed text-sm mb-8">
-                            Based on your reaction times and dwell periods, your mind prioritizes structural integrity and creative leaps over standard conventional routes. You are naturally inclined towards problem-solving in high-autonomy environments.
-                        </p>
-                        
-                        <button onclick="confirmArchetype()" id="arch-confirm-btn" class="w-full py-4 bg-teal-600 hover:bg-teal-700 text-white rounded-2xl font-extrabold transition-all shadow-lg shadow-teal-600/30 flex items-center justify-center gap-2">
-                            <span>Lock Metadata & Continue</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    async function confirmArchetype() {
-        const btn = document.getElementById("arch-confirm-btn");
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner animate-spin"></i> Finalizing Profile...`;
-        
-        try {
-            const res = await fetch("/assessment/api/archetype_confirm", { method: "POST" });
-            const data = await res.json();
-            if (data.status === "success") {
-                await refreshState();
-            }
-        } catch (e) {
-            console.error(e);
-            btn.disabled = false;
-        }
-    }
-
-    // --- PHASE 3: ENVIRONMENTAL FIT PROXIES (BOTH) ---
-    let proxyAnswersLog = [];
-    let activeProxyIdx = 0;
-
-    function renderProxyPhase() {
-        proxyAnswersLog = [];
-        activeProxyIdx = 0;
-        showProxyQuestion();
-    }
-
-    function showProxyQuestion() {
-        const total = activePhaseData.proxy_questions.length;
-        if (activeProxyIdx >= total) {
-            submitProxyAnswers();
+        if (currentQuestionIdx >= phase2Questions.length) {
+            submitPhase2Answers();
             return;
         }
 
@@ -1086,79 +1018,53 @@
         const scenarioDesc = `Use the tools below to map how you would approach: "${scenarioTitle}". Connect them to show how they work together.`;
         const toolsRequired = taskData.tools_required || [];
         
-        // Reset state
-        plannerWorkspaceItems = [];
-        plannerConnections = [];
-        nextPlannerId = 1;
-        linkingMode = false;
-        selectedSourceId = null;
-        draggingNodeId = null;
+        document.getElementById("phase-step-label").innerText = `Behavioral Assessment (${currentQuestionIdx + 1}/${phase2Questions.length})`;
+        document.getElementById("global-progress-fill").style.width = `${((currentQuestionIdx) / phase2Questions.length) * 100}%`;
+        
+        const q = phase2Questions[currentQuestionIdx];
+        
+        const enClass = currentLang === 'en' ? "px-4 py-1.5 text-sm font-bold rounded-full bg-teal-600 text-white shadow-sm transition-all" : "px-4 py-1.5 text-sm font-medium rounded-full bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 transition-all";
+        const hiClass = currentLang === 'hi' ? "px-4 py-1.5 text-sm font-bold rounded-full bg-teal-600 text-white shadow-sm transition-all" : "px-4 py-1.5 text-sm font-medium rounded-full bg-white text-slate-500 border border-slate-200 hover:bg-slate-50 transition-all";
+        
+        let optionsHtml = q.options.map((opt, idx) => `
+            <button onclick="selectPhase2Option('${opt.archetype_id}', this)" class="w-full text-left p-4 rounded-xl border border-slate-200 bg-white hover:border-teal-500 hover:bg-teal-50 hover:shadow-md transition-all duration-300 group">
+                <div class="flex items-start gap-4">
+                    <div class="h-8 w-8 shrink-0 rounded-full border-2 border-slate-200 group-hover:border-teal-500 flex items-center justify-center text-teal-600 transition-colors mt-0.5">
+                        <span class="opacity-0 group-hover:opacity-100 text-sm"><i class="fas fa-check"></i></span>
+                    </div>
+                    <div class="flex flex-col justify-center min-h-[32px]">
+                        <p class="lang-en text-slate-800 font-bold text-base ${currentLang !== 'en' ? 'hidden' : ''}">${opt.option_en}</p>
+                        <p class="lang-hi text-slate-800 font-bold text-base ${currentLang !== 'hi' ? 'hidden' : ''}">${opt.option_hi_en}</p>
+                    </div>
+                </div>
+            </button>
+        `).join("");
+
         body.innerHTML = `
-            <div class="stagger-in">
-                <header class="flex flex-col gap-2 p-4 border-b border-slate-100 bg-slate-50/30 rounded-t-2xl">
-                    <div class="flex items-center gap-2">
-                        <span class="w-8 h-8 flex items-center justify-center bg-teal-100 text-teal-600 rounded-lg text-sm font-bold">4</span>
-                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-widest">Phase 4: Strategy Planner</h2>
+            <div class="max-w-3xl mx-auto stagger-in">
+                <!-- Header with Toggle -->
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                    <span class="cyber-badge">Question ${currentQuestionIdx + 1} of ${phase2Questions.length}</span>
+                    <div class="flex bg-slate-100 p-1 rounded-full border border-slate-200 shadow-inner">
+                        <button id="btn-lang-en" onclick="togglePhase2Lang('en')" class="${enClass}">English</button>
+                        <button id="btn-lang-hi" onclick="togglePhase2Lang('hi')" class="${hiClass}">Hinglish</button>
                     </div>
-                    <div class="p-3 bg-white border border-teal-100 rounded-xl">
-                        <p class="text-xs font-bold text-teal-700 mb-1">📌 Scenario: ${scenarioTitle}</p>
-                        <p class="text-[11px] text-slate-500 leading-relaxed">${scenarioDesc}</p>
-                    </div>
-                </header>
-
-                <div class="flex overflow-hidden rounded-b-2xl border border-slate-100" style="height: 460px;">
-                    <!-- Palette -->
-                    <aside id="planner-sidebar" class="w-44 border-r border-slate-100 p-3 overflow-y-auto bg-slate-50/50 flex-shrink-0">
-                        <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">🛠 Tool Palette</h3>
-                        <p class="text-[9px] text-slate-400 mb-3">Click a tool to add it to the canvas</p>
-                        <div id="planner-palette" class="flex flex-col gap-2">
-                        </div>
-                    </aside>
-
-                    <!-- Canvas Container -->
-                    <div class="flex-1 flex flex-col">
-                        <div class="relative workspace-grid" id="planner-canvas-container" style="flex: 1; position: relative; overflow: hidden; cursor: crosshair;">
-                            <!-- SVG for connections -->
-                            <svg id="planner-connections-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;"></svg>
-
-                            <div id="planner-canvas" style="position:absolute;inset:0;width:100%;height:100%;z-index:2;">
-                                <div id="planner-empty-state" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;color:#94a3b8;">
-                                    <div style="width:48px;height:48px;background:#f1f5f9;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:8px;">📥</div>
-                                    <p style="font-size:11px;font-weight:700;">Click a tool to add it here</p>
-                                    <p style="font-size:9px;color:#cbd5e1;margin-top:4px;">Then drag to reposition, 🔗 to connect</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Bottom action bar -->
-                        <div style="padding: 10px 12px; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; align-items: center; justify-content: space-between;">
-                            <span id="linking-mode-indicator" class="hidden" style="font-size:10px;font-weight:700;background:#ccfbf1;color:#0f766e;padding:4px 12px;border-radius:99px;border:1px solid #99f6e4;">🔗 Linking Mode — click another node to connect</span>
-                            <button onclick="submitPlannerProject()" id="planner-submit-btn" style="padding: 8px 20px; background: #0d9488; color: white; border-radius: 12px; font-size: 12px; font-weight: 700; border: none; cursor: pointer; margin-left: auto;">Submit Strategy →</button>
-                        </div>
-                    </div>
+                </div>
+                
+                <div class="mb-8 text-center md:text-left bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
+                    <h2 class="lang-en text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight ${currentLang !== 'en' ? 'hidden' : ''}">${q.question_en}</h2>
+                    <h2 class="lang-hi text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight ${currentLang !== 'hi' ? 'hidden' : ''}">${q.question_hi_en}</h2>
+                </div>
+                <div class="space-y-4">
+                    ${optionsHtml}
                 </div>
             </div>
         `;
-
-        initPlanner(toolsRequired);
     }
 
-    const TOOL_RESOURCES = [
-        { type: 'database', label: 'Cloud Database', icon: '🗄️', category: 'Tech' },
-        { type: 'ai_model', label: 'AI Engine', icon: '🧠', category: 'Tech' },
-        { type: 'frontend', label: 'Dashboard UI', icon: '💻', category: 'Tech' },
-        { type: 'api', label: 'Backend API', icon: '🔌', category: 'Tech' },
-        { type: 'strategy', label: 'Market Strategy', icon: '🎯', category: 'Business' },
-        { type: 'team', label: 'Core Team', icon: '👥', category: 'People' },
-        { type: 'security', label: 'Cyber Security', icon: '🔒', category: 'Ops' },
-        { type: 'budget', label: 'Funding', icon: '💰', category: 'Business' },
-        { type: 'marketing', label: 'Growth Plan', icon: '📢', category: 'Business' },
-        { type: 'timeline', label: 'Milestones', icon: '📅', category: 'Ops' }
-    ];
-
-    function initPlanner(requiredTools) {
-        const palette = document.getElementById("planner-palette");
-        const allowed = (requiredTools || []).map(t => t.toLowerCase());
+    window.selectPhase2Option = function(archetypeId, btn) {
+        // Prevent double click
+        if (btn.disabled) return;
         
         const filtered = TOOL_RESOURCES.filter(tr => 
             allowed.length === 0 || allowed.some(a => tr.label.toLowerCase().includes(a) || tr.type.toLowerCase().includes(a))
@@ -1312,6 +1218,13 @@
             `;
             nodeMap.set(item.id, true);
         });
+        
+        // Next question
+        setTimeout(() => {
+            currentQuestionIdx++;
+            renderCurrentMCQ();
+        }, 400);
+    };
 
         existingNodes.forEach(rn => {
             const id = parseInt(rn.getAttribute('data-id'));
@@ -1334,7 +1247,7 @@
         
         showLoader("Synchronizing vector multipliers...");
         try {
-            const res = await fetch("/assessment/api/phase4_complete", {
+            const res = await fetch("/assessment/api/phase2/submit", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ 
@@ -1388,17 +1301,13 @@
             if (data.status === "success") {
                 window.location.href = data.redirect;
             } else {
-                alert("Compilation failed. Please try resetting assessment progress.");
-                if (btn) btn.disabled = false;
-                if (btn) btn.classList.remove("opacity-40", "cursor-not-allowed");
-                if (ind) ind.classList.add("hidden");
+                hideLoader();
+                alert("Failed to submit Phase 2 assessment.");
             }
-        } catch (e) {
+        } catch(e) {
             console.error(e);
-            alert("Matrix Compilation Error. Check local gateway connections.");
-            if (btn) btn.disabled = false;
-            if (btn) btn.classList.remove("opacity-40", "cursor-not-allowed");
-            if (ind) ind.classList.add("hidden");
+            hideLoader();
+            alert("Network error.");
         }
     }
 </script>
