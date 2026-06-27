@@ -2325,22 +2325,22 @@ async def send_completion_reminders(request: Request, db: AsyncSession = Depends
 
 @app.post("/admin/users/{user_id}/delete")
 async def delete_user(user_id: int, request: Request, db: AsyncSession = Depends(get_db)):
-    # 1. Check admin auth
     current_user = await get_current_user(request, db)
     admin_email = os.getenv("ADMIN_EMAIL")
     if not current_user or (current_user.role != "admin" and current_user.email != admin_email):
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
 
-    # 2. Get User
     user_to_delete = (await db.execute(select(models.User).where(models.User.id == user_id))).scalars().first()
     if not user_to_delete:
-         raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
 
-    # 3. Delete Assessment Result first (ForeignKey)
-    if user_to_delete.assessment:
-        await db.delete(user_to_delete.assessment)
-    
-    # 4. Delete User
+    # Assessment alag query se delete karo — lazy load mat karo
+    assessment = (await db.execute(
+        select(models.AssessmentResult).where(models.AssessmentResult.user_id == user_id)
+    )).scalars().first()
+    if assessment:
+        await db.delete(assessment)
+
     await db.delete(user_to_delete)
     await db.commit()
     
@@ -2614,7 +2614,7 @@ async def block_counsellor(
     if profile:
         profile.is_blocked = True
         profile.block_reason = block_reason
-        profile.is_verified = False  # Remove from public listing
+        profile.is_verified = False
         await db.commit()
     
     return RedirectResponse(url="/admin", status_code=status.HTTP_302_FOUND)
