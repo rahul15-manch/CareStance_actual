@@ -1685,6 +1685,22 @@ async def assessment_api_chat(request: Request, payload: dict, db: AsyncSession 
         
         return {"status": "success", "message": next_q, "chat_turn": next_turn, "phase_complete": False}
 
+
+@app.get("/assessment/api/phase2_mcqs")
+async def get_phase2_mcqs(request: Request, db: AsyncSession = Depends(get_db)):
+    user = await get_current_user(request, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    import json
+    import os
+    mcqs_path = os.path.join(os.path.dirname(__file__), "assessment_data", "phase2_mcqs.json")
+    if os.path.exists(mcqs_path):
+        with open(mcqs_path, "r", encoding="utf-8") as f:
+            mcqs = json.load(f)
+        return {"status": "success", "mcqs": mcqs}
+    return {"status": "error", "detail": "Questions not found"}
+
 @app.post("/assessment/api/phase2/submit")
 async def submit_phase2_mcqs(request: Request, payload: dict, db: AsyncSession = Depends(get_db)):
     user = await get_current_user(request, db)
