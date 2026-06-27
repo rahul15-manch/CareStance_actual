@@ -3779,12 +3779,14 @@ async def phase3_chat_v2(request: Request, chat_req: Phase3V2ChatRequest, db: As
         "student_previous_answers_summary": "N/A"
     }
 
-    primary_interest = student_context["selected_interests"][0] if student_context["selected_interests"] else "your field of interest"
+    all_interests = ", ".join(student_context["selected_interests"]) if student_context["selected_interests"] else "your fields of interest"
+    parents_occupation = student_context["family_context"]["parent_occupation_category"] or "various fields"
 
     sys_prompt = LIVE_CHAT_PROMPT.format(
         context_json=json.dumps(student_context, indent=2),
         student_name=student_context["student_name"],
-        primary_interest=primary_interest
+        all_interests=all_interests,
+        parents_occupation=parents_occupation
     )
 
     # Build conversation history as messages for Groq

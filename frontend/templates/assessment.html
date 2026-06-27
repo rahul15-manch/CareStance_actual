@@ -519,8 +519,10 @@
                 hideLoader();
             } else if (phase === 1) {
                 renderPhase2MCQs();
-            } else if (phase === 2 || phase === 5) {
-                // If it hits 2 or 5, just compile. 
+            } else if (phase === 2) {
+                // Redirect to Phase 3 Career Buddy
+                window.location.href = "/assessment/phase3";
+            } else if (phase === 5) {
                 renderCompilePhase();
                 hideLoader();
             }
